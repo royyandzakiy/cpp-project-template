@@ -1,7 +1,9 @@
 ```bash
+# called once
 conan profile list
 conan profile detect
 
+# called every pristine build
 conan install . --build=missing
  && cmake -B build --preset default
  && cmake --build build --config Release
