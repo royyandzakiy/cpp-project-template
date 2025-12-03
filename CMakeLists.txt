@@ -1,7 +1,7 @@
 # =============================================================================
 # Project Configuration
 # =============================================================================
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.28)
 
 project(cmake_project_template 
     LANGUAGES CXX
@@ -25,7 +25,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # =============================================================================
 # Dependencies
 # =============================================================================
-# find_package(fmt REQUIRED)
+find_package(fmt REQUIRED)
 
 # =============================================================================
 # Main Executable
@@ -34,4 +34,4 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
 )
 
-# target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
