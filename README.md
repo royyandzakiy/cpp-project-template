@@ -30,8 +30,8 @@ specify via command
 
 ```bash
 conan install . --build=missing -s compiler=msvc -s compiler.version=193 -s compiler.runtime=dynamic
-conan install . --build=missing -s compiler=gcc -s compiler.version=12 -s compiler.libcxx=libstdc++11 -s compiler.cppstd=23 # still fails to run std::print
 
-# These 2 are still problematic
-conan install . --build=missing -s compiler=clang -s compiler.version=17 -s compiler.runtime=dynamic -s compiler.runtime_type=Release -s compiler.cppstd=20 -s build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
+# These 2 successfully configure, but fail to build because of std::print
+conan install . --build=missing -s compiler=gcc -s compiler.version=12 -s compiler.libcxx=libstdc++11 -s compiler.cppstd=23
+conan install . --build=missing -s compiler=clang -s compiler.version=20 -s compiler.runtime_type=Release -s compiler.cppstd=23
 ```
