@@ -1,20 +1,52 @@
 {
 	"version": 3,
-	"vendor": {
-		"conan": {}
-	},
 	"cmakeMinimumRequired": {
 		"major": 3,
-		"minor": 15,
+		"minor": 28,
 		"patch": 0
 	},
 	"configurePresets": [
 		{
-			"name": "default",
-			"displayName": "default (msvc)",
-			"description": "default configure using 'Visual Studio 17 2022' generator",
+			"name": "clang-ninja",
+			"displayName": "Clang + Ninja",
+			"description": "Configure using Clang compiler with Ninja generator",
+			"generator": "Ninja",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++",
+				"CMAKE_CXX_STANDARD": "23",
+				"CMAKE_CXX_STANDARD_REQUIRED": "ON",
+				"CMAKE_CXX_EXTENSIONS": "OFF",
+				"CMAKE_POLICY_DEFAULT_CMP0091": "NEW"
+			},
+			"binaryDir": "${sourceDir}/build-clang",
+			"toolchainFile": "build/generators/conan_toolchain.cmake"
+		},
+		{
+			"name": "gcc-ninja",
+			"displayName": "GCC + Ninja",
+			"description": "Configure using GCC compiler with Ninja generator",
+			"generator": "Ninja",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "gcc",
+				"CMAKE_CXX_COMPILER": "g++",
+				"CMAKE_CXX_STANDARD": "23",
+				"CMAKE_CXX_STANDARD_REQUIRED": "ON",
+				"CMAKE_CXX_EXTENSIONS": "OFF",
+				"CMAKE_POLICY_DEFAULT_CMP0091": "NEW"
+			},
+			"binaryDir": "${sourceDir}/build-gcc",
+			"toolchainFile": "build/generators/conan_toolchain.cmake"
+		},
+		{
+			"name": "msvc-vs2022",
+			"displayName": "MSVC (Visual Studio 2022)",
+			"description": "Configure using MSVC with Visual Studio 2022 generator",
 			"generator": "Visual Studio 17 2022",
 			"cacheVariables": {
+				"CMAKE_CXX_STANDARD": "23",
+				"CMAKE_CXX_STANDARD_REQUIRED": "ON",
+				"CMAKE_CXX_EXTENSIONS": "OFF",
 				"CMAKE_POLICY_DEFAULT_CMP0091": "NEW"
 			},
 			"toolset": {
@@ -25,36 +57,40 @@
 				"value": "x64",
 				"strategy": "external"
 			},
-			"toolchainFile": "generators\\conan_toolchain.cmake",
-			"binaryDir": "build"
+			"binaryDir": "${sourceDir}/build-msvc",
+			"toolchainFile": "build/generators/conan_toolchain.cmake"
 		}
 	],
 	"buildPresets": [
 		{
-			"name": "release",
-			"displayName": "release (msvc)",
-			"configurePreset": "default",
-			"configuration": "Release",
-			"jobs": 20
+			"name": "clang-debug",
+			"configurePreset": "clang-ninja",
+			"configuration": "Debug"
 		},
 		{
-			"name": "debug",
-			"displayName": "debug (msvc)",
-			"configurePreset": "default",
-			"configuration": "Debug",
-			"jobs": 20
-		}
-	],
-	"testPresets": [
-		{
-			"name": "release",
-			"configurePreset": "default",
+			"name": "clang-release",
+			"configurePreset": "clang-ninja",
 			"configuration": "Release"
 		},
 		{
-			"name": "debug",
-			"configurePreset": "default",
+			"name": "gcc-debug",
+			"configurePreset": "gcc-ninja",
 			"configuration": "Debug"
+		},
+		{
+			"name": "gcc-release",
+			"configurePreset": "gcc-ninja",
+			"configuration": "Release"
+		},
+		{
+			"name": "msvc-debug",
+			"configurePreset": "msvc-vs2022",
+			"configuration": "Debug"
+		},
+		{
+			"name": "msvc-release",
+			"configurePreset": "msvc-vs2022",
+			"configuration": "Release"
 		}
 	]
 }

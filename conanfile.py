@@ -22,7 +22,7 @@ class HelloFmtRecipe(ConanFile):
 
     def requirements(self):
         # Add fmt dependency
-        self.requires("fmt/10.1.1")
+        self.requires("fmt/12.1.0")
 
     def layout(self):
         cmake_layout(self)

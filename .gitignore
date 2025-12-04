@@ -51,6 +51,7 @@ vcpkg_installed/
 # End of https://www.toptal.com/developers/gitignore/api/cmake,vcpkg,visualstudiocode,doxygen
 
 build/
+build**/**
 __pycache__
 .pytest_cache
 

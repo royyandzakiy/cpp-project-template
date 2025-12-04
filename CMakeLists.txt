@@ -19,17 +19,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#==============================================================================
-# Toolchain Configuration
-#==============================================================================
-if(NOT CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE "generators\\conan_toolchain.cmake")
-endif()
-
-if(CMAKE_TOOLCHAIN_FILE)
-    message(STATUS "Using Conan toolchain: ${CMAKE_TOOLCHAIN_FILE}")
-endif()
-
 # =============================================================================
 # Dependencies
 # =============================================================================
