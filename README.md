@@ -30,7 +30,7 @@ specify via command
 
 ```bash
 conan install . -of build-msvc --build=missing -s compiler=msvc -s compiler.version=193 -s compiler.runtime=dynamic
-conan install . -of build-clang --build=missing -s compiler=clang -s compiler.version=20 -s compiler.runtime_type=Release
+conan install . -of build-clang --build=missing -s compiler=clang -s compiler.version=20 -s build_type=Release
 
 # still fails to build
 conan install . -of build-gcc --build=missing -s compiler=gcc -s compiler.version=15 -s compiler.libcxx=libstdc++

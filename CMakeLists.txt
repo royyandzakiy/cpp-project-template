@@ -1,8 +1,13 @@
+cmake_minimum_required(VERSION 3.28..4.1)
+
+# =============================================================================
+# Conan Pre-configure
+# =============================================================================
+include(cmake/conan-preconfigure.cmake)
+
 # =============================================================================
 # Project Configuration
 # =============================================================================
-cmake_minimum_required(VERSION 3.28)
-
 project(cmake_project_template 
     LANGUAGES CXX
     VERSION 1.0.0
