@@ -16,6 +16,7 @@ if(NOT CMAKE_BUILD_TYPE)
 else()
     set(CONAN_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 endif()
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 # Determine output directory (use CMake's binary directory)
 if(NOT CONAN_OUTPUT_DIR)
@@ -33,7 +34,7 @@ if(CMAKE_CXX_COMPILER STREQUAL "clang++")
         COMMAND ${CONAN_CMD} install . --build=missing
                 -s compiler=clang
                 -s compiler.version=20
-                -s compiler.runtime_type=${CONAN_BUILD_TYPE}
+                -s build_type=${CONAN_BUILD_TYPE}
                 -of ${CONAN_OUTPUT_DIR}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         RESULT_VARIABLE CONAN_RESULT
