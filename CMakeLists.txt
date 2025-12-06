@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION 3.28..3.31)
 # Conan Pre-configure
 # =============================================================================
 include(cmake/conan-preconfigure.cmake)
+# if(WIN32)
+    include(cmake/setup-windows.cmake)
+# endif()
 
 # =============================================================================
 # Project Configuration
