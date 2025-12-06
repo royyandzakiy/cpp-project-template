@@ -13,11 +13,7 @@
 			"generator": "Ninja",
 			"cacheVariables": {
 				"CMAKE_C_COMPILER": "clang",
-				"CMAKE_CXX_COMPILER": "clang++",
-				"CMAKE_CXX_STANDARD": "23",
-				"CMAKE_CXX_STANDARD_REQUIRED": "ON",
-				"CMAKE_CXX_EXTENSIONS": "OFF",
-				"CMAKE_POLICY_DEFAULT_CMP0091": "NEW"
+				"CMAKE_CXX_COMPILER": "clang++"
 			},
 			"binaryDir": "${sourceDir}/build-clang",
 			"toolchainFile": "build/Release/generators/conan_toolchain.cmake",
@@ -48,12 +44,7 @@
 			"displayName": "msvc",
 			"description": "Configure using MSVC with Visual Studio 2022 generator",
 			"generator": "Visual Studio 17 2022",
-			"cacheVariables": {
-				"CMAKE_CXX_STANDARD": "23",
-				"CMAKE_CXX_STANDARD_REQUIRED": "ON",
-				"CMAKE_CXX_EXTENSIONS": "OFF",
-				"CMAKE_POLICY_DEFAULT_CMP0091": "NEW"
-			},
+			"cacheVariables": {},
 			"toolset": {
 				"value": "v143",
 				"strategy": "external"

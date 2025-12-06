@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28..4.1)
+cmake_minimum_required(VERSION 3.28..3.31)
 
 # =============================================================================
 # Conan Pre-configure
@@ -19,6 +19,8 @@ project(cmake_project_template
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+cmake_policy(SET CMP0091 NEW)
 
 if(MSVC)
     add_compile_options(/W4 /permissive-)
