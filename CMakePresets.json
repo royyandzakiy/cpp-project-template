@@ -7,8 +7,8 @@
 	},
 	"configurePresets": [
 		{
+			"displayName": "clang-ninja-base",
 			"name": "clang-ninja-base",
-			"displayName": "Clang + Ninja",
 			"description": "Configure using Clang compiler with Ninja generator",
 			"generator": "Ninja",
 			"cacheVariables": {
@@ -20,8 +20,8 @@
 			"hidden": true
 		},
 		{
-			"name": "clang-release",
 			"displayName": "clang-release",
+			"name": "clang-release",
 			"description": "Configure using Clang compiler with Ninja generator",
 			"inherits": "clang-ninja-base",
 			"cacheVariables": {
@@ -30,8 +30,8 @@
 			"toolchainFile": "build/Release/generators/conan_toolchain.cmake"
 		},
 		{
-			"name": "clang-debug",
 			"displayName": "clang-debug",
+			"name": "clang-debug",
 			"description": "Configure using Clang compiler with Ninja generator",
 			"inherits": "clang-ninja-base",
 			"cacheVariables": {
@@ -40,8 +40,8 @@
 			"toolchainFile": "build/Debug/generators/conan_toolchain.cmake"
 		},
 		{
-			"name": "msvc-vs2022",
 			"displayName": "msvc",
+			"name": "msvc-vs2022",
 			"description": "Configure using MSVC with Visual Studio 2022 generator",
 			"generator": "Visual Studio 17 2022",
 			"cacheVariables": {},
