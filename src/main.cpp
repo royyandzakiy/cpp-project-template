@@ -5,9 +5,9 @@ auto main() -> int {
 	fmt::println("hello guys!");
 	std::cout << "test";
 
-	int *ptr = nullptr;
-	*ptr = 42;
-	std::cout << "Value: " << *ptr << std::endl;
+	// int *ptr = nullptr;
+	// *ptr = 42;
+	// std::cout << "Value: " << *ptr << std::endl;
 
 	return 0;
 }
