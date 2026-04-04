@@ -32,9 +32,13 @@ else()
     add_compile_options(-Wall -Wextra -Werror -pedantic)
 endif()
 
-if(CLANGTIDY)
-    set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY})
-    message(STATUS "Clang-Tidy enabled: ${CLANGTIDY}")
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+
+if(CLANG_TIDY_EXE)
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+    message(STATUS "Clang-Tidy found: ${CLANG_TIDY_EXE}")
+else()
+    message(WARNING "Clang-Tidy not found. Static analysis is disabled.")
 endif()
 
 option(ENABLE_SANITIZERS "Enable Address, Undefined, and Leak sanitizers" OFF)
