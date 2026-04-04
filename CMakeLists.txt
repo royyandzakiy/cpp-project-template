@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5..4.2)
 
-include(cmake/local_vcpkg.cmake)
+if(EXISTS cmake/local_vcpkg.cmake)
+	include(cmake/local_vcpkg.cmake)
+endif()
 include(cmake/config_vcpkg.cmake)
 
 #==============================================================================
