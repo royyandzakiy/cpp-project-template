@@ -113,18 +113,21 @@ message(STATUS "└────────────────────�
 # -----------------------------------------------------------------------------
 message(STATUS "")
 message(STATUS "┌─ [3/${VCPKG_CHECKS_TOTAL}] vcpkg Installation")
-set(VCPKG_INSTALLED_DIR "${VCPKG_ROOT_PATH}/installed")
 
-if(EXISTS "${VCPKG_INSTALLED_DIR}")
-    message(STATUS "│   ${STATUS_OK} vcpkg root: ${VCPKG_ROOT_PATH}")
-    message(STATUS "│   ${STATUS_OK} installed packages: ${VCPKG_INSTALLED_DIR}")
+# Detect Mode
+if(VCPKG_MANIFEST_MODE)
+    message(STATUS "│   ${STATUS_INFO} Mode: MANIFEST (using vcpkg.json)")
+    message(STATUS "│   ${STATUS_OK} dependencies will be managed automatically")
+    math(EXPR VCPKG_CHECKS_PASSED "${VCPKG_CHECKS_PASSED} + 1")
+else()
+    message(STATUS "│   ${STATUS_INFO} Mode: CLASSIC (global installation)")
     
-    set(TRIPLET_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
+    set(TRIPLET_DIR "${VCPKG_ROOT_PATH}/installed/${VCPKG_TARGET_TRIPLET}")
     if(EXISTS "${TRIPLET_DIR}")
         message(STATUS "│   ${STATUS_OK} triplet directory: ${TRIPLET_DIR}")
         math(EXPR VCPKG_CHECKS_PASSED "${VCPKG_CHECKS_PASSED} + 1")
                
-		# Quick package checks
+		# Quick global package checks if using vcpkg classic mode. If using manifest mode, ignore
         if(EXISTS "${TRIPLET_DIR}/include/fmt")
             message(STATUS "│   ${STATUS_OK} fmt: found")
         else()
@@ -148,11 +151,6 @@ if(EXISTS "${VCPKG_INSTALLED_DIR}")
         message(STATUS "│   ${STATUS_INFO} Run: ./vcpkg install --triplet ${VCPKG_TARGET_TRIPLET}")
         math(EXPR VCPKG_CHECKS_PASSED "${VCPKG_CHECKS_PASSED} + 0")
     endif()
-else()
-    message(STATUS "│   ${STATUS_FAIL} vcpkg installation not found at: ${VCPKG_ROOT_PATH}")
-    message(STATUS "│   ${STATUS_INFO} Please verify VCPKG_ROOT_PATH points to a valid vcpkg installation")
-    message(FATAL_ERROR "│\n╚════════════════════════════════════════════════════════════════════════════╝\n"
-                        "vcpkg installation not found! Please verify your vcpkg path.\n")
 endif()
 message(STATUS "└─────────────────────────────────────────────────────────────────────────")
 
