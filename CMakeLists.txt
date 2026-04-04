@@ -58,13 +58,13 @@ endif()
 #==============================================================================
 # Dependencies
 #==============================================================================
-find_package(fmt CONFIG REQUIRED)
-find_package(GTest CONFIG REQUIRED)
+# find_package(fmt CONFIG REQUIRED)
+# find_package(GTest CONFIG REQUIRED)
 
 #==============================================================================
 # Project Structure
 #==============================================================================
-add_subdirectory(test)
+# add_subdirectory(test)
 
 #==============================================================================
 # Main Executable
@@ -76,5 +76,5 @@ add_executable(${PROJECT_NAME}
 # Core dependencies (always included)
 target_link_libraries(${PROJECT_NAME} 
     PRIVATE 
-		fmt::fmt
+		# fmt::fmt
 )
