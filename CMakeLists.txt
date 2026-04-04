@@ -32,8 +32,42 @@ else()
     add_compile_options(-Wall -Wextra -Werror -pedantic)
 endif()
 
+# Compiler sanitizers
+option(ENABLE_SANITIZERS "Enable comprehensive runtime sanitizers" ON)
+
+if(ENABLE_SANITIZERS AND NOT MSVC)
+    message(STATUS "Configuring Hardened Sanitizer Profile")
+
+    # 1. Address & Undefined (The standard combo)
+    # 2. Add 'bounds' and 'integer' for extra UBSan checks
+    set(SANITIZER_FLAGS 
+        -fsanitize=address 
+        -fsanitize=undefined 
+        -fsanitize=leak
+        -fsanitize=bounds
+        -fsanitize=integer
+        -fno-omit-frame-pointer
+        -fno-optimize-sibling-calls
+    )
+
+    # Note: ThreadSanitizer (-fsanitize=thread) and MemorySanitizer (-fsanitize=memory)
+    # usually cannot be combined with AddressSanitizer.
+    
+    # Extra UBSan hardening
+    add_compile_options(-fstack-protector-strong)
+    
+    # Add to compiler and linker
+    add_compile_options(${SANITIZER_FLAGS})
+    add_link_options(${SANITIZER_FLAGS})
+
+    # Optimization: Symbols are required for readable stack traces
+    if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message(WARNING "Sanitizers are most effective in Debug builds (-g).")
+    endif()
+endif()
+
 # Static Analysis: Clang-tidy
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+# find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 if(CLANG_TIDY_EXE)
     set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
     message(STATUS "Clang-Tidy found: ${CLANG_TIDY_EXE}")
@@ -42,7 +76,7 @@ else()
 endif()
 
 # Static Analysis: Cppcheck
-find_program(CPPCHECK_EXE NAMES "cppcheck")
+# find_program(CPPCHECK_EXE NAMES "cppcheck")
 if(CPPCHECK_EXE)
     set(CMAKE_CXX_CPPCHECK 
         "${CPPCHECK_EXE}"
@@ -54,23 +88,6 @@ if(CPPCHECK_EXE)
     message(STATUS "Cppcheck found: ${CPPCHECK_EXE}")
 else()
     message(WARNING "Cppcheck not found. Static analysis is disabled.")
-endif()
-
-option(ENABLE_SANITIZERS "Enable Address, Undefined, and Leak sanitizers" OFF)
-
-if(ENABLE_SANITIZERS AND NOT MSVC)
-    message(STATUS "Building with Address, Undefined, and Leak Sanitizers")
-    
-    set(SANITIZER_FLAGS 
-        -fsanitize=address,undefined,leak 
-        -fno-omit-frame-pointer
-    )
-    
-    # Add to compiler flags
-    add_compile_options(${SANITIZER_FLAGS})
-    
-    # Add to linker flags (CRITICAL: sanitizers need library linking)
-    add_link_options(${SANITIZER_FLAGS})
 endif()
 
 #==============================================================================
