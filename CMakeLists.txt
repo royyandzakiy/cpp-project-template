@@ -32,13 +32,28 @@ else()
     add_compile_options(-Wall -Wextra -Werror -pedantic)
 endif()
 
+# Static Analysis: Clang-tidy
 find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-
 if(CLANG_TIDY_EXE)
     set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
     message(STATUS "Clang-Tidy found: ${CLANG_TIDY_EXE}")
 else()
     message(WARNING "Clang-Tidy not found. Static analysis is disabled.")
+endif()
+
+# Static Analysis: Cppcheck
+find_program(CPPCHECK_EXE NAMES "cppcheck")
+if(CPPCHECK_EXE)
+    set(CMAKE_CXX_CPPCHECK 
+        "${CPPCHECK_EXE}"
+        "--enable=warning,performance,portability,style"
+        "--inline-suppr"  # Allows you to suppress warnings in code comments
+        "--suppress=missingIncludeSystem"
+        "--inconclusive"
+    )
+    message(STATUS "Cppcheck found: ${CPPCHECK_EXE}")
+else()
+    message(WARNING "Cppcheck not found. Static analysis is disabled.")
 endif()
 
 option(ENABLE_SANITIZERS "Enable Address, Undefined, and Leak sanitizers" OFF)
