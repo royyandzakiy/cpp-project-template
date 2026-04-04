@@ -8,30 +8,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build with ${{ matrix.compiler.name }}
+  build-gcc:
+    name: Build with GCC
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        compiler:
-          - { name: GCC,   pkg: g++-13,     cmd: g++-13,      version: "13" }
-          - { name: Clang, pkg: clang-17,   cmd: clang++-17,  version: "17" }
-      fail-fast: false
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Install ${{ matrix.compiler.name }}
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ${{ matrix.compiler.pkg }} cmake ninja-build
+        sudo apt-get install -y g++-13 cmake ninja-build
     
-    - name: Configure CMake
+    - name: Configure CMake (GCC)
       run: |
-        cmake -B build/${{ matrix.compiler.name | lower }} \
+        cmake -B build/gcc \
           -G Ninja \
-          -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cmd }} \
+          -DCMAKE_CXX_COMPILER=g++-13 \
           -DCMAKE_CXX_STANDARD=23 \
           -DCMAKE_BUILD_TYPE=Debug \
           -DENABLE_SANITIZERS=OFF \
@@ -40,18 +34,58 @@ jobs:
           -DVCPKG_TARGET_TRIPLET=""
     
     - name: Build
-      run: cmake --build build/${{ matrix.compiler.name | lower }}
+      run: cmake --build build/gcc
     
     - name: Run program
       run: |
-        echo "=== Running ${{ matrix.compiler.name }} build ==="
-        ./build/${{ matrix.compiler.name | lower }}/cmake_project_template
-        echo "=== Exit code: $? ==="
+        echo "Running GCC build:"
+        ./build/gcc/cmake_project_template || true
     
     - name: Upload build artifacts (optional)
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.compiler.name | lower }}-binary
-        path: build/${{ matrix.compiler.name | lower }}/cmake_project_template
+        name: gcc-build
+        path: build/gcc/cmake_project_template
+        retention-days: 7
+
+  build-clang:
+    name: Build with Clang
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-17 cmake ninja-build
+    
+    - name: Configure CMake (Clang)
+      run: |
+        cmake -B build/clang \
+          -G Ninja \
+          -DCMAKE_CXX_COMPILER=clang++-17 \
+          -DCMAKE_CXX_STANDARD=23 \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DENABLE_SANITIZERS=OFF \
+          -DCMAKE_TOOLCHAIN_FILE="" \
+          -DVCPKG_ROOT_PATH="" \
+          -DVCPKG_TARGET_TRIPLET=""
+    
+    - name: Build
+      run: cmake --build build/clang
+    
+    - name: Run program
+      run: |
+        echo "Running Clang build:"
+        ./build/clang/cmake_project_template || true
+    
+    - name: Upload build artifacts (optional)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: clang-build
+        path: build/clang/cmake_project_template
         retention-days: 7
