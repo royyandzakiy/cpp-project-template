@@ -562,3 +562,4 @@ FodyWeavers.xsd
 
 build/**
 vcpkg_installed/
+cmake/local_vcpkg.cmake

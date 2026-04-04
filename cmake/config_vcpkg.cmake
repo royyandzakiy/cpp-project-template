@@ -3,29 +3,46 @@
 # VCPKG Configuration
 # =============================================================================
 
-# Set default triplet based on platform
-if(WIN32)
-    set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "vcpkg triplet")
-else()
-    set(VCPKG_TARGET_TRIPLET "x64-linux" CACHE STRING "vcpkg triplet")
+# Allow local override (gitignored)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/local_vcpkg.cmake")
+    message(STATUS "Loading local vcpkg configuration")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/local_vcpkg.cmake)
 endif()
 
-# Determine VCPKG root path
-if(DEFINED VCPKG_ROOT_PATH)
-    # Already defined via cache variable
-elseif(DEFINED ENV{VCPKG_ROOT_PATH})
-    set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT_PATH}" CACHE PATH "vcpkg root directory")
-elseif(DEFINED ENV{VCPKG_ROOT})
-    set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT}" CACHE PATH "vcpkg root directory")
+# Set triplet
+if(NOT VCPKG_TARGET_TRIPLET)
+    if(WIN32)
+        set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "vcpkg triplet")
+    else()
+        set(VCPKG_TARGET_TRIPLET "x64-linux" CACHE STRING "vcpkg triplet")
+    endif()
+endif()
+
+
+# Find vcpkg root (priority: CMake var > Env var > Project subdir > Error)
+if(NOT VCPKG_ROOT_PATH)
+    if(DEFINED ENV{VCPKG_ROOT})
+        set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT}")
+    elseif(DEFINED ENV{VCPKG_ROOT_PATH})
+        set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT_PATH}")
+    elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg")
+        set(VCPKG_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg")
+    else()
+        message(FATAL_ERROR "VCPKG_ROOT_PATH not set. Set it via:\n"
+                           "  - cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg\n"
+                           "  - export VCPKG_ROOT=/path/to/vcpkg\n"
+                           "  - Create cmake/local_vcpkg.cmake file")
+    endif()
 endif()
 
 # Validate VCPKG_ROOT_PATH
 if(NOT DEFINED VCPKG_ROOT_PATH)
     message(FATAL_ERROR "\n╔════════════════════════════════════════════════════════════════════════════╗\n"
-                        "║  VCPKG_ROOT_PATH is not set!                                              ║\n"
-                        "║  Please define it in your CMake preset or environment:                    ║\n"
-                        "║    - CMakePresets.json: \"VCPKG_ROOT_PATH\": \"/path/to/vcpkg\"            ║\n"
-                        "║    - Environment: export VCPKG_ROOT_PATH=/path/to/vcpkg                   ║\n"
+                        "║  VCPKG_ROOT_PATH is not set!                                               ║\n"
+                        "║  Please define it in your CMake preset or environment, ways include:		  ║\n"
+                        "║    - File: Create cmake/local_vcpkg.cmake file							  ║\n"
+                        "║    - Build: cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg						  ║\n"
+                        "║    - Environment: export VCPKG_ROOT_PATH=/path/to/vcpkg                    ║\n"
                         "╚════════════════════════════════════════════════════════════════════════════╝\n")
 endif()
 
@@ -106,6 +123,11 @@ if(EXISTS "${VCPKG_INSTALLED_DIR}")
             message(STATUS "│   ${STATUS_OK} fmt: found")
         else()
             message(STATUS "│   ${STATUS_WARN} fmt: not found (run: ./vcpkg install fmt --triplet ${VCPKG_TARGET_TRIPLET})")
+        endif()
+        if(EXISTS "${TRIPLET_DIR}/include/gtest")
+            message(STATUS "│   ${STATUS_OK} gtest: found")
+        else()
+            message(STATUS "│   ${STATUS_WARN} gtest: not found (run: ./vcpkg install gtest --triplet ${VCPKG_TARGET_TRIPLET})")
         endif()
 
 		# Add more as needed, following this format:
