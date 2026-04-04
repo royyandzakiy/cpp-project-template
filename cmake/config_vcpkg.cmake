@@ -2,6 +2,12 @@
 # =============================================================================
 # VCPKG Configuration
 # =============================================================================
+# Skip the installation check if requested
+option(VCPKG_SKIP_INSTALL_CHECK "Skip vcpkg installation directory check" OFF)
+
+if(VCPKG_SKIP_INSTALL_CHECK)
+    return()
+endif()
 
 # Allow local override (gitignored)
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/local_vcpkg.cmake")

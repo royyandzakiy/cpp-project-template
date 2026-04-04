@@ -47,6 +47,8 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cmd }} \
           -DCMAKE_BUILD_TYPE=Debug \
           -DENABLE_SANITIZERS=OFF \
+          -DVCPKG_ROOT_PATH=${{ github.workspace }}/vcpkg \
+          -DVCPKG_SKIP_INSTALL_CHECK=ON \
           -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
           -DVCPKG_TARGET_TRIPLET=${{ matrix.compiler.triplet }}
     
