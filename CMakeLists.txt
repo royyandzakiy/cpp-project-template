@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5..4.2)
 
-include(cmake/local_path.cmake)
-include(cmake/config_vcpkg.cmake)
+# include(cmake/local_path.cmake)
+# include(cmake/config_vcpkg.cmake)
 
 #==============================================================================
 # Project Configuration
