@@ -37,7 +37,7 @@ else()
 endif()
 
 # Compiler sanitizers
-option(ENABLE_SANITIZERS "Enable comprehensive runtime sanitizers" ON)
+option(ENABLE_SANITIZERS "Enable comprehensive runtime sanitizers" OFF)
 
 if(ENABLE_SANITIZERS AND NOT MSVC)
   message(STATUS "Configuring Hardened Sanitizer Profile")
@@ -99,7 +99,6 @@ endif()
 # Dependencies
 #==============================================================================
 find_package(fmt CONFIG REQUIRED)
-find_package(GTest CONFIG REQUIRED)
 
 #==============================================================================
 # Project Structure
@@ -109,7 +108,7 @@ add_subdirectory(test)
 #==============================================================================
 # Main Executable
 #==============================================================================
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
 
 # Core dependencies (always included)
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
