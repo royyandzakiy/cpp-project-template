@@ -1,34 +1,48 @@
 # cmake/analyzers_optimizers.cmake
-if(ENABLE_SANITIZERS AND NOT MSVC)
-  message(STATUS "Configuring Hardened Sanitizer Profile")
+if(TRUE)
+  # if(ENABLE_SANITIZERS AND NOT MSVC)
+  message(STATUS "Configuring Sanitizer Baseline")
 
-  # 1. Address & Undefined (The standard combo)
-  # 2. Add 'bounds' and 'integer' for extra UBSan checks
+  # 1. Baseline Safety (Always ON if ENABLE_SANITIZERS is active)
+  # These handle Undefined Behavior and are generally compatible with everything.
   set(SANITIZER_FLAGS
-      -fsanitize=address
       -fsanitize=undefined
-      -fsanitize=leak
       -fsanitize=bounds
       -fsanitize=integer
       -fno-omit-frame-pointer
-      -fno-optimize-sibling-calls)
+      -fno-optimize-sibling-calls
+      -fstack-protector-strong)
 
-  # Note: ThreadSanitizer (-fsanitize=thread) and MemorySanitizer (-fsanitize=memory)
-  # usually cannot be combined with AddressSanitizer.
+  # 2. Exclusive Profile Selection
+  if(ENABLE_ASAN)
+    message(STATUS "Adding ASan: Address and Leak detection")
+    list(
+      APPEND
+      SANITIZER_FLAGS
+      -fsanitize=address
+      -fsanitize=leak)
+  elseif(ENABLE_TSAN_MSAN)
+    message(STATUS "Adding TSan: Thread/Data-race detection")
+    list(APPEND SANITIZER_FLAGS -fsanitize=thread)
+    message(STATUS "Adding MSan: Uninitialized memory detection")
+    # track-origins provides better backtraces for where the memory was allocated
+    list(
+      APPEND
+      SANITIZER_FLAGS
+      -fsanitize=memory
+      -fsanitize-memory-track-origins)
+  endif()
 
-  # Extra UBSan hardening
-  add_compile_options(-fstack-protector-strong)
-
-  # Add to compiler and linker
+  # 3. Apply to targets
   add_compile_options(${SANITIZER_FLAGS})
   add_link_options(${SANITIZER_FLAGS})
 
-  # Optimization: Symbols are required for readable stack traces
+  # Reminder for symbols
   if(NOT
      CMAKE_BUILD_TYPE
      STREQUAL
      "Debug")
-    message(WARNING "Sanitizers are most effective in Debug builds (-g).")
+    message(WARNING "Sanitizers work best in 'Debug' for symbolication.")
   endif()
 endif()
 

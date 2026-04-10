@@ -2,18 +2,46 @@
 #include <iostream>
 
 auto main() -> int {
-	fmt::println("hello guys!");
+	// // 1. MSan Trigger: Uninitialized variable
+	// int uninitialized_val;
 
-	// 1. Memory Leak (Detectable by clang-tidy bugprone-* or clang-analyzer)
-	int *leak = new int(42);
-	// forgot to delete leak
+	// // This will cause MSan to throw an error because 'add'
+	// // will try to read a garbage value from the stack.
+	// fmt::println("MSan Test (Add): {}", add(uninitialized_val, 3));
 
-	// 2. Potential Use-after-free/Dangling Pointer
-	int *ptr = new int(100);
-	delete ptr;
-	return *ptr; // Clang-Tidy will scream about this
+	// // 2. TSan Trigger: Data Race
+	// int shared_value = 0;
+	// // Two threads incrementing the same variable without a mutex/atomic
+	// std::thread t1([&]() {
+	// 	for (int i = 0; i < 1000; ++i)
+	// 		shared_value = add(shared_value, 1);
+	// });
 
-	(void)leak;
+	// std::thread t2([&]() {
+	// 	for (int i = 0; i < 1000; ++i)
+	// 		shared_value = add(shared_value, 1);
+	// });
+
+	// t1.join();
+	// t2.join();
+
+	// fmt::println("TSan Test (Shared Value): {}", shared_value);
+
+	// // 3. ASan Trigger
+	// int *results = new int[3];
+
+	// for (int i = 0; i < 5; ++i) {
+	// 	// When i is 3 and 4, ASan will intercept the out-of-bounds write.
+	// 	results[i] = multiply(i, 10);
+	// 	fmt::println("Stored result {}: {}", i, results[i]);
+	// }
+
+	// // --- ASan Trigger: Use-After-Free ---
+	// delete[] results;
+
+	// // Accessing the pointer after deletion.
+	// // ASan will catch this immediately.
+	// fmt::println("Post-delete access: {}", results[0]);
 
 	return 0;
 }
