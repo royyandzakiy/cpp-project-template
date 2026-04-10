@@ -1,7 +1,11 @@
+# test/CMakeLists.txt
 # =============================================================================
 # Test Configuration
 # =============================================================================
-add_executable(unit_tests test_simple.cpp)
+find_package(GTest CONFIG REQUIRED)
+# or, Fetch Google Test include(FetchContent) FetchContent_Declare( googletest
+# URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip )
+# FetchContent_MakeAvailable(googletest)
 
 # find_package(GTest CONFIG REQUIRED)
 include(FetchContent)
