@@ -1,39 +1,64 @@
 # cmake/analyzers_optimizers.cmake
-if(TRUE)
-  # if(ENABLE_SANITIZERS AND NOT MSVC)
+if(ENABLE_SANITIZERS)
   message(STATUS "Configuring Sanitizer Baseline")
 
-  # 1. Baseline Safety (Always ON if ENABLE_SANITIZERS is active)
-  # These handle Undefined Behavior and are generally compatible with everything.
-  set(SANITIZER_FLAGS
+  set(SANITIZER_FLAGS "")
+
+  # Use generator expressions or ID checks to handle clang-cl vs standard clang
+  if(MSVC
+     OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
+     AND WIN32)
+    # --- Windows (clang-cl) Logic ---
+    list(
+      APPEND
+      SANITIZER_FLAGS
+      -fsanitize=undefined
+      -fsanitize=bounds)
+
+    # Use /clang: prefix for flags clang-cl doesn't natively map to MSVC switches
+    list(APPEND SANITIZER_FLAGS "/clang:-fsanitize=integer")
+    list(APPEND SANITIZER_FLAGS "/clang:-fno-omit-frame-pointer")
+
+    # Note: fstack-protector is handled by /GS in MSVC/clang-cl (usually on by default)
+  else()
+    # --- Linux/macOS (standard clang/gcc) Logic ---
+    list(
+      APPEND
+      SANITIZER_FLAGS
       -fsanitize=undefined
       -fsanitize=bounds
       -fsanitize=integer
       -fno-omit-frame-pointer
       -fno-optimize-sibling-calls
       -fstack-protector-strong)
+  endif()
 
   # 2. Exclusive Profile Selection
   if(ENABLE_ASAN)
-    message(STATUS "Adding ASan: Address and Leak detection")
-    list(
-      APPEND
-      SANITIZER_FLAGS
-      -fsanitize=address
-      -fsanitize=leak)
+    message(STATUS "Adding ASan: Address detection")
+    list(APPEND SANITIZER_FLAGS -fsanitize=address)
+
+    # Leak sanitizer is ONLY a separate flag on Linux
+    if(NOT WIN32)
+      list(APPEND SANITIZER_FLAGS -fsanitize=leak)
+    endif()
+
   elseif(ENABLE_TSAN_MSAN)
-    message(STATUS "Adding TSan: Thread/Data-race detection")
-    list(APPEND SANITIZER_FLAGS -fsanitize=thread)
-    message(STATUS "Adding MSan: Uninitialized memory detection")
-    # track-origins provides better backtraces for where the memory was allocated
-    list(
-      APPEND
-      SANITIZER_FLAGS
-      -fsanitize=memory
-      -fsanitize-memory-track-origins)
+    if(WIN32)
+      # TSan is recently supported in some LLVM versions on Windows,
+      # but MSan (MemorySanitizer) is NOT supported on Windows at all.
+      message(WARNING "MSan is not supported on Windows. Only TSan will be attempted.")
+      list(APPEND SANITIZER_FLAGS -fsanitize=thread)
+    else()
+      list(
+        APPEND
+        SANITIZER_FLAGS
+        -fsanitize=thread
+        -fsanitize=memory
+        -fsanitize-memory-track-origins)
+    endif()
   endif()
 
-  # 3. Apply to targets
   add_compile_options(${SANITIZER_FLAGS})
   add_link_options(${SANITIZER_FLAGS})
 
