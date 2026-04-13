@@ -54,8 +54,8 @@ add_subdirectory(test)
 #==============================================================================
 # Main Executable
 #==============================================================================
-# add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
-add_executable(${PROJECT_NAME} src/main_fail_sanitizer.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
+# add_executable(${PROJECT_NAME} src/main_fail_sanitizer.cpp)
 # target_include_directories(${PROJECT_NAME} PRIVATE path/to/folder)
 
 # Core dependencies (always included)
