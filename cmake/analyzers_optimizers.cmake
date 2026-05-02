@@ -1,6 +1,5 @@
 # cmake/analyzers_optimizers.cmake
-if(TRUE)
-  # if(ENABLE_SANITIZERS AND NOT MSVC)
+if(ENABLE_SANITIZERS AND NOT MSVC)
   message(STATUS "Configuring Sanitizer Baseline")
 
   # 1. Baseline Safety (Always ON if ENABLE_SANITIZERS is active)
