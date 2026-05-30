@@ -1,7 +1,9 @@
 ## Backlog
 
+- add claude.md & architecture.md
 - add tracey, ensure works fine
 - use sourcetrail app
+- add scan lib: https://github.com/eliaskosunen/scnlib
 - code coverage: find out whats best practice todo in CI after generate coverage report XML (other than via codecov)
 - using clang, add option to choose asan vs tsan/msan (fix current bugs)
   - add all static analyzers (gcc, then clang-cl, msvc)
