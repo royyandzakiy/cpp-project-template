@@ -15,7 +15,7 @@ jobs:
       matrix:
         compiler:
           - { name: GCC,   cmd: g++-13,      triplet: x64-linux, build_dir: gcc }
-          - { name: Clang, cmd: clang++-17,  triplet: x64-linux, build_dir: clang }
+          - { name: Clang, cmd: clang++-18,  triplet: x64-linux, build_dir: clang }
       fail-fast: false
     
     steps:
@@ -25,7 +25,7 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++-13 clang-17 cmake ninja-build curl zip unzip tar
+        sudo apt-get install -y g++-13 clang-18 cmake ninja-build curl zip unzip tar
     
     - name: Setup vcpkg
       run: |
