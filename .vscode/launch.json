@@ -3,18 +3,21 @@
 	"configurations": [
 		{
 			"name": "Debug App (CMake)",
-			"type": "cppvsdbg",
+			"type": "cppdbg",
 			"request": "launch",
 			"program": "${command:cmake.launchTargetPath}",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
-			"environment": [
+			"MIMode": "gdb",
+			"setupCommands": [
 				{
-					"name": "PATH",
-					"value": "${env:PATH};C:/vcpkg/installed/x64-windows/bin"
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
 				}
 			],
+			"environment": [],
 			"console": "integratedTerminal"
 		}
 	]

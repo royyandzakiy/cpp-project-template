@@ -4,6 +4,9 @@
 	// --- CMake ---
 	"cmake.useCMakePresets": "always",
 	"cmake.options.statusBarVisibility": "visible",
+	"cmake.debugConfig": {
+		"cwd": "${workspaceFolder}"
+	},
 	// --- Code Analysis ---
 	"C_Cpp.codeAnalysis.clangTidy.enabled": true,
 	"C_Cpp.codeAnalysis.clangTidy.path": "clang-tidy",

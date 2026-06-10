@@ -2,6 +2,7 @@
 # Compiler sanitizers
 option(SETUP_VCPKG "Check & setup vcpkg installation" ON)
 option(ENABLE_STRICT_COMPILER "Strict compiler options, sees warnings as errors!" ON)
+option(VCPKG_MANIFEST_MODE "VCPKG in Manifest Mode, else Global Mode" ON)
 
 option(ENABLE_SANITIZERS "Enable static & runtime sanitizers" OFF)
 option(ENABLE_ASAN "Enable Address, Leak, and Undefined sanitizers" OFF)
