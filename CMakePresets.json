@@ -87,76 +87,94 @@
 			}
 		},
 		{
-			"name": "msvc-debug",
-			"inherits": "msvc-base",
+			"name": "build-debug",
+			"hidden": true,
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug"
 			}
+		},
+		{
+			"name": "build-release",
+			"hidden": true,
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "msvc-debug",
+			"inherits": [
+				"msvc-base",
+				"build-debug"
+			]
 		},
 		{
 			"name": "msvc-release",
-			"inherits": "msvc-base",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
-			}
+			"inherits": [
+				"msvc-base",
+				"build-release"
+			]
 		},
 		{
 			"name": "clang-cl-debug",
-			"inherits": "clang-cl-base",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
-			}
+			"inherits": [
+				"clang-cl-base",
+				"build-debug"
+			]
 		},
 		{
 			"name": "clang-cl-release",
-			"inherits": "clang-cl-base",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
-			}
+			"inherits": [
+				"clang-cl-base",
+				"build-release"
+			]
 		},
 		{
 			"name": "mingw-debug",
-			"inherits": "mingw-base",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
-			}
+			"inherits": [
+				"mingw-base",
+				"build-debug"
+			]
 		},
 		{
 			"name": "mingw-release",
-			"inherits": "mingw-base",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
-			}
+			"inherits": [
+				"mingw-base",
+				"build-release"
+			]
 		},
 		{
 			"name": "clang-linux-debug",
-			"inherits": "clang-linux-base",
+			"inherits": [
+				"clang-linux-base",
+				"build-debug"
+			],
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
 				"ENABLE_COVERAGE": "ON"
 			}
 		},
 		{
 			"name": "gcc-linux-debug",
-			"inherits": "gcc-linux-base",
+			"inherits": [
+				"gcc-linux-base",
+				"build-debug"
+			],
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
 				"ENABLE_COVERAGE": "ON"
 			}
 		},
 		{
 			"name": "clang-linux-release",
-			"inherits": "clang-linux-base",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
-			}
+			"inherits": [
+				"clang-linux-base",
+				"build-release"
+			]
 		},
 		{
 			"name": "gcc-linux-release",
-			"inherits": "gcc-linux-base",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
-			}
+			"inherits": [
+				"gcc-linux-base",
+				"build-release"
+			]
 		}
 	],
 	"buildPresets": [
@@ -166,55 +184,65 @@
 			"inheritConfigureEnvironment": true
 		},
 		{
-			"name": "msvc-debug",
+			"name": "build-type-debug",
+			"hidden": true,
 			"inherits": "base-build",
-			"configurePreset": "msvc-debug",
 			"configuration": "Debug"
 		},
 		{
-			"name": "msvc-release",
+			"name": "build-type-release",
+			"hidden": true,
 			"inherits": "base-build",
-			"configurePreset": "msvc-release",
 			"configuration": "Release"
 		},
 		{
+			"name": "msvc-debug",
+			"inherits": "build-type-debug",
+			"configurePreset": "msvc-debug"
+		},
+		{
+			"name": "msvc-release",
+			"inherits": "build-type-release",
+			"configurePreset": "msvc-release"
+		},
+		{
 			"name": "clang-cl-debug",
-			"inherits": "base-build",
+			"inherits": "build-type-debug",
 			"configurePreset": "clang-cl-debug"
 		},
 		{
 			"name": "clang-cl-release",
-			"inherits": "base-build",
+			"inherits": "build-type-release",
 			"configurePreset": "clang-cl-release"
 		},
 		{
 			"name": "mingw-debug",
-			"inherits": "base-build",
+			"inherits": "build-type-debug",
 			"configurePreset": "mingw-debug"
 		},
 		{
 			"name": "mingw-release",
-			"inherits": "base-build",
+			"inherits": "build-type-release",
 			"configurePreset": "mingw-release"
 		},
 		{
 			"name": "clang-linux-debug",
-			"inherits": "base-build",
+			"inherits": "build-type-debug",
 			"configurePreset": "clang-linux-debug"
 		},
 		{
 			"name": "gcc-linux-debug",
-			"inherits": "base-build",
+			"inherits": "build-type-debug",
 			"configurePreset": "gcc-linux-debug"
 		},
 		{
 			"name": "clang-linux-release",
-			"inherits": "base-build",
+			"inherits": "build-type-release",
 			"configurePreset": "clang-linux-release"
 		},
 		{
 			"name": "gcc-linux-release",
-			"inherits": "base-build",
+			"inherits": "build-type-release",
 			"configurePreset": "gcc-linux-release"
 		}
 	],
