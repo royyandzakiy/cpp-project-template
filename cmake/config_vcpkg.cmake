@@ -37,24 +37,21 @@ if(NOT VCPKG_ROOT_PATH)
   else()
     message(
       FATAL_ERROR
-        "VCPKG_ROOT_PATH not set. Set it via:\n"
-        "  - cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg\n"
-        "  - export VCPKG_ROOT=/path/to/vcpkg\n"
-        "  - Create cmake/local_vcpkg.cmake file")
+        "\n╔════════════════════════════════════════════════════════════════════════════╗\n"
+        "║  VCPKG_ROOT_PATH is not set!                                               ║\n"
+        "║                                                                            ║\n"
+        "║  Recommended: copy CMakeUserPresets.json.example to CMakeUserPresets.json  ║\n"
+        "║  and set VCPKG_ROOT_PATH to your local vcpkg installation, example:        ║\n"
+        "║                                                                            ║\n"
+        "║    Linux/macOS : \"VCPKG_ROOT_PATH\": \"/opt/vcpkg\"                          ║\n"
+        "║    Windows     : \"VCPKG_ROOT_PATH\": \"C:/vcpkg\"                            ║\n"
+        "║                                                                            ║\n"
+        "║  Alternatives:                                                             ║\n"
+        "║    - cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg                               ║\n"
+        "║    - export VCPKG_ROOT=/path/to/vcpkg  (env var)                          ║\n"
+        "║    - Create cmake/local_vcpkg.cmake with set(VCPKG_ROOT_PATH ...)         ║\n"
+        "╚════════════════════════════════════════════════════════════════════════════╝\n")
   endif()
-endif()
-
-# Validate VCPKG_ROOT_PATH
-if(NOT DEFINED VCPKG_ROOT_PATH)
-  message(
-    FATAL_ERROR
-      "\n╔════════════════════════════════════════════════════════════════════════════╗\n"
-      "║  VCPKG_ROOT_PATH is not set!                                               ║\n"
-      "║  Please define it in your CMake preset or environment, ways include:		  ║\n"
-      "║    - File: Create cmake/local_vcpkg.cmake file							  ║\n"
-      "║    - Build: cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg						  ║\n"
-      "║    - Environment: export VCPKG_ROOT_PATH=/path/to/vcpkg                    ║\n"
-      "╚════════════════════════════════════════════════════════════════════════════╝\n")
 endif()
 
 # Set toolchain file
