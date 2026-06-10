@@ -2,7 +2,7 @@
 	"version": 4,
 	"cmakeMinimumRequired": {
 		"major": 3,
-		"minor": 20,
+		"minor": 23,
 		"patch": 0
 	},
 	"configurePresets": [
@@ -18,6 +18,11 @@
 			"name": "win-vcpkg-base",
 			"hidden": true,
 			"inherits": "base",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			},
 			"cacheVariables": {
 				"VCPKG_TARGET_TRIPLET": "x64-windows"
 			}
@@ -51,6 +56,11 @@
 			"hidden": true,
 			"inherits": "base",
 			"generator": "Ninja",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			},
 			"cacheVariables": {
 				"CMAKE_C_COMPILER": "gcc",
 				"CMAKE_CXX_COMPILER": "g++",
@@ -63,6 +73,11 @@
 			"hidden": true,
 			"inherits": "base",
 			"generator": "Ninja",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Linux"
+			},
 			"cacheVariables": {
 				"VCPKG_TARGET_TRIPLET": "x64-linux",
 				"CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/linux"
@@ -102,6 +117,8 @@
 		},
 		{
 			"name": "msvc-debug",
+			"hidden": true,
+			"displayName": "MSVC Debug",
 			"inherits": [
 				"msvc-base",
 				"build-debug"
@@ -109,6 +126,8 @@
 		},
 		{
 			"name": "msvc-release",
+			"hidden": true,
+			"displayName": "MSVC Release",
 			"inherits": [
 				"msvc-base",
 				"build-release"
@@ -116,6 +135,8 @@
 		},
 		{
 			"name": "clang-cl-debug",
+			"hidden": true,
+			"displayName": "Clang-CL Debug",
 			"inherits": [
 				"clang-cl-base",
 				"build-debug"
@@ -123,6 +144,8 @@
 		},
 		{
 			"name": "clang-cl-release",
+			"hidden": true,
+			"displayName": "Clang-CL Release",
 			"inherits": [
 				"clang-cl-base",
 				"build-release"
@@ -130,6 +153,8 @@
 		},
 		{
 			"name": "mingw-debug",
+			"hidden": true,
+			"displayName": "MinGW Debug",
 			"inherits": [
 				"mingw-base",
 				"build-debug"
@@ -137,6 +162,8 @@
 		},
 		{
 			"name": "mingw-release",
+			"hidden": true,
+			"displayName": "MinGW Release",
 			"inherits": [
 				"mingw-base",
 				"build-release"
@@ -144,6 +171,8 @@
 		},
 		{
 			"name": "clang-linux-debug",
+			"hidden": true,
+			"displayName": "Clang Debug",
 			"inherits": [
 				"clang-linux-base",
 				"build-debug"
@@ -154,6 +183,8 @@
 		},
 		{
 			"name": "gcc-linux-debug",
+			"hidden": true,
+			"displayName": "GCC Debug",
 			"inherits": [
 				"gcc-linux-base",
 				"build-debug"
@@ -164,6 +195,8 @@
 		},
 		{
 			"name": "clang-linux-release",
+			"hidden": true,
+			"displayName": "Clang Release",
 			"inherits": [
 				"clang-linux-base",
 				"build-release"
@@ -171,6 +204,8 @@
 		},
 		{
 			"name": "gcc-linux-release",
+			"hidden": true,
+			"displayName": "GCC Release",
 			"inherits": [
 				"gcc-linux-base",
 				"build-release"
@@ -197,51 +232,61 @@
 		},
 		{
 			"name": "msvc-debug",
+			"hidden": true,
 			"inherits": "build-type-debug",
 			"configurePreset": "msvc-debug"
 		},
 		{
 			"name": "msvc-release",
+			"hidden": true,
 			"inherits": "build-type-release",
 			"configurePreset": "msvc-release"
 		},
 		{
 			"name": "clang-cl-debug",
+			"hidden": true,
 			"inherits": "build-type-debug",
 			"configurePreset": "clang-cl-debug"
 		},
 		{
 			"name": "clang-cl-release",
+			"hidden": true,
 			"inherits": "build-type-release",
 			"configurePreset": "clang-cl-release"
 		},
 		{
 			"name": "mingw-debug",
+			"hidden": true,
 			"inherits": "build-type-debug",
 			"configurePreset": "mingw-debug"
 		},
 		{
 			"name": "mingw-release",
+			"hidden": true,
 			"inherits": "build-type-release",
 			"configurePreset": "mingw-release"
 		},
 		{
 			"name": "clang-linux-debug",
+			"hidden": true,
 			"inherits": "build-type-debug",
 			"configurePreset": "clang-linux-debug"
 		},
 		{
 			"name": "gcc-linux-debug",
+			"hidden": true,
 			"inherits": "build-type-debug",
 			"configurePreset": "gcc-linux-debug"
 		},
 		{
 			"name": "clang-linux-release",
+			"hidden": true,
 			"inherits": "build-type-release",
 			"configurePreset": "clang-linux-release"
 		},
 		{
 			"name": "gcc-linux-release",
+			"hidden": true,
 			"inherits": "build-type-release",
 			"configurePreset": "gcc-linux-release"
 		}
@@ -256,41 +301,61 @@
 		},
 		{
 			"name": "test-msvc-debug",
+			"hidden": true,
 			"inherits": "base-test",
 			"configurePreset": "msvc-debug"
 		},
 		{
 			"name": "test-msvc-release",
+			"hidden": true,
 			"inherits": "base-test",
 			"configurePreset": "msvc-release"
 		},
 		{
+			"name": "test-clang-cl-debug",
+			"hidden": true,
+			"inherits": "base-test",
+			"configurePreset": "clang-cl-debug"
+		},
+		{
+			"name": "test-clang-cl-release",
+			"hidden": true,
+			"inherits": "base-test",
+			"configurePreset": "clang-cl-release"
+		},
+		{
 			"name": "test-mingw-debug",
+			"hidden": true,
 			"inherits": "base-test",
 			"configurePreset": "mingw-debug"
 		},
 		{
 			"name": "test-mingw-release",
+			"hidden": true,
 			"inherits": "base-test",
 			"configurePreset": "mingw-release"
 		},
 		{
 			"name": "test-clang-linux-debug",
+			"hidden": true,
 			"inherits": "base-test",
 			"configurePreset": "clang-linux-debug"
 		},
 		{
 			"name": "test-gcc-linux-debug",
+			"hidden": true,
 			"inherits": "base-test",
 			"configurePreset": "gcc-linux-debug"
 		},
 		{
 			"name": "test-clang-linux-release",
+			"hidden": true,
 			"inherits": "base-test",
 			"configurePreset": "clang-linux-release"
 		},
 		{
 			"name": "test-gcc-linux-release",
+			"hidden": true,
 			"inherits": "base-test",
 			"configurePreset": "gcc-linux-release"
 		}
