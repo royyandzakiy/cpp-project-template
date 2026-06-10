@@ -1,0 +1,40 @@
+{
+	"version": 4,
+	"configurePresets": [
+		{
+			"name": "my-base",
+			"hidden": true,
+			"cacheVariables": {
+				"VCPKG_ROOT_PATH": "/opt/vcpkg"
+			}
+		},
+		{
+			"name": "my-clang-linux-debug",
+			"inherits": [
+				"my-base",
+				"clang-linux-debug"
+			]
+		},
+		{
+			"name": "my-gcc-linux-debug",
+			"inherits": [
+				"my-base",
+				"gcc-linux-debug"
+			]
+		},
+		{
+			"name": "my-clang-linux-release",
+			"inherits": [
+				"my-base",
+				"clang-linux-release"
+			]
+		},
+		{
+			"name": "my-gcc-linux-release",
+			"inherits": [
+				"my-base",
+				"gcc-linux-release"
+			]
+		}
+	]
+}

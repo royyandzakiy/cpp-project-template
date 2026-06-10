@@ -69,6 +69,24 @@
 			}
 		},
 		{
+			"name": "clang-linux-base",
+			"hidden": true,
+			"inherits": "linux-base",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++"
+			}
+		},
+		{
+			"name": "gcc-linux-base",
+			"hidden": true,
+			"inherits": "linux-base",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "gcc",
+				"CMAKE_CXX_COMPILER": "g++"
+			}
+		},
+		{
 			"name": "msvc-debug",
 			"inherits": "msvc-base",
 			"cacheVariables": {
@@ -112,22 +130,32 @@
 		},
 		{
 			"name": "clang-linux-debug",
-			"inherits": "linux-base",
+			"inherits": "clang-linux-base",
 			"cacheVariables": {
-				"CMAKE_C_COMPILER": "clang",
-				"CMAKE_CXX_COMPILER": "clang++",
 				"CMAKE_BUILD_TYPE": "Debug",
 				"ENABLE_COVERAGE": "ON"
 			}
 		},
 		{
 			"name": "gcc-linux-debug",
-			"inherits": "linux-base",
+			"inherits": "gcc-linux-base",
 			"cacheVariables": {
-				"CMAKE_C_COMPILER": "gcc",
-				"CMAKE_CXX_COMPILER": "g++",
 				"CMAKE_BUILD_TYPE": "Debug",
 				"ENABLE_COVERAGE": "ON"
+			}
+		},
+		{
+			"name": "clang-linux-release",
+			"inherits": "clang-linux-base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "gcc-linux-release",
+			"inherits": "gcc-linux-base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
 			}
 		}
 	],
@@ -144,9 +172,20 @@
 			"configuration": "Debug"
 		},
 		{
+			"name": "msvc-release",
+			"inherits": "base-build",
+			"configurePreset": "msvc-release",
+			"configuration": "Release"
+		},
+		{
 			"name": "clang-cl-debug",
 			"inherits": "base-build",
 			"configurePreset": "clang-cl-debug"
+		},
+		{
+			"name": "clang-cl-release",
+			"inherits": "base-build",
+			"configurePreset": "clang-cl-release"
 		},
 		{
 			"name": "mingw-debug",
@@ -154,9 +193,29 @@
 			"configurePreset": "mingw-debug"
 		},
 		{
+			"name": "mingw-release",
+			"inherits": "base-build",
+			"configurePreset": "mingw-release"
+		},
+		{
+			"name": "clang-linux-debug",
+			"inherits": "base-build",
+			"configurePreset": "clang-linux-debug"
+		},
+		{
 			"name": "gcc-linux-debug",
 			"inherits": "base-build",
 			"configurePreset": "gcc-linux-debug"
+		},
+		{
+			"name": "clang-linux-release",
+			"inherits": "base-build",
+			"configurePreset": "clang-linux-release"
+		},
+		{
+			"name": "gcc-linux-release",
+			"inherits": "base-build",
+			"configurePreset": "gcc-linux-release"
 		}
 	],
 	"testPresets": [
@@ -173,9 +232,39 @@
 			"configurePreset": "msvc-debug"
 		},
 		{
+			"name": "test-msvc-release",
+			"inherits": "base-test",
+			"configurePreset": "msvc-release"
+		},
+		{
 			"name": "test-mingw-debug",
 			"inherits": "base-test",
 			"configurePreset": "mingw-debug"
+		},
+		{
+			"name": "test-mingw-release",
+			"inherits": "base-test",
+			"configurePreset": "mingw-release"
+		},
+		{
+			"name": "test-clang-linux-debug",
+			"inherits": "base-test",
+			"configurePreset": "clang-linux-debug"
+		},
+		{
+			"name": "test-gcc-linux-debug",
+			"inherits": "base-test",
+			"configurePreset": "gcc-linux-debug"
+		},
+		{
+			"name": "test-clang-linux-release",
+			"inherits": "base-test",
+			"configurePreset": "clang-linux-release"
+		},
+		{
+			"name": "test-gcc-linux-release",
+			"inherits": "base-test",
+			"configurePreset": "gcc-linux-release"
 		}
 	]
 }
