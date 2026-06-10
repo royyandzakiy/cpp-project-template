@@ -1,7 +1,6 @@
 {
-  "dependencies": [
-    "fmt",
-    "gtest",
-	"tracy"
-  ]
+	"dependencies": [
+		"fmt",
+		"tracy"
+	]
 }

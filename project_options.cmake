@@ -1,3 +1,4 @@
+# project_options.cmake
 # Compiler sanitizers
 option(SETUP_VCPKG "Check & setup vcpkg installation" ON)
 option(ENABLE_STRICT_COMPILER "Strict compiler options, sees warnings as errors!" ON)
