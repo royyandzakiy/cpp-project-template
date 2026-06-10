@@ -1,0 +1,43 @@
+{
+	// --- Standard ---
+	"C_Cpp.default.cppStandard": "c++23",
+	// --- CMake ---
+	"cmake.useCMakePresets": "always",
+	"cmake.options.statusBarVisibility": "visible",
+	// --- Code Analysis ---
+	"C_Cpp.codeAnalysis.clangTidy.enabled": true,
+	"C_Cpp.codeAnalysis.clangTidy.path": "clang-tidy",
+	"C_Cpp.codeAnalysis.clangTidy.buildPath": "${workspaceFolder}/build",
+	"C_Cpp.codeAnalysis.runAutomatically": true,
+	// --- Cppcheck Analysis ---
+	"cppcheck.enabled": true,
+	"cppcheck.executable": "cppcheck",
+	"cppcheck.onsave": true,
+	"cppcheck.args": [
+		"--enable=all",
+		"--inline-suppr",
+		"--suppress=missingIncludeSystem",
+		"--std=c++23",
+		"--project=${workspaceFolder}/build/compile_commands.json"
+	],
+	// --- Formatting ---
+	"editor.formatOnSave": true,
+	"editor.insertSpaces": false,
+	"editor.tabSize": 4,
+	"editor.detectIndentation": false,
+	"clang-format.style": "file",
+	// "emeraldwalk.runonsave": {
+	// 	"commands": [
+	// 		{
+	// 			"showElapsed": true,
+	// 			"autoShowOutputPanel": "error",
+	// 			"match": "\\.(cpp|h|hpp|c|cc|cmake|txt)$", // Regex matching relevant files
+	// 			"isAsync": true, // Run in background
+	// 			"cmd": "\"C:\\Program Files\\CMake\\bin\\cmake.EXE\" --build C:/project-coding/work/lmesh/nexus-dll-lib-cmake/build/release --config Release --target unit_tests -- && C:\\project-coding\\work\\lmesh\\nexus-dll-lib-cmake\\build\\release\\test\\Release\\unit_tests.exe"
+	// 			// Or potentially run a custom script:
+	// 			// "cmd": "${workspaceFolder}/scripts/build_and_test.sh"
+	// 		}
+	// 	]
+	// },
+	// --- Include Associations (standard C++ headers) ---
+}
