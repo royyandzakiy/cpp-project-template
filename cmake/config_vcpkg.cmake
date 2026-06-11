@@ -26,31 +26,59 @@ if(NOT VCPKG_TARGET_TRIPLET)
   endif()
 endif()
 
-# Find vcpkg root (priority: CMake var > Env var > Project subdir > Error)
+# Find vcpkg root
+# Priority: CMake var (preset/-D) > env var > vcpkg in PATH > common default paths > project subdir > error
 if(NOT VCPKG_ROOT_PATH)
-  #   if(DEFINED ENV{VCPKG_ROOT})
-  #     set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT}")
-  # elseif(DEFINED ENV{VCPKG_ROOT_PATH})
-  if(DEFINED ENV{VCPKG_ROOT_PATH})
+  if(DEFINED ENV{VCPKG_ROOT})
+    set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT}")
+  elseif(DEFINED ENV{VCPKG_ROOT_PATH})
     set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT_PATH}")
-  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg")
-    set(VCPKG_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg")
   else()
+    # Auto-detect: derive root from vcpkg executable if it's in PATH
+    find_program(_vcpkg_exe vcpkg)
+    if(_vcpkg_exe)
+      get_filename_component(VCPKG_ROOT_PATH "${_vcpkg_exe}" DIRECTORY)
+      message(STATUS "vcpkg auto-detected via PATH: ${VCPKG_ROOT_PATH}")
+    else()
+      # Auto-detect: check common default installation paths
+      set(_vcpkg_default_paths
+          "C:/vcpkg"
+          "C:/tools/vcpkg"
+          "$ENV{LOCALAPPDATA}/vcpkg"
+          "$ENV{USERPROFILE}/vcpkg"
+          "/opt/vcpkg"
+          "$ENV{HOME}/vcpkg"
+          "/usr/local/vcpkg"
+      )
+      foreach(_path IN LISTS _vcpkg_default_paths)
+        if(EXISTS "${_path}/scripts/buildsystems/vcpkg.cmake")
+          set(VCPKG_ROOT_PATH "${_path}")
+          message(STATUS "vcpkg auto-detected at default path: ${VCPKG_ROOT_PATH}")
+          break()
+        endif()
+      endforeach()
+    endif()
+    unset(_vcpkg_exe CACHE)
+  endif()
+
+  # Last resort: project-local submodule/clone
+  if(NOT VCPKG_ROOT_PATH AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg")
+    set(VCPKG_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg")
+  endif()
+
+  if(NOT VCPKG_ROOT_PATH)
     message(
       FATAL_ERROR
         "\n╔════════════════════════════════════════════════════════════════════════════╗\n"
-        "║  VCPKG_ROOT_PATH is not set!                                               ║\n"
+        "║  vcpkg not found. Options (pick one):                                      ║\n"
         "║                                                                            ║\n"
-        "║  Recommended: copy CMakeUserPresets.json.example to CMakeUserPresets.json  ║\n"
-        "║  and set VCPKG_ROOT_PATH to your local vcpkg installation, example:        ║\n"
-        "║                                                                            ║\n"
-        "║    Linux/macOS : \"VCPKG_ROOT_PATH\": \"/opt/vcpkg\"                          ║\n"
-        "║    Windows     : \"VCPKG_ROOT_PATH\": \"C:/vcpkg\"                            ║\n"
-        "║                                                                            ║\n"
-        "║  Alternatives:                                                             ║\n"
-        "║    - cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg                               ║\n"
-        "║    - export VCPKG_ROOT=/path/to/vcpkg  (env var)                          ║\n"
-        "║    - Create cmake/local_vcpkg.cmake with set(VCPKG_ROOT_PATH ...)         ║\n"
+        "║  1. Add vcpkg to PATH  (auto-detected on next configure)                  ║\n"
+        "║  2. Copy CMakeUserPresets.json.example → CMakeUserPresets.json            ║\n"
+        "║       set VCPKG_ROOT_PATH to your vcpkg location:                         ║\n"
+        "║         Linux : \"VCPKG_ROOT_PATH\": \"/opt/vcpkg\"                           ║\n"
+        "║         Windows: \"VCPKG_ROOT_PATH\": \"C:/vcpkg\"                            ║\n"
+        "║  3. cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg                               ║\n"
+        "║  4. Create cmake/local_vcpkg.cmake with set(VCPKG_ROOT_PATH ...)         ║\n"
         "╚════════════════════════════════════════════════════════════════════════════╝\n")
   endif()
 endif()
