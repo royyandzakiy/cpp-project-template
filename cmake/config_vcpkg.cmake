@@ -68,17 +68,23 @@ else()
   if(NOT VCPKG_ROOT_PATH)
     message(
       FATAL_ERROR
-        "\n╔════════════════════════════════════════════════════════════════════════════╗\n"
-        "║  vcpkg not found. Options (pick one):                                      ║\n"
-        "║                                                                            ║\n"
-        "║  1. Add vcpkg to PATH  (auto-detected on next configure)                  ║\n"
-        "║  2. Copy CMakeUserPresets.json.example → CMakeUserPresets.json            ║\n"
-        "║       set VCPKG_ROOT_PATH to your vcpkg location:                         ║\n"
-        "║         Linux : \"VCPKG_ROOT_PATH\": \"/opt/vcpkg\"                           ║\n"
-        "║         Windows: \"VCPKG_ROOT_PATH\": \"C:/vcpkg\"                            ║\n"
-        "║  3. cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg                               ║\n"
-        "║  4. Create local_options.cmake with: set(VCPKG_ROOT_PATH ...)            ║\n"
-        "╚════════════════════════════════════════════════════════════════════════════╝\n")
+        "\n"
+        "======================================================================\n"
+        " ERROR: vcpkg toolchain not found\n"
+        "======================================================================\n"
+        " Please provide the path to vcpkg using one of the following options:\n\n"
+        " 1. Add vcpkg to your system PATH (auto-detected on next configure)\n\n"
+        " 2. Configure via CMakeUserPresets.json:\n"
+        "    Copy 'CMakeUserPresets.json.example' to 'CMakeUserPresets.json'\n"
+        "    and set 'VCPKG_ROOT_PATH' to your vcpkg location:\n"
+        "      Linux  :  \"VCPKG_ROOT_PATH\": \"/opt/vcpkg\"\n"
+        "      Windows:  \"VCPKG_ROOT_PATH\": \"C:/vcpkg\"\n\n"
+        " 3. Pass the path directly to the CMake command:\n"
+        "    cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg .\n\n"
+        " 4. Create a local configuration file:\n"
+        "    Create 'local_options.cmake' and add:\n"
+        "    set(VCPKG_ROOT_PATH \"/path/to/vcpkg\")\n"
+        "----------------------------------------------------------------------\n")
   endif()
 endif()
 
