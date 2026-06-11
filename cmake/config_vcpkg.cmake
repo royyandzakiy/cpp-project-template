@@ -28,17 +28,23 @@ endif()
 
 # Find vcpkg root
 # Priority: CMake var (preset/-D) > env var > vcpkg in PATH > common default paths > project subdir > error
-if(NOT VCPKG_ROOT_PATH)
+if(VCPKG_ROOT_PATH)
+  message(STATUS "VCPKG_ROOT_PATH already set: ${VCPKG_ROOT_PATH}")
+else()
+  message(STATUS "VCPKG_ROOT_PATH not yet set, finding vcpkg root...")
+
   if(DEFINED ENV{VCPKG_ROOT})
     set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT}")
+    message(STATUS "ENV\{VCPKG_ROOT\} already set: $ENV{VCPKG_ROOT}")
   elseif(DEFINED ENV{VCPKG_ROOT_PATH})
+    message(STATUS "ENV\{VCPKG_ROOT_PATH\} already set: $ENV{VCPKG_ROOT_PATH}")
     set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT_PATH}")
   else()
     # Auto-detect: derive root from vcpkg executable if it's in PATH
     find_program(_vcpkg_exe vcpkg)
     if(_vcpkg_exe)
       get_filename_component(VCPKG_ROOT_PATH "${_vcpkg_exe}" DIRECTORY)
-      message(STATUS "vcpkg auto-detected via PATH: ${VCPKG_ROOT_PATH}")
+      message(STATUS "vcpkg.exe auto-detected via executable path: ${VCPKG_ROOT_PATH}")
     else()
       # Auto-detect: check common default installation paths
       set(_vcpkg_default_paths
@@ -48,8 +54,7 @@ if(NOT VCPKG_ROOT_PATH)
           "$ENV{USERPROFILE}/vcpkg"
           "/opt/vcpkg"
           "$ENV{HOME}/vcpkg"
-          "/usr/local/vcpkg"
-      )
+          "/usr/local/vcpkg")
       foreach(_path IN LISTS _vcpkg_default_paths)
         if(EXISTS "${_path}/scripts/buildsystems/vcpkg.cmake")
           set(VCPKG_ROOT_PATH "${_path}")
