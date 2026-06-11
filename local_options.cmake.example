@@ -1,0 +1,31 @@
+# local_options.cmake — gitignored, never committed
+# Copy this file to local_options.cmake and uncomment what applies to your machine.
+# Loaded automatically by CMakeLists.txt before anything else.
+#
+# Use this for any machine-specific paths or local overrides — package managers,
+# compiler paths, or feature flags you want to change without touching tracked files.
+
+# =============================================================================
+# vcpkg
+# =============================================================================
+# Only needed if vcpkg is not in PATH or a standard location.
+# Auto-detected from: PATH, /opt/vcpkg, C:/vcpkg, ~/vcpkg, and other common paths.
+
+# set(VCPKG_ROOT_PATH "/opt/vcpkg")     # Linux / macOS
+# set(VCPKG_ROOT_PATH "C:/vcpkg")       # Windows
+
+# Disable vcpkg entirely (e.g. you manage dependencies another way):
+# set(SETUP_VCPKG OFF)
+
+# =============================================================================
+# Conan
+# =============================================================================
+# set(CONAN_ROOT_PATH "/path/to/conan")
+
+# =============================================================================
+# Feature flag overrides (see project_options.cmake for all available options)
+# =============================================================================
+# set(ENABLE_STRICT_COMPILER OFF)
+# set(ENABLE_CLANG_TIDY ON)
+# set(ENABLE_ASAN ON)
+# set(ENABLE_CCACHE ON)

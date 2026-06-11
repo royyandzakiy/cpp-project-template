@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
+include(local_options.cmake OPTIONAL)
 include(project_options.cmake)
 include(cmake/config_vcpkg.cmake)
 

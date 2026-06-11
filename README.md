@@ -2,14 +2,14 @@
 
 A cross-platform C++23 project template with CMake Presets, vcpkg, sanitizers, static analysis, and CI out of the box.
 
-Targets Windows (MSVC, Clang-CL, MinGW) and Linux (GCC, Clang). Requires CMake 3.21+ and vcpkg.
+Targets Windows (MSVC, Clang-CL, MinGW) and Linux (GCC, Clang). Requires CMake 3.23+.
 
 ---
 
 ## Prerequisites
 
-- CMake 3.21+
-- vcpkg (set `VCPKG_ROOT` env variable, or configure `cmake/local_vcpkg.cmake`)
+- CMake 3.23+
+- vcpkg -- auto-detected from PATH and common install locations. See [vcpkg setup](#vcpkg-setup) if not found.
 - A C++23-capable compiler
 
 ---
@@ -17,17 +17,16 @@ Targets Windows (MSVC, Clang-CL, MinGW) and Linux (GCC, Clang). Requires CMake 3
 ## Quick Start
 
 ```bash
-# Configure
-cmake --preset msvc-debug
+# Configure (preset is filtered to your platform automatically)
+cmake --preset clang-linux-debug    # Linux
+cmake --preset msvc-debug           # Windows
 
 # Build
-cmake --build build/msvc-debug
+cmake --build --preset clang-linux-debug
 
 # Run tests
-ctest --preset test-msvc-debug
+ctest --preset test-clang-linux-debug
 ```
-
-Replace `msvc-debug` with any preset from `CMakePresets.json`.
 
 ---
 
@@ -35,39 +34,72 @@ Replace `msvc-debug` with any preset from `CMakePresets.json`.
 
 ```
 .
-├── cmake/                    # CMake utility modules
+├── cmake/                        # CMake utility modules (internal)
 │   ├── analyzers_optimizers.cmake
 │   ├── config_vcpkg.cmake
-│   ├── version.cmake
-│   ├── version.h.in
-│   └── local_vcpkg.cmake.example
+│   └── version.cmake
 ├── include/cmake_project_template/
-│   └── version.h             # Auto-generated from version.txt
-├── src/                      # Application sources
-├── test/                     # GoogleTest unit tests
-├── .github/workflows/        # CI pipeline
+│   └── version.h                 # Auto-generated from version.txt
+├── src/                          # Application sources
+├── test/                         # GoogleTest unit tests
+├── .github/workflows/            # CI pipeline
 ├── CMakeLists.txt
-├── CMakePresets.json
-├── project_options.cmake     # Feature toggles
-├── vcpkg.json                # Package manifest
-└── version.txt               # Project version (1.0.0)
+├── CMakePresets.json             # All presets (platform-filtered, no setup needed)
+├── CMakeUserPresets.json.example # Optional: template for custom preset overrides
+├── local_options.cmake.example   # Optional: template for machine-local overrides
+├── project_options.cmake         # Feature toggles (shared, committed)
+├── vcpkg.json                    # Package manifest
+└── version.txt                   # Project version (1.0.0)
 ```
+
+---
+
+## vcpkg Setup
+
+vcpkg is auto-detected in this order:
+
+1. `VCPKG_ROOT_PATH` set in `local_options.cmake` or via `-D` flag
+2. `VCPKG_ROOT` / `VCPKG_ROOT_PATH` environment variables
+3. `vcpkg` executable found in PATH
+4. Common default paths: `C:/vcpkg`, `/opt/vcpkg`, `~/vcpkg`, etc.
+5. `./vcpkg` project subdirectory
+
+For most setups nothing needs to be configured. If vcpkg is in a non-standard location, create `local_options.cmake` (see [local options](#local-options)).
+
+---
+
+## Local Options (`local_options.cmake`)
+
+For machine-specific settings that should never be committed. Copy the example and uncomment what you need:
+
+```bash
+cp local_options.cmake.example local_options.cmake
+```
+
+```cmake
+# local_options.cmake
+set(VCPKG_ROOT_PATH "/my/custom/vcpkg")  # if not auto-detected
+set(CONAN_ROOT_PATH "/path/to/conan")
+set(ENABLE_CLANG_TIDY ON)
+```
+
+This file is gitignored. `local_options.cmake.example` documents all available options.
 
 ---
 
 ## CMake Presets
 
-Presets are defined in `CMakePresets.json` and cover all supported toolchains:
+Presets are defined in `CMakePresets.json`. They are **automatically filtered by platform** -- only presets relevant to your OS appear in the picker.
 
-| Preset                                | Platform | Compiler         |
-| ------------------------------------- | -------- | ---------------- |
-| `msvc-debug` / `msvc-release`         | Windows  | MSVC (VS 2022)   |
-| `clang-cl-debug` / `clang-cl-release` | Windows  | Clang-CL + Ninja |
-| `mingw-debug` / `mingw-release`       | Windows  | MinGW GCC        |
-| `clang-linux-debug`                   | Linux    | Clang 17         |
-| `gcc-linux-debug`                     | Linux    | GCC 13           |
+| Preset                                  | Platform | Compiler         |
+| --------------------------------------- | -------- | ---------------- |
+| `msvc-debug` / `msvc-release`           | Windows  | MSVC (VS 2022)   |
+| `clang-cl-debug` / `clang-cl-release`   | Windows  | Clang-CL + Ninja |
+| `mingw-debug` / `mingw-release`         | Windows  | MinGW GCC        |
+| `clang-linux-debug` / `clang-linux-release` | Linux | Clang            |
+| `gcc-linux-debug` / `gcc-linux-release` | Linux    | GCC              |
 
-Each preset sets the generator, compiler, output directory under `bin/`, and vcpkg triplet. Test presets (`test-*`) are paired with each configure preset.
+`CMakeUserPresets.json` is optional -- only needed if you want custom preset names or overrides. Copy `CMakeUserPresets.json.example` as a starting point.
 
 ---
 
@@ -85,7 +117,7 @@ Each preset sets the generator, compiler, output directory under `bin/`, and vcp
 | `ENABLE_CCACHE`          | OFF     | ccache compiler launcher                                |
 | `ENABLE_TRACY`           | OFF     | Tracy profiler (v0.13.1 via FetchContent)               |
 
-Pass options at configure time:
+Pass at configure time or set permanently in `local_options.cmake`:
 
 ```bash
 cmake --preset clang-linux-debug -DENABLE_ASAN=ON -DENABLE_CLANG_TIDY=ON
@@ -95,9 +127,9 @@ cmake --preset clang-linux-debug -DENABLE_ASAN=ON -DENABLE_CLANG_TIDY=ON
 
 ## cmake/ Modules
 
-**`config_vcpkg.cmake`** -- Locates vcpkg from `VCPKG_ROOT`, env variable, or a local subdirectory. Validates the toolchain file and reports installed packages. Copy `local_vcpkg.cmake.example` to `local_vcpkg.cmake` to override the vcpkg path locally without touching tracked files.
+**`config_vcpkg.cmake`** -- Locates vcpkg using the resolution order above. Validates the toolchain and reports package status. Do not edit; configure via `local_options.cmake` instead.
 
-**`analyzers_optimizers.cmake`** -- Wires up sanitizers, Clang-Tidy, Cppcheck, ccache, and Tracy based on the options in `project_options.cmake`. All analysis tools are configured per-target.
+**`analyzers_optimizers.cmake`** -- Wires up sanitizers, Clang-Tidy, Cppcheck, ccache, and Tracy based on `project_options.cmake`. All tools are configured per-target.
 
 **`version.cmake`** -- Reads `version.txt`, splits into major/minor/patch, and generates `include/cmake_project_template/version.h` from `version.h.in`.
 

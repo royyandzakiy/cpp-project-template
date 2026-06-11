@@ -7,12 +7,6 @@ if(NOT SETUP_VCPKG)
   return()
 endif()
 
-# Allow local override (gitignored)
-# if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/local_vcpkg.cmake")
-#   message(STATUS "Loading local vcpkg configuration")
-#   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/local_vcpkg.cmake)
-# endif()
-
 # Set triplet
 if(NOT VCPKG_TARGET_TRIPLET)
   if(WIN32)
@@ -83,7 +77,7 @@ else()
         "║         Linux : \"VCPKG_ROOT_PATH\": \"/opt/vcpkg\"                           ║\n"
         "║         Windows: \"VCPKG_ROOT_PATH\": \"C:/vcpkg\"                            ║\n"
         "║  3. cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg                               ║\n"
-        "║  4. Create cmake/local_vcpkg.cmake with set(VCPKG_ROOT_PATH ...)         ║\n"
+        "║  4. Create local_options.cmake with: set(VCPKG_ROOT_PATH ...)            ║\n"
         "╚════════════════════════════════════════════════════════════════════════════╝\n")
   endif()
 endif()
