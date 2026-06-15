@@ -1,6 +1,6 @@
-## Backlog
+# DEVELOPMENT
 
-### Easy
+## Easy
 
 - merge improvements from nexus project
 - baselines
@@ -9,13 +9,13 @@
   - add scan lib: https://github.com/eliaskosunen/scnlib
 - add INSTALL to create as library, add in option
 
-### Prio
+## Prio
 
 - add dev-container: use clang-cl, clang, gcc16
 - add conan
   - add option to choose vcpkg vs conan
 
-### Backlog
+## Backlog
 
 - using clang, add option to choose asan vs tsan/msan (fix current bugs)
   - add all static analyzers (gcc, then clang-cl, msvc)
