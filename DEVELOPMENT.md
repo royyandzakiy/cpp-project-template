@@ -1,21 +1,40 @@
 ## Backlog
 
-- add claude.md & architecture.md
-- add tracey, ensure works fine
-- use sourcetrail app
-- add scan lib: https://github.com/eliaskosunen/scnlib
-- code coverage: find out whats best practice todo in CI after generate coverage report XML (other than via codecov)
+### Easy
+
+- merge improvements from nexus project
+- baselines
+  - add boost sml as default lib
+  - add imgui as default lib
+  - add scan lib: https://github.com/eliaskosunen/scnlib
+- add INSTALL to create as library, add in option
+
+### Prio
+
+- add dev-container: use clang-cl, clang, gcc16
+- add conan
+  - add option to choose vcpkg vs conan
+
+### Backlog
+
 - using clang, add option to choose asan vs tsan/msan (fix current bugs)
   - add all static analyzers (gcc, then clang-cl, msvc)
-- create commented out cmake for library creation
-- add boost sml as default lib
-- add imgui as default lib
-- get workflow to build successfully
+  - add .clangd
+  - ensure all project_options.cmake works fine
+- CI github actions:
+  - os: add windows & linux
+  - compilers: gcc16, clang, apple clang, msvc
+  - fuzz build matrix (random seed)
 
-## Future Add-ons
+## Skip
 
-- add dev-container
-- add option to choose vcpkg vs conan
+- contribution goodies
+- open for contributor: issues, discussions, contributions
+  - fix readme: logo & badge, pitch (problem to solve), quick start (inline code example), live demo
+  - add complete docs suite (tutorials, how-to-guides, understand, reference, release blog, release/change log)
+  - add compiler explore quick test
+- add more hardenning
+  - add tracey, ensure works fine
+  - use sourcetrail app
+  - code coverage: find out whats best practice todo in CI after generate coverage report XML (other than via codecov)
 - add doxyfile & doxygen
-- add option to either use this as library or application
-- add .clangd
