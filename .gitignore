@@ -560,3 +560,4 @@ FodyWeavers.xsd
 build/**
 vcpkg_installed/
 local_options.cmake
+**.VC.DB**

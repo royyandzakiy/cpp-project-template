@@ -8,10 +8,12 @@
   - add imgui as default lib
   - add scan lib: https://github.com/eliaskosunen/scnlib
 - add INSTALL to create as library, add in option
+  - merge with win lib
 
 ## Prio
 
 - add dev-container: use clang-cl, clang, gcc16
+  - add windows-setup.ps1 with winget + microsoft.visualstudio
 - add conan
   - add option to choose vcpkg vs conan
 
@@ -33,8 +35,10 @@
   - fix readme: logo & badge, pitch (problem to solve), quick start (inline code example), live demo
   - add complete docs suite (tutorials, how-to-guides, understand, reference, release blog, release/change log)
   - add compiler explore quick test
+- profiling
+  - use perf + [flamegraph](https://github.com/brendangregg/FlameGraph)
+  - add tracey
 - add more hardenning
-  - add tracey, ensure works fine
   - use sourcetrail app
   - code coverage: find out whats best practice todo in CI after generate coverage report XML (other than via codecov)
 - add doxyfile & doxygen
