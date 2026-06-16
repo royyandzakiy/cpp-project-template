@@ -2,11 +2,6 @@
 
 ## Easy
 
-- merge improvements from nexus project
-- baselines
-  - add boost sml as default lib
-  - add imgui as default lib
-  - add scan lib: https://github.com/eliaskosunen/scnlib
 - add INSTALL to create as library, add in option
   - merge with win lib
 
