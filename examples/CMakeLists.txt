@@ -1,6 +1,10 @@
 if(ENABLE_SANITIZERS)
   add_executable(example_sanitizer sanitizers/main_fail_sanitizer.cpp)
   target_link_libraries(example_sanitizer PRIVATE fmt::fmt)
+  if(NOT WIN32)
+    find_package(Threads REQUIRED)
+    target_link_libraries(example_sanitizer PRIVATE Threads::Threads)
+  endif()
 endif()
 
 if(TARGET project_tracy_profile)

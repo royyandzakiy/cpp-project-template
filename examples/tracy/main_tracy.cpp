@@ -7,8 +7,7 @@
 
 using namespace std::chrono_literals;
 
-static void background_worker(std::atomic<bool>& running)
-{
+static void background_worker(std::atomic<bool> &running) {
 	tracy::SetThreadName("BackgroundWorker");
 	int iteration = 0;
 
@@ -33,8 +32,7 @@ static void background_worker(std::atomic<bool>& running)
 	}
 }
 
-int main()
-{
+int main() {
 	fmt::println("Tracy example — connect tracy-profiler.exe to observe.");
 
 	std::atomic<bool> running{true};

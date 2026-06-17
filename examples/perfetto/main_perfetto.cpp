@@ -5,23 +5,20 @@
 #include <thread>
 #include <vector>
 
-PERFETTO_DEFINE_CATEGORIES(
-    perfetto::Category("app").SetDescription("Application events"));
+PERFETTO_DEFINE_CATEGORIES(perfetto::Category("app").SetDescription("Application events"));
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
 using namespace std::chrono_literals;
 
-static void process(int n)
-{
+static void process(int n) {
 	TRACE_EVENT("app", "process");
 	volatile double result = 0;
 	for (int i = 0; i < n * 10'000; ++i)
 		result += i * 0.001;
 }
 
-int main()
-{
+int main() {
 	// Initialize
 	perfetto::TracingInitArgs args;
 	args.backends = perfetto::kInProcessBackend;
@@ -31,7 +28,7 @@ int main()
 	// Configure and start session
 	perfetto::TraceConfig cfg;
 	cfg.add_buffers()->set_size_kb(1024);
-	auto* ds_cfg = cfg.add_data_sources()->mutable_config();
+	auto *ds_cfg = cfg.add_data_sources()->mutable_config();
 	ds_cfg->set_name("track_event");
 
 	auto session = perfetto::Tracing::NewTrace();
