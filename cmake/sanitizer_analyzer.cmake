@@ -1,6 +1,6 @@
 # cmake/analyzers_optimizers.cmake
 
-# ====== SANITIZERS ======
+# ====== RUNTIME SANITIZERS ======
 if(ENABLE_SANITIZERS)
   message(STATUS "Configuring Sanitizer Baseline")
   if(MSVC)
@@ -85,7 +85,8 @@ if(ENABLE_ASAN)
   add_asan_dll_to_executable(${PROJECT_NAME})
 endif()
 
-# ===== Static Analysis: Clang-tidy =====
+# ====== STATIC ANALYZERS ======
+# ----- Clang-tidy -----
 if(ENABLE_CLANG_TIDY)
   find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
   if(CLANG_TIDY_EXE)
@@ -96,7 +97,7 @@ if(ENABLE_CLANG_TIDY)
   endif()
 endif()
 
-# ===== Static Analysis: Cppcheck =====
+# ----- Cppcheck -----
 if(ENABLE_CPPCHECK)
   find_program(CPPCHECK_EXE NAMES "cppcheck")
   if(CPPCHECK_EXE)
@@ -113,7 +114,8 @@ if(ENABLE_CPPCHECK)
   endif()
 endif()
 
-# ===== Cache compilation: ccache =====
+# ====== COMPILATION OPTIMIZERS
+# ----- ccache -----
 if(ENABLE_CCACHE)
   find_program(CCACHE_PROGRAM ccache)
   if(CCACHE_PROGRAM)

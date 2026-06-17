@@ -51,6 +51,7 @@ else()
 endif()
 
 include(cmake/sanitizer_analyzer.cmake)
+include(cmake/profiler.cmake)
 
 #==============================================================================
 # Dependencies
@@ -65,21 +66,30 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sml)
 
 #==============================================================================
-# Project Structure
+# Subdirectories
 #==============================================================================
 add_subdirectory(test)
+add_subdirectory(examples)
 
 #==============================================================================
 # Main Executable
 #==============================================================================
 add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
-# add_executable(${PROJECT_NAME} src/main_fail_sanitizer.cpp)
+
+# --- Include directories ---
 # target_include_directories(${PROJECT_NAME} PRIVATE path/to/folder)
 
-# Core dependencies (always included)
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+# --- Compile definitions ---
 # target_compile_definitions(${PROJECT_NAME} PRIVATE ANY_MACRO_HERE)
 
+# --- Core Dependencies ---
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+
+# --- Optional Dependencies ---
 if(TARGET project_tracy_profile)
   target_link_libraries(${PROJECT_NAME} PRIVATE project_tracy_profile)
 endif()
+if(TARGET project_perfetto_profile)
+  target_link_libraries(${PROJECT_NAME} PRIVATE project_perfetto_profile)
+endif()
+

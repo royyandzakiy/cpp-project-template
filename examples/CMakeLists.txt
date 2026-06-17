@@ -1,0 +1,14 @@
+if(ENABLE_SANITIZERS)
+  add_executable(example_sanitizer sanitizers/main_fail_sanitizer.cpp)
+  target_link_libraries(example_sanitizer PRIVATE fmt::fmt)
+endif()
+
+if(TARGET project_tracy_profile)
+  add_executable(example_tracy tracy/main_tracy.cpp)
+  target_link_libraries(example_tracy PRIVATE fmt::fmt project_tracy_profile)
+endif()
+
+if(TARGET project_perfetto_profile)
+  add_executable(example_perfetto perfetto/main_perfetto.cpp)
+  target_link_libraries(example_perfetto PRIVATE fmt::fmt project_perfetto_profile)
+endif()
