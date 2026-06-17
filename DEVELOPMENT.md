@@ -25,7 +25,6 @@
 
 ## Skip
 
-- contribution goodies
 - open for contributor: issues, discussions, contributions
   - fix readme: logo & badge, pitch (problem to solve), quick start (inline code example), live demo
   - add complete docs suite (tutorials, how-to-guides, understand, reference, release blog, release/change log)

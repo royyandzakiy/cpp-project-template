@@ -27,20 +27,30 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(ENABLE_STRICT_COMPILER)
-  if(MSVC)
-    add_compile_options(/W4 /permissive- /WX)
-  else()
-    # Clang/GCC
+if(WIN32)
+  set(CMAKE_DEBUG_POSTFIX d)
+endif()
+
+if(MSVC)
+  add_compile_options(/W4 /permissive- /utf-8)
+  if(ENABLE_STRICT_COMPILER)
+    add_compile_options(/WX /GS) # warning as errors. Stack guards
     add_compile_options(
-      -Wall
-      -Wextra
-      -Werror
-      -pedantic)
+      /Zc:preprocessor # Critical for modern C++ macro-heavy libs
+      /Zc:__cplusplus # Ensures __cplusplus macro reports correctly
+    )
+  endif()
+
+else()
+  # Clang/GCC
+  add_compile_options(-Wall -Wextra)
+  if(ENABLE_STRICT_COMPILER)
+
+    add_compile_options(-Werror -pedantic) # more strict
   endif()
 endif()
 
-include(cmake/analyzers_optimizers.cmake)
+include(cmake/sanitizer_analyzer.cmake)
 
 #==============================================================================
 # Dependencies
