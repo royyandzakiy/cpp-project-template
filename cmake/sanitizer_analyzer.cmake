@@ -114,6 +114,20 @@ if(ENABLE_CPPCHECK)
   endif()
 endif()
 
+# ----- IWYU -----
+if(ENABLE_IWYU)
+  find_program(IWYU_EXE NAMES "include-what-you-use" "iwyu")
+  if(IWYU_EXE)
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
+        "${IWYU_EXE}"
+        "--transitive_includes_only"
+        "--no_fwd_decls")
+    message(STATUS "IWYU found: ${IWYU_EXE}")
+  else()
+    message(WARNING "IWYU not found. Install include-what-you-use and re-run CMake.")
+  endif()
+endif()
+
 # ====== COMPILATION OPTIMIZERS
 # ----- ccache -----
 if(ENABLE_CCACHE)

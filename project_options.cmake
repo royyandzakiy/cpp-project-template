@@ -12,6 +12,7 @@ endif()
 
 option(ENABLE_CLANG_TIDY "Enable clang tidy" OFF)
 option(ENABLE_CPPCHECK "Enable cppcheck" OFF)
+option(ENABLE_IWYU "Enable Include What You Use" OFF)
 option(ENABLE_CCACHE "Enable cache" OFF)
 option(ENABLE_CLANG_BUILD_ANALYZER "Enable Clang -ftime-trace + ClangBuildAnalyzer target (Clang only)" OFF)
 option(ENABLE_TRACY "Enable Tracy debug profiler" OFF)

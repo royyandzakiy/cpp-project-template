@@ -1,16 +1,11 @@
 # DEVELOPMENT
 
-## Easy
-
-- add INSTALL to create as library, add in option
-  - merge with win lib
-
 ## Prio
 
-- add dev-container: use clang-cl, clang, gcc16
-  - add windows-setup.ps1 with winget + microsoft.visualstudio
 - add conan
   - add option to choose vcpkg vs conan
+- add dev-container: use clang-cl, clang, gcc16
+  - add windows-setup.ps1 with winget + microsoft.visualstudio
 
 ## Backlog
 
@@ -22,6 +17,8 @@
   - os: add windows & linux
   - compilers: gcc16, clang, apple clang, msvc
   - fuzz build matrix (random seed)
+- add INSTALL to create as library, add in option
+  - merge with win lib
 
 ## Skip
 
