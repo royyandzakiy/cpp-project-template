@@ -8,7 +8,7 @@ include(cmake/config_vcpkg.cmake)
 # Project Configuration
 #==============================================================================
 project(
-  cmake_project_template
+  cpp_project_template
   LANGUAGES CXX
   VERSION 1.0.0)
 
@@ -45,7 +45,6 @@ else()
   # Clang/GCC
   add_compile_options(-Wall -Wextra)
   if(ENABLE_STRICT_COMPILER)
-
     add_compile_options(-Werror -pedantic) # more strict
   endif()
 endif()
@@ -92,4 +91,3 @@ endif()
 if(TARGET project_perfetto_profile)
   target_link_libraries(${PROJECT_NAME} PRIVATE project_perfetto_profile)
 endif()
-
