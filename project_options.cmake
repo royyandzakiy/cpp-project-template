@@ -1,10 +1,6 @@
 # project_options.cmake
 
-# Project settings
-set(____PROJECT_NAME____ cpp_project_template)
-set(____CPP_VERSION____ 23)
-
-# Compiler sanitizers
+# ----- Compiler sanitizers -----
 option(ENABLE_STRICT_COMPILER "Strict compiler options, sees warnings as errors!" OFF)
 
 option(SETUP_VCPKG "Check & setup vcpkg installation" ON)
