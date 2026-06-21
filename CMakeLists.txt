@@ -4,25 +4,25 @@ include(local_options.cmake OPTIONAL)
 include(project_options.cmake)
 include(cmake/config_vcpkg.cmake)
 
-#===========================================================
+#=========================
 # Project Configuration
-#===========================================================
+#=========================
 project(
   cpp_project_template
   LANGUAGES CXX
   VERSION 1.0.0)
 
-#===========================================================
+#=========================
 # Version Management
-#===========================================================
+#=========================
 include(cmake/version.cmake)
 generate_version_header()
 source_group("Generated" FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/version.h")
 message(STATUS "Building ${PROJECT_NAME} version ${PROJECT_VERSION}")
 
-#===========================================================
+#=========================
 # Compiler Configuration
-#===========================================================
+#=========================
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -52,9 +52,9 @@ endif()
 include(cmake/sanitizer_analyzer.cmake)
 include(cmake/profiler.cmake)
 
-#==============================================================================
+#=========================
 # Dependencies
-#==============================================================================
+#=========================
 find_package(fmt CONFIG REQUIRED)
 find_package(scn CONFIG REQUIRED)
 include(FetchContent)
@@ -64,15 +64,15 @@ FetchContent_Declare(
   GIT_TAG v1.1.13)
 FetchContent_MakeAvailable(sml)
 
-#==============================================================================
+#=========================
 # Subdirectories
-#==============================================================================
+#=========================
 add_subdirectory(test)
 add_subdirectory(examples)
 
-#==============================================================================
+#=========================
 # Main Executable
-#==============================================================================
+#=========================
 add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
 
 # --- Include directories ---
