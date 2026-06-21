@@ -8,7 +8,7 @@ include(cmake/config_vcpkg.cmake)
 # Project Configuration
 #==============================================================================
 project(
-  ${____PROJECT_NAME____}
+  cpp_project_template
   LANGUAGES CXX
   VERSION 1.0.0)
 
@@ -23,7 +23,7 @@ message(STATUS "Building ${PROJECT_NAME} version ${PROJECT_VERSION}")
 #==============================================================================
 # Compiler Configuration
 #==============================================================================
-set(CMAKE_CXX_STANDARD ${____CPP_VERSION____})
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
