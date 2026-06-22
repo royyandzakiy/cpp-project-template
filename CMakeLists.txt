@@ -57,7 +57,6 @@ include(cmake/profiler.cmake)
 # Dependencies
 #=========================
 find_package(fmt CONFIG REQUIRED)
-find_package(scn CONFIG REQUIRED)
 include(FetchContent)
 FetchContent_Declare(
   sml
@@ -74,7 +73,7 @@ add_subdirectory(examples)
 #=========================
 # Main Executable
 #=========================
-add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp)
 
 # --- Include directories ---
 # target_include_directories(${PROJECT_NAME} PRIVATE path/to/folder)

@@ -1,4 +1,7 @@
 {
+	// --- CMake ---
+	"cmake.useCMakePresets": "always",
+	"cmake.options.statusBarVisibility": "visible",
   "cmake.configureSettings": {
     "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
   },
