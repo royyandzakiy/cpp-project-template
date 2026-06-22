@@ -1,6 +1,7 @@
 ---
 Language: Cpp
 BasedOnStyle: Microsoft
+Standard: Latest # parse C++23 syntax (matches CMAKE_CXX_STANDARD 23)
 
 # === Indentation & Alignment ===
 UseTab: Always
@@ -30,6 +31,7 @@ SpaceBeforeParensOptions:
   AfterFunctionDefinitionName: false
   AfterFunctionDeclarationName: false
 PointerAlignment: Right
+DerivePointerAlignment: false # honor PointerAlignment, don't infer from the file
 SpaceAfterTemplateKeyword: true
 SpacesInContainerLiterals: true
 SpacesInParentheses: false
@@ -52,3 +54,4 @@ IncludeBlocks: Preserve
 FixNamespaceComments: true
 NamespaceIndentation: None
 ReflowComments: true
+InsertNewlineAtEOF: true

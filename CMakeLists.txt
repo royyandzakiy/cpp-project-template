@@ -76,6 +76,8 @@ add_subdirectory(examples)
 add_executable(${PROJECT_NAME} src/main.cpp)
 
 # --- Include directories ---
+# Public headers (incl. the generated include/${PROJECT_NAME}/version.h) live here.
+target_include_directories(${PROJECT_NAME} PRIVATE include)
 # target_include_directories(${PROJECT_NAME} PRIVATE path/to/folder)
 
 # --- Compile definitions ---
@@ -90,4 +92,21 @@ if(TARGET project_tracy_profile)
 endif()
 if(TARGET project_perfetto_profile)
   target_link_libraries(${PROJECT_NAME} PRIVATE project_perfetto_profile)
+endif()
+
+#=========================
+# clangd Integration
+#=========================
+# Presets build into build/<preset>/, a layout clangd cannot auto-discover
+# (it only searches the file's dir, ./build, and ancestors). Mirror the active
+# preset's compile_commands.json to the project root so the checked-in .clangd
+# (CompilationDatabase: .) always reflects the build you last configured.
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+  add_custom_target(
+    mirror_compile_commands ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/compile_commands.json"
+            "${CMAKE_SOURCE_DIR}/compile_commands.json"
+    BYPRODUCTS "${CMAKE_SOURCE_DIR}/compile_commands.json"
+    COMMENT "Mirroring compile_commands.json to project root for clangd"
+    VERBATIM)
 endif()
