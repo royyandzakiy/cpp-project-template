@@ -52,6 +52,7 @@ endif()
 
 include(cmake/sanitizer_analyzer.cmake)
 include(cmake/profiler.cmake)
+include(cmake/format.cmake)
 
 #=========================
 # Dependencies
