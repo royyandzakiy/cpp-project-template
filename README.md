@@ -42,6 +42,31 @@ List everything available for your OS with `cmake --list-presets`.
 
 ---
 
+## Dev Environment Setup
+
+Three independent, non-conflicting ways to get the toolchain. Pick **one** based on how you work —
+they don't interfere (VS Code only uses whichever remote you choose; each writes to its own
+per-preset `build/<preset>/` dir; `.gitattributes` keeps the shell scripts LF so they survive a
+Windows checkout):
+
+| Tier | For | How |
+|------|-----|-----|
+| **Remote-WSL** *(recommended if you have WSL2)* | One shared Linux box for all your projects | `bash scripts/setup-ubuntu.sh` in your distro once, then **Reopen in WSL** in VS Code |
+| **Dev Container** | No WSL/Linux box, or you want a reproducible/portable env | **Reopen in Container** (`.devcontainer/`) — builds the same toolchain via the *same* `setup-ubuntu.sh` |
+| **Native Windows** | clang-cl / MSVC without WSL or Docker | `pwsh -File scripts/setup-windows.ps1` (winget) |
+
+Notes:
+- The Dev Container **reuses `scripts/setup-ubuntu.sh`** (its Dockerfile runs it), so there's a
+  single toolchain definition — the WSL and container environments can't drift apart.
+- Add `--with-vcpkg` (Linux) / `-WithVcpkg` (Windows) to also install vcpkg; otherwise just Conan
+  (the `PKG_MANAGER` default) is set up.
+- Native Windows note: clang-cl **and** msvc presets still need the MSVC headers + Windows SDK from
+  Visual Studio's "Desktop development with C++" workload.
+- Already have a Linux toolbox? Use **Remote-WSL** and dismiss the container prompt — it's the
+  lighter, shared-across-projects path.
+
+---
+
 ## Project Structure
 
 ```
@@ -71,7 +96,9 @@ List everything available for your OS with `cmake --list-presets`.
 │   └── version.h                 # Auto-generated from version.txt (gitignored)
 ├── src/                          # Application sources
 ├── test/                         # GoogleTest unit tests
-└── examples/                     # Sanitizer / Tracy / Perfetto demo targets
+├── examples/                     # Sanitizer / Tracy / Perfetto demo targets
+├── scripts/                      # setup-ubuntu.sh (WSL/container) · setup-windows.ps1 (native)
+└── .devcontainer/                # Portable container (runs setup-ubuntu.sh — same toolchain)
 ```
 
 ---
