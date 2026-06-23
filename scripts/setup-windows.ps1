@@ -23,12 +23,33 @@ function Install-WinGet([string]$Id) {
 }
 
 Write-Host "==> toolchain (LLVM/clang-cl, CMake, Ninja, Git, Python, ccache)"
-Install-WinGet 'LLVM.LLVM'
+Install-WinGet 'LLVM.LLVM'          # provides clang, clangd, clang-format, clang-tidy, lld AND clang-cl
 Install-WinGet 'Kitware.CMake'
 Install-WinGet 'Ninja-build.Ninja'
 Install-WinGet 'Git.Git'
 Install-WinGet 'Python.Python.3.12'
 Install-WinGet 'Ccache.Ccache'
+
+Write-Host "==> Visual Studio 2022 Build Tools (MSVC C++ + Windows SDK + Clang)"
+# clang-cl.exe itself comes from LLVM.LLVM above; what it still NEEDS is the MSVC headers,
+# CRT, and Windows SDK from the VCTools workload — the same pieces the msvc preset uses.
+# Run unconditionally: if Build Tools (or full Visual Studio) is already present, winget just
+# reports "already installed" and moves on — no harm.
+$vsArgs = @(
+  '--quiet', '--wait', '--norestart',
+  '--add', 'Microsoft.VisualStudio.Workload.VCTools',
+  '--add', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+  '--add', 'Microsoft.VisualStudio.Component.Windows11SDK.22621',
+  '--add', 'Microsoft.VisualStudio.Component.VC.Llvm.Clang',       # VS-side clang-cl toolset
+  '--add', 'Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset',
+  '--includeRecommended'
+) -join ' '
+winget install --id Microsoft.VisualStudio.2022.BuildTools --exact --silent `
+  --accept-package-agreements --accept-source-agreements --override "$vsArgs"
+if ($LASTEXITCODE -ne 0) {
+  Write-Warning "winget returned $LASTEXITCODE for VS Build Tools (commonly 'already installed' — harmless)."
+  $global:LASTEXITCODE = 0
+}
 
 Write-Host "==> conan 2 (the project's default package manager)"
 if (Get-Command python -ErrorAction SilentlyContinue) {
@@ -48,8 +69,6 @@ if ($WithVcpkg) {
 }
 
 Write-Host ""
-Write-Host "IMPORTANT: clang-cl AND msvc presets need the MSVC headers + Windows SDK."
-Write-Host "  Install 'Desktop development with C++' via the Visual Studio Installer"
-Write-Host "  (or: winget install Microsoft.VisualStudio.2022.BuildTools)."
-Write-Host ""
-Write-Host "Then: cmake --preset clang-cl-debug && cmake --build --preset clang-cl-debug"
+Write-Host "Done. clang-cl is provided by LLVM.LLVM; the MSVC headers + Windows SDK come from the"
+Write-Host "VS Build Tools C++ workload installed above. Open a NEW terminal so PATH refreshes, then:"
+Write-Host "  cmake --preset clang-cl-debug && cmake --build --preset clang-cl-debug"

@@ -18,7 +18,14 @@
       ]
     }
   },
-  // Give the runtime user its own Conan default profile.
-  "postCreateCommand": "conan profile detect --force || true",
+  // Keep build/ on a container-local volume so it never collides with a build/ configured
+  // from the host or WSL — CMake bakes absolute paths into its cache, so a shared build/ dir
+  // (same preset name, different path) causes "CMakeCache directory is different" errors.
+  // Bonus: a real Linux volume is far faster than a Windows bind mount for build I/O.
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-build,target=${containerWorkspaceFolder}/build,type=volume"
+  ],
+  // chown the fresh volume to the runtime user, then give it a Conan default profile.
+  "postCreateCommand": "sudo chown vscode:vscode build || true; conan profile detect --force || true",
   "remoteUser": "vscode"
 }
