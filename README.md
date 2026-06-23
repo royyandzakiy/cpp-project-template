@@ -231,6 +231,32 @@ via `cmake/config_conan.cmake`.
 
 ---
 
+## Codebase Memory (Knowledge Graph)
+
+**What it is:** a queryable knowledge graph of the codebase (symbols, calls, imports, structure)
+stored in `.codebase-memory/`. It's **not used by the build** — it's developer/AI tooling.
+
+**Workflow:** consumed by AI coding agents (e.g. Claude Code) over **MCP**
+(Model Context Protocol). Instead of blindly grepping, the agent queries the graph — "who calls
+this?", "where is X defined?", "show the architecture" — for faster, more accurate code
+navigation and edits. The index is generated once and shared via git.
+
+**To use it:** add the `codebase-memory` MCP server to your AI client (e.g. in Claude Code,
+register it in your MCP config), then ask the agent to `index_repository` (or it bootstraps from
+the committed `graph.db.zst`). No MCP client → these files are simply inert.
+
+| File             | Purpose                                                                  |
+| ---------------- | ------------------------------------------------------------------------ |
+| `graph.db.zst`   | Compressed index snapshot — teammates bootstrap from it instead of re-indexing |
+| `artifact.json`  | Index metadata (node/edge counts, timestamp, schema version)             |
+| `.gitattributes` | Marks the artifact binary + `merge=ours` so it never conflicts           |
+
+It is intentionally **committed** (the `.gitattributes` is auto-generated for exactly that). The
+artifact is a point-in-time snapshot, so re-index before a release if you want it current — or
+delete the directory and let each clone build its own index.
+
+---
+
 ## Adapting the Template
 
 1. Rename the project in `CMakeLists.txt` and `vcpkg.json` (the generated header path follows the
