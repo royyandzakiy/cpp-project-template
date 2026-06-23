@@ -1,9 +1,9 @@
 #include <filesystem>
-#include <iostream>
+#include <print>
 
 auto main() -> int {
-	[[maybe_unused]] std::filesystem::path path;
+	[[maybe_unused]] std::filesystem::path path{"."};
 
-	std::cout << "Hello, clangd + CMake!\n";
+	std::println("Hello, clangd + CMake!");
 	return 0;
 }
