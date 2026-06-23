@@ -2,8 +2,8 @@
 # =============================================================================
 # VCPKG Configuration
 # =============================================================================
-if(NOT SETUP_VCPKG)
-  message(STATUS "Skip vcpkg installation check & setup")
+if(NOT PKG_MANAGER STREQUAL "vcpkg")
+  message(STATUS "Skip vcpkg (PKG_MANAGER=${PKG_MANAGER})")
   return()
 endif()
 

@@ -117,7 +117,7 @@ Each has matching `build` and `test` presets. `CMakeUserPresets.json` is optiona
 
 | Option                      | Default | Description                                                  |
 | --------------------------- | ------- | ------------------------------------------------------------ |
-| `SETUP_VCPKG`               | ON      | Validate vcpkg installation on configure                     |
+| `PKG_MANAGER`               | `vcpkg` | Dependency provider: `vcpkg` \| `conan` \| `none`            |
 | `VCPKG_MANIFEST_MODE`       | ON      | Use `vcpkg.json` (manifest) vs. a global install             |
 | `ENABLE_STRICT_COMPILER`    | OFF     | Warnings as errors + hardening (`/WX /GS`, `-Werror -pedantic`) |
 | `ENABLE_SANITIZERS`         | OFF     | UBSan + bounds + integer checks                              |

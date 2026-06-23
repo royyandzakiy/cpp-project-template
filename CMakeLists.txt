@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.28)
 
 include(local_options.cmake OPTIONAL)
 include(project_options.cmake)
-include(cmake/config_conan.cmake)  # reads USE_CONAN -> must come after project_options
-include(cmake/config_vcpkg.cmake)  # no-op when config_conan set SETUP_VCPKG OFF
+include(cmake/package_manager.cmake)
+setup_package_manager()            # dispatches to vcpkg / conan / none per PKG_MANAGER
 
 #=========================
 # Project Configuration

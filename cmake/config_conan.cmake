@@ -1,24 +1,29 @@
 # cmake/config_conan.cmake
-# Optional Conan 2 dependency provider integration.
-# Activated when USE_CONAN=ON is set (via preset or -D flag).
-# Conan packages are resolved through the cmake-conan dependency provider,
-# so find_package() calls in CMakeLists.txt work unchanged.
+# Conan 2 integration via the cmake-conan dependency provider. Included by
+# setup_package_manager() when PKG_MANAGER=conan, so find_package() in CMakeLists
+# resolves through Conan with no other changes. (vcpkg isn't included in this mode,
+# so the two never run together.)
 
-if(USE_CONAN)
-    message(STATUS "[config_conan] Conan dependency provider enabled")
-
-    # Verify conan_provider.cmake is present (added via git submodule)
-    set(CONAN_PROVIDER "${CMAKE_SOURCE_DIR}/cmake/cmake-conan/conan_provider.cmake")
-    if(NOT EXISTS "${CONAN_PROVIDER}")
-        message(FATAL_ERROR
-            "[config_conan] cmake-conan submodule not found at ${CONAN_PROVIDER}.\n"
-            "Run: git submodule update --init --recursive"
-        )
-    endif()
-
-    # Disable vcpkg when Conan is active to avoid toolchain conflicts
-    set(SETUP_VCPKG OFF CACHE BOOL "Disabled because USE_CONAN=ON" FORCE)
-
-    message(STATUS "[config_conan] Using conan_provider.cmake: ${CONAN_PROVIDER}")
-    message(STATUS "[config_conan] Pass -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=${CONAN_PROVIDER} at configure time")
+set(CONAN_PROVIDER "${CMAKE_SOURCE_DIR}/cmake/cmake-conan/conan_provider.cmake")
+if(NOT EXISTS "${CONAN_PROVIDER}")
+  message(FATAL_ERROR
+    "[conan] cmake-conan submodule not found at ${CONAN_PROVIDER}.\n"
+    "Run: git submodule update --init --recursive")
 endif()
+
+# Register the provider (consumed at the next project() call). Honor an explicit
+# -D / preset override if one was already supplied.
+if(NOT DEFINED CMAKE_PROJECT_TOP_LEVEL_INCLUDES)
+  set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES "${CONAN_PROVIDER}")
+endif()
+
+# Optional host profile. A preset / local_options may set CONAN_HOST_PROFILE (e.g. the
+# clang-cl profile that maps clang-cl -> compiler=msvc). If unset, the cmake-conan
+# provider auto-detects settings from the CMake configuration.
+if(CONAN_HOST_PROFILE)
+  message(STATUS "[conan] host profile: ${CONAN_HOST_PROFILE}")
+else()
+  message(STATUS "[conan] no explicit profile — provider auto-detects from CMake")
+endif()
+
+message(STATUS "[conan] provider: ${CONAN_PROVIDER}")

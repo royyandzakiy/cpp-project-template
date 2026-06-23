@@ -4,9 +4,12 @@
 option(ENABLE_STRICT_COMPILER "Strict compiler options, sees warnings as errors!" OFF)
 
 # ------ Package Managers ------
-# Default OFF: vcpkg is the default; opt into Conan via the *-conan preset (sets USE_CONAN=ON).
-option(USE_CONAN "Use Conan as the package manager instead of vcpkg" OFF)
-option(SETUP_VCPKG "Check & setup vcpkg installation" ON)
+# Single knob. Swap with -DPKG_MANAGER=conan, set(PKG_MANAGER ...) in local_options.cmake,
+# the IDE's CMake cache UI (dropdown), or a *-conan preset.
+# NOTE: switching needs a fresh configure (toolchain/provider lock in at first configure) —
+# use a separate build dir or the matching preset.
+set(PKG_MANAGER "vcpkg" CACHE STRING "Dependency provider: vcpkg | conan | none")
+set_property(CACHE PKG_MANAGER PROPERTY STRINGS vcpkg conan none)
 option(VCPKG_MANIFEST_MODE "VCPKG in Manifest Mode, else Global Mode" ON)
 
 # ------ Sanitizers ------

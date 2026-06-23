@@ -175,9 +175,7 @@
 			"inherits": "clang-cl-debug",
 			"displayName": "Clang-CL Debug (Conan)",
 			"cacheVariables": {
-				"USE_CONAN": "ON",
-				"SETUP_VCPKG": "OFF",
-				"CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/cmake-conan/conan_provider.cmake",
+				"PKG_MANAGER": "conan",
 				"CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-debug.ini"
 			}
 		},
