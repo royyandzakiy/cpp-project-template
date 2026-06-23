@@ -8,7 +8,5 @@ auto main() -> int {
 	fmt::println("Hello, clangd + CMake!");
 	fmt::println("Hello, clangd + CMake! {}", mymath::add(1, 2));
 
-	while (true)
-		;
 	return 0;
 }

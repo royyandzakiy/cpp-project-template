@@ -4,4 +4,4 @@ scnlib/4.0.1
 tracy/0.13.1
 
 [generators]
-CMakeDeps
+CMakeConfigDeps
