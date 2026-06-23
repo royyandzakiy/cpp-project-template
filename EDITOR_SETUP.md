@@ -10,7 +10,7 @@ There are two layers. Understanding the split is the key to setting up any edito
 
 | Layer | Files | Who reads it |
 |-------|-------|--------------|
-| **Shared / portable** | `.clangd`, `.clang-tidy`, `.clang-format`, `compile_commands.json` | Every clangd-based editor, identically. Commit these. |
+| **Shared / portable** | `.clangd`, `.clang-tidy`, `.clang-format`, `.editorconfig`, `compile_commands.json` | Every clangd-based editor, identically. Commit these. |
 | **Per-editor launcher** | `.vscode/settings.json` (`clangd.arguments`), Neovim `cmd`, CLion settings, … | Each editor separately. These flags **cannot** live in `.clangd`. |
 
 `.clangd` holds all the *semantic* behavior (background index, IncludeCleaner, inlay hints,
@@ -61,10 +61,11 @@ include paths — essential on Windows and for any non-default-named driver.
 
 ## VS Code
 
-Already configured. Install the recommended extensions (`.vscode/extensions.json`):
-**clangd** (`llvm-vs-code-extensions.vscode-clangd`) and **CMake Tools**. The MS C/C++
-extension (`cpptools`) is deliberately marked *unwanted* — its IntelliSense engine conflicts
-with clangd and is disabled in settings. Nothing else to do.
+Already configured. Install the recommended extensions (`.vscode/extensions.json`): **clangd**,
+**CMake Tools**, **CodeLLDB** (debugging), and **EditorConfig** (honors `.editorconfig` — VS Code
+needs this extension, unlike VS/CLion which read it natively). The MS C/C++ extension (`cpptools`)
+is deliberately marked *unwanted* — its IntelliSense engine conflicts with clangd and is disabled
+in settings. Nothing else to do.
 
 ## CLion
 
@@ -93,6 +94,24 @@ CLion has first-class native support for everything in this template — **no pl
 
 CLion writes its project metadata to `.idea/` and builds into `cmake-build-*/` — both are
 gitignored.
+
+## Visual Studio (full IDE)
+
+Visual Studio 2022 (17.4+) works natively — **note that VS uses its own C++ IntelliSense, not
+clangd**, so `.clangd` and `compile_commands.json` are ignored. Everything else is picked up:
+
+1. **Open the folder** (File → Open → Folder). VS reads `CMakePresets.json` and lists the presets
+   in the configuration dropdown — pick `msvc-debug` (VS 2022 generator) or any Ninja preset.
+2. **Formatting** — VS auto-applies `.clang-format` (on by default; Tools → Options → Text Editor
+   → C/C++ → Formatting).
+3. **clang-tidy** — enable it under the project's Code Analysis settings; VS uses the project
+   `.clang-tidy`.
+4. **Debugging** — the native VS debugger runs the CMake target (from `bin/msvc`); no setup.
+5. **vcpkg** — the toolchain is wired by the preset, so Configure resolves dependencies.
+
+`.editorconfig`, `.clang-format`, and `.clang-tidy` are all honored natively; VS-generated `.vs/`
+is gitignored. The clangd-only niceties (IncludeCleaner, exact inlay hints) come from VS's own
+IntelliSense instead — expected, not a gap.
 
 ## Neovim (nvim-lspconfig)
 

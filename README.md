@@ -50,6 +50,7 @@ List everything available for your OS with `cmake --list-presets`.
 ├── .clang-format                 # Formatting style (Microsoft base, tabs, 120 cols)
 ├── .clang-tidy                   # Static-analysis checks (warnings as errors)
 ├── .cmake-format.yaml            # CMake formatting style
+├── .editorconfig                 # Cross-editor defaults (indent, EOL, charset)
 ├── .pre-commit-config.yaml       # Git pre-commit hooks (format + lint)
 ├── CMakeLists.txt                # Top-level build
 ├── CMakePresets.json             # Presets, platform-filtered (no setup needed)
@@ -145,6 +146,7 @@ Styles and checks are split by tool so each is shared and editor-agnostic:
 - **`.clang-format`** — Microsoft base, tabs, 120-column limit, C++23.
 - **`.clang-tidy`** — bugprone, modernize, performance, cppcoreguidelines; warnings as errors.
 - **`.cmake-format.yaml`** — CMake formatting.
+- **`.editorconfig`** — cross-editor indent/EOL/charset defaults (honored by VS Code, CLion, Visual Studio); matches the rules above.
 
 Convenience build targets (from `cmake/format.cmake`):
 
