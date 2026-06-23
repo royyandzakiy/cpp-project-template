@@ -5,7 +5,8 @@
     "vadimcn.vscode-lldb",
     "editorconfig.editorconfig"
   ],
-  "unwantedRecommendations": [
-    "ms-vscode.cpptools"
-  ]
+  // ms-vscode.cpptools is OPTIONAL: only needed for the cppvsdbg (MSVC) and cppdbg/gdb (MinGW)
+  // debug configs in launch.json. Its IntelliSense/formatting/analysis are disabled in
+  // settings.json, so it won't compete with clangd. Clang-only users don't need it.
+  "unwantedRecommendations": []
 }

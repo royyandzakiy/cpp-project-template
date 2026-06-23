@@ -21,8 +21,12 @@
   "clangd.onConfigChanged": "restart",
   "clangd.checkUpdates": false,
 
-  // Defer entirely to clangd; disable Microsoft's competing IntelliSense engine.
+  // Defer entirely to clangd. If the C/C++ extension is installed for its debugger
+  // (cppvsdbg/cppdbg in launch.json), keep all its language features off so it never
+  // competes with clangd.
   "C_Cpp.intelliSenseEngine": "disabled",
+  "C_Cpp.formatting": "disabled",
+  "C_Cpp.codeAnalysis.runAutomatically": false,
 
   // ---- Editor: format with clangd, driven by .clang-format ----
   "[cpp]": {

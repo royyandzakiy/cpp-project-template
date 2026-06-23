@@ -64,8 +64,9 @@ include paths — essential on Windows and for any non-default-named driver.
 Already configured. Install the recommended extensions (`.vscode/extensions.json`): **clangd**,
 **CMake Tools**, **CodeLLDB** (debugging), and **EditorConfig** (honors `.editorconfig` — VS Code
 needs this extension, unlike VS/CLion which read it natively). The MS C/C++ extension (`cpptools`)
-is deliberately marked *unwanted* — its IntelliSense engine conflicts with clangd and is disabled
-in settings. Nothing else to do.
+is **optional** — only its *debugger* is used (for the MSVC/MinGW launch configs below); its
+IntelliSense, formatting, and analysis are disabled in settings, so it never competes with clangd.
+Nothing else to do.
 
 ## CLion
 
@@ -193,13 +194,20 @@ Each preset writes to its own `bin/<toolchain>/` directory *on purpose* (so tool
 clobber each other); debugging stays **preset-agnostic** because each IDE resolves the binary from
 the *active* CMake configuration, not a hard-coded path. No unified output dir, no duplication.
 
-**VS Code** — install **CodeLLDB** (`vadimcn.vscode-lldb`, in recommended extensions), then press
-**F5**. `.vscode/launch.json` debugs `${command:cmake.launchTargetPath}` — the active CMake Tools
-launch target — so one config works across every preset and OS (LLDB reads DWARF and Windows PDB).
-Pick the target (`app` / `unit_tests`) in the CMake Tools status bar. We standardize on CodeLLDB to
-stay cpptools-free; if you specifically want Microsoft's `cppvsdbg` engine for an MSVC build,
-install the C/C++ extension and add a `cppvsdbg` config — IntelliSense stays disabled via settings,
-so it won't fight clangd.
+**VS Code** — press **F5** and choose a config from the dropdown. All three use
+`${command:cmake.launchTargetPath}`, so they follow the active CMake Tools target/preset (pick
+`app` / `unit_tests` in the status bar):
+
+- **Debug (LLDB · all OS)** — default, via CodeLLDB (`vadimcn.vscode-lldb`). Best for Clang, Apple
+  Clang, clang-cl, and GCC on Linux/macOS/Windows. No cpptools needed.
+- **Debug (Windows MSVC · cppvsdbg)** — native Microsoft debugger for `msvc-*` builds; best
+  PDB/STL visualization on Windows.
+- **Debug (GDB · MinGW & GCC)** — `cppdbg` + GDB with pretty-printing; natural for `mingw-*` and
+  `gcc-linux-*`.
+
+The last two use the C/C++ extension (`ms-vscode.cpptools`) **only as a debugger** — it's optional,
+and its IntelliSense/formatting/analysis are disabled in `settings.json` so it never competes with
+clangd. Clang-only users can ignore it and just use the LLDB config.
 
 **CLion** — zero setup. CLion generates a run/debug configuration per CMake target and uses the
 toolchain's native debugger (GDB/LLDB on Unix & MinGW, the LLDB-based debugger on MSVC). Shared
