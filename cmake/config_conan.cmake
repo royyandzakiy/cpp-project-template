@@ -10,7 +10,7 @@ if(USE_CONAN)
     message(STATUS "[config_conan] Conan dependency provider enabled")
 
     # Verify conan_provider.cmake is present (added via git submodule)
-    set(CONAN_PROVIDER "${CMAKE_SOURCE_DIR}/cmake-conan/conan_provider.cmake")
+    set(CONAN_PROVIDER "${CMAKE_SOURCE_DIR}/cmake/cmake-conan/conan_provider.cmake")
     if(NOT EXISTS "${CONAN_PROVIDER}")
         message(FATAL_ERROR
             "[config_conan] cmake-conan submodule not found at ${CONAN_PROVIDER}.\n"

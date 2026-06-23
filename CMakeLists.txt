@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
+include(cmake/config_conan.cmake)
 include(local_options.cmake OPTIONAL)
 include(project_options.cmake)
 include(cmake/config_vcpkg.cmake)
@@ -58,6 +59,7 @@ include(cmake/format.cmake)
 # Dependencies
 #=========================
 find_package(fmt CONFIG REQUIRED)
+find_package(scn CONFIG REQUIRED)
 include(FetchContent)
 FetchContent_Declare(
   sml
@@ -106,7 +108,7 @@ endif()
 # target_compile_definitions(${PROJECT_NAME} PRIVATE ANY_MACRO_HERE)
 
 # --- Core Dependencies ---
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt scn::scn)
 
 # --- Optional Dependencies ---
 if(TARGET project_tracy_profile)
