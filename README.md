@@ -125,6 +125,9 @@ Each has matching `build` and `test` presets. `CMakeUserPresets.json` is optiona
 | `ENABLE_TSAN_MSAN`          | OFF     | ThreadSanitizer or MemorySanitizer                           |
 | `ENABLE_CLANG_TIDY`         | OFF     | clang-tidy during the build (also runs live in clangd)       |
 | `ENABLE_CCACHE`             | **ON**  | ccache compiler launcher (no-op if ccache absent)            |
+| `ENABLE_FAST_LINKER`        | **ON**  | Use mold/lld if found (faster linking); no-op if absent / MSVC |
+| `ENABLE_PCH`                | OFF     | Precompiled headers (faster full builds, slower incremental) |
+| `ENABLE_UNITY_BUILD`        | OFF     | Unity/jumbo TUs (faster clean/CI builds; incremental-hostile) |
 | `ENABLE_CLANG_BUILD_ANALYZER` | OFF   | `-ftime-trace` + ClangBuildAnalyzer target (Clang only)      |
 | `ENABLE_TRACY`              | OFF     | Tracy debug profiler (FetchContent)                          |
 | `ENABLE_PERFETTO`           | OFF     | Perfetto runtime tracing (FetchContent)                      |

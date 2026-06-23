@@ -19,6 +19,9 @@ option(ENABLE_CLANG_TIDY "Enable clang tidy" OFF)
 
 # ------ Compile Optimizations ------
 option(ENABLE_CCACHE "Enable compiler cache (ccache) — no-op if ccache isn't installed" ON)
+option(ENABLE_FAST_LINKER "Use mold/lld if available (much faster linking) — auto-detected, no-op if absent" ON)
+option(ENABLE_PCH "Precompile common heavy headers (faster full builds; can slow incremental)" OFF)
+option(ENABLE_UNITY_BUILD "Batch sources into unity translation units (faster clean/CI builds; incremental-hostile)" OFF)
 option(ENABLE_CLANG_BUILD_ANALYZER "Enable Clang -ftime-trace + ClangBuildAnalyzer target (Clang only)" OFF)
 
 # ------ Profilers ------

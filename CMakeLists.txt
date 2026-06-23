@@ -74,12 +74,33 @@ add_subdirectory(examples)
 #=========================
 # Main Executable
 #=========================
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
 
 # --- Include directories ---
 # Public headers (incl. the generated include/${PROJECT_NAME}/version.h) live here.
-target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_include_directories(${PROJECT_NAME} PRIVATE include src)
 # target_include_directories(${PROJECT_NAME} PRIVATE path/to/folder)
+
+# --- Build-time optimizations (per target) ---
+# Precompiled headers: tune this list to the heavy headers you use everywhere.
+if(ENABLE_PCH)
+  target_precompile_headers(
+    ${PROJECT_NAME}
+    PRIVATE
+    <filesystem>
+    <print>
+    <string>
+    <string_view>
+    <vector>
+    <memory>
+    <utility>)
+  message(STATUS "PCH enabled for ${PROJECT_NAME}")
+endif()
+# Unity build: only meaningful once the target has several .cpp files.
+if(ENABLE_UNITY_BUILD)
+  set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
+  message(STATUS "Unity build enabled for ${PROJECT_NAME}")
+endif()
 
 # --- Compile definitions ---
 # target_compile_definitions(${PROJECT_NAME} PRIVATE ANY_MACRO_HERE)

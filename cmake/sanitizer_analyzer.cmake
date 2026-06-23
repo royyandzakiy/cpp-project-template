@@ -98,6 +98,23 @@ if(ENABLE_CLANG_TIDY)
 endif()
 
 # ====== COMPILATION OPTIMIZERS
+# ----- Fast linker (mold / lld) -----
+# Linking is often the dominant cost; swapping the linker is a one-flag win. Applies only to
+# GNU-like drivers (Clang/GCC/AppleClang/MinGW); MSVC & clang-cl use their own fast linkers.
+if(ENABLE_FAST_LINKER AND NOT MSVC)
+  find_program(MOLD_LINKER mold)
+  find_program(LLD_LINKER NAMES ld.lld lld)
+  if(MOLD_LINKER)
+    add_link_options(-fuse-ld=mold)
+    message(STATUS "Fast linker: mold (${MOLD_LINKER})")
+  elseif(LLD_LINKER)
+    add_link_options(-fuse-ld=lld)
+    message(STATUS "Fast linker: lld (${LLD_LINKER})")
+  else()
+    message(STATUS "Fast linker: mold/lld not found; using the default linker")
+  endif()
+endif()
+
 # ----- ccache -----
 if(ENABLE_CCACHE)
   find_program(CCACHE_PROGRAM ccache)

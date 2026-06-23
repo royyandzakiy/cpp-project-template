@@ -1,10 +1,9 @@
 #pragma once
-#ifndef MATH_H
-#define MATH_H
+namespace mymath {
 
-int add(int a, int b);
-int subtract(int a, int b);
-int multiply(int a, int b);
-double divide(double a, double b);
+auto add(int a, int b) -> int;
+auto subtract(int a, int b) -> int;
+auto multiply(int a, int b) -> int;
+auto divide(double a, double b) -> double;
 
-#endif
+}; // namespace mymath

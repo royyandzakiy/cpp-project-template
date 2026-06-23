@@ -2,7 +2,6 @@
 
 ## Backlog
 
-- project options enable
 - improve compilation time
 - add conan
   - add option to choose vcpkg vs conan
