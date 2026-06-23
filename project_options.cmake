@@ -4,8 +4,11 @@
 option(ENABLE_STRICT_COMPILER "Strict compiler options, sees warnings as errors!" OFF)
 
 # ------ Package Managers ------
-option(SETUP_VCPKG "Check & setup vcpkg installation" ON)
-option(VCPKG_MANIFEST_MODE "VCPKG in Manifest Mode, else Global Mode" ON)
+set(PKG_MANAGER "vcpkg" CACHE STRING "Dependency provider: vcpkg | conan | none")
+set_property(CACHE PKG_MANAGER PROPERTY STRINGS vcpkg conan none)
+if (PKG_MANAGER STREQUAL "vcpkg")
+  option(VCPKG_MANIFEST_MODE "VCPKG in Manifest Mode, else Global Mode" ON)
+endif()
 
 # ------ Sanitizers ------
 option(ENABLE_SANITIZERS "Enable static & runtime sanitizers" OFF)

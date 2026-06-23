@@ -117,7 +117,7 @@ Each has matching `build` and `test` presets. `CMakeUserPresets.json` is optiona
 
 | Option                      | Default | Description                                                  |
 | --------------------------- | ------- | ------------------------------------------------------------ |
-| `SETUP_VCPKG`               | ON      | Validate vcpkg installation on configure                     |
+| `PKG_MANAGER`               | `vcpkg` | Dependency provider: `vcpkg` \| `conan` \| `none`            |
 | `VCPKG_MANIFEST_MODE`       | ON      | Use `vcpkg.json` (manifest) vs. a global install             |
 | `ENABLE_STRICT_COMPILER`    | OFF     | Warnings as errors + hardening (`/WX /GS`, `-Werror -pedantic`) |
 | `ENABLE_SANITIZERS`         | OFF     | UBSan + bounds + integer checks                              |
@@ -201,6 +201,28 @@ only when their option is enabled.
 | `sml`        | `boost-ext/sml` state machine (header-only)                |
 | `googletest` | Unit testing (in `test/`)                                  |
 | `perfetto`   | Runtime tracing (when `ENABLE_PERFETTO`)                   |
+
+---
+
+## Package Managers (vcpkg ↔ Conan)
+
+The package manager is **orthogonal to the presets** — every preset works with either. Pick it
+with the `PKG_MANAGER` knob (`vcpkg` default · `conan` · `none`), wherever is convenient:
+
+```cmake
+# local_options.cmake (gitignored)
+set(PKG_MANAGER conan)
+```
+
+…or `-DPKG_MANAGER=conan`, or the IDE's CMake cache dropdown. vcpkg reads `vcpkg.json`; Conan reads
+`conanfile.txt` (resolved via the cmake-conan provider, so `find_package()` is unchanged). For
+clang-cl the matching `cmake/conan-profiles/clang-cl-windows-<buildtype>.ini` is selected
+automatically; other compilers are auto-detected.
+
+> Switching managers needs a **fresh configure** — the toolchain/provider locks in at first
+> configure. Just configure into a new build directory (e.g. `cmake --preset clang-cl-debug -B build/conan`).
+
+Conan requires the submodule once: `git submodule update --init --recursive`.
 
 ---
 

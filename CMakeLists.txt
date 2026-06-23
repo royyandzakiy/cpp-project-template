@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.28)
 
 include(local_options.cmake OPTIONAL)
 include(project_options.cmake)
-include(cmake/config_vcpkg.cmake)
+include(cmake/package_manager.cmake)
+setup_package_manager()            # dispatches to vcpkg / conan / none per PKG_MANAGER
 
 #=========================
 # Project Configuration
@@ -58,6 +59,7 @@ include(cmake/format.cmake)
 # Dependencies
 #=========================
 find_package(fmt CONFIG REQUIRED)
+# find_package(scn CONFIG REQUIRED)
 include(FetchContent)
 FetchContent_Declare(
   sml

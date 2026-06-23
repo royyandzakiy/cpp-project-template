@@ -14,13 +14,17 @@
 # set(VCPKG_ROOT_PATH "/opt/vcpkg")     # Linux / macOS
 # set(VCPKG_ROOT_PATH "C:/vcpkg")       # Windows
 
-# Disable vcpkg entirely (e.g. you manage dependencies another way):
-# set(SETUP_VCPKG OFF)
+# Pick the dependency provider without touching tracked files (vcpkg | conan | none):
+# set(PKG_MANAGER vcpkg)
+# set(PKG_MANAGER none)   # manage dependencies yourself (system / find_package only)
 
 # =============================================================================
-# Conan
+# Conan  (works with ANY preset; switching requires a fresh build dir)
 # =============================================================================
-# set(CONAN_ROOT_PATH "/path/to/conan")
+# set(PKG_MANAGER conan)
+# clang-cl profiles are auto-selected; other compilers are auto-detected.
+# Override only if you need a custom one:
+# set(CONAN_HOST_PROFILE "/path/to/your.ini")
 
 # =============================================================================
 # Feature flag overrides (see project_options.cmake for all available options)
