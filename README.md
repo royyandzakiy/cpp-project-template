@@ -8,8 +8,8 @@ unit tests.
 Targets **Windows** (MSVC, Clang-CL, MinGW), **Linux** (GCC, Clang), and **macOS** (Apple Clang).
 Requires CMake 3.28+.
 
-> New to the project in your editor? See **[EDITOR_SETUP.md](EDITOR_SETUP.md)** for clangd setup in
-> VS Code, CLion, Neovim, Emacs, Zed, Helix, and more.
+> New to the project in your editor? See **[EDITOR_SETUP.md](EDITOR_SETUP.md)** for clangd setup
+> and debugging in VS Code, CLion, Neovim, Emacs, Zed, Helix, and more.
 
 ---
 

@@ -167,6 +167,40 @@ flag list to the package's `initializationOptions`/`args` setting.
 
 ---
 
+## Debugging
+
+Debug builds carry symbols automatically — the `*-debug` presets set `CMAKE_BUILD_TYPE=Debug`.
+Each preset writes to its own `bin/<toolchain>/` directory *on purpose* (so toolchains don't
+clobber each other); debugging stays **preset-agnostic** because each IDE resolves the binary from
+the *active* CMake configuration, not a hard-coded path. No unified output dir, no duplication.
+
+**VS Code** — install **CodeLLDB** (`vadimcn.vscode-lldb`, in recommended extensions), then press
+**F5**. `.vscode/launch.json` debugs `${command:cmake.launchTargetPath}` — the active CMake Tools
+launch target — so one config works across every preset and OS (LLDB reads DWARF and Windows PDB).
+Pick the target (`app` / `unit_tests`) in the CMake Tools status bar. We standardize on CodeLLDB to
+stay cpptools-free; if you specifically want Microsoft's `cppvsdbg` engine for an MSVC build,
+install the C/C++ extension and add a `cppvsdbg` config — IntelliSense stays disabled via settings,
+so it won't fight clangd.
+
+**CLion** — zero setup. CLion generates a run/debug configuration per CMake target and uses the
+toolchain's native debugger (GDB/LLDB on Unix & MinGW, the LLDB-based debugger on MSVC). Shared
+configs are committed in `.run/` (`app`, `unit_tests`), so everyone gets the same named entries;
+they run under whichever CMake profile is selected.
+
+**CLI / any editor** — build a debug preset, then point your debugger at the preset's binary:
+
+```sh
+cmake --build --preset clang-linux-debug
+lldb ./bin/linux/cpp_project_template     # or: gdb ./bin/linux/cpp_project_template
+```
+
+(On Windows the debug binary gets a `d` suffix, e.g. `bin/clang-cl/cpp_project_templated.exe`.)
+
+**Neovim** — use `nvim-dap` with the `codelldb` adapter; set `program` to the preset's binary, or
+wire it to your cmake-tools.nvim launch target for the same preset-agnostic behavior.
+
+---
+
 ## Alternative: machine-wide clangd flags
 
 If you'd rather not repeat the flags per editor, put them in your **user** clangd config — it

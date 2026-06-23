@@ -1,24 +1,21 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "Debug App (CMake)",
-			"type": "cppdbg",
-			"request": "launch",
-			"program": "${command:cmake.launchTargetPath}",
-			"args": [],
-			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}",
-			"MIMode": "gdb",
-			"setupCommands": [
-				{
-					"description": "Enable pretty-printing for gdb",
-					"text": "-enable-pretty-printing",
-					"ignoreFailures": true
-				}
-			],
-			"environment": [],
-			"console": "integratedTerminal"
-		}
-	]
+  // Debugging via CodeLLDB (vadimcn.vscode-lldb) — works on Windows, Linux, macOS.
+  // `program` resolves to the active CMake Tools launch target, so a single config covers
+  // every preset (bin/msvc, bin/clang-cl, bin/linux, bin/mac, ...). Choose the target
+  // (app / unit_tests) in the CMake Tools status bar; F5 builds it first, then debugs.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug: CMake active target (LLDB)",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PATH": "${command:cmake.launchTargetDirectory}${pathSeparator}${env:PATH}"
+      },
+      "preLaunchTask": "CMake: build"
+    }
+  ]
 }
