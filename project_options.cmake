@@ -4,6 +4,8 @@
 option(ENABLE_STRICT_COMPILER "Strict compiler options, sees warnings as errors!" OFF)
 
 # ------ Package Managers ------
+# Default OFF: vcpkg is the default; opt into Conan via the *-conan preset (sets USE_CONAN=ON).
+option(USE_CONAN "Use Conan as the package manager instead of vcpkg" OFF)
 option(SETUP_VCPKG "Check & setup vcpkg installation" ON)
 option(VCPKG_MANIFEST_MODE "VCPKG in Manifest Mode, else Global Mode" ON)
 

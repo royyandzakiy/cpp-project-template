@@ -4,8 +4,6 @@
 # Conan packages are resolved through the cmake-conan dependency provider,
 # so find_package() calls in CMakeLists.txt work unchanged.
 
-option(USE_CONAN "Use Conan as the package manager instead of vcpkg" OFF)
-
 if(USE_CONAN)
     message(STATUS "[config_conan] Conan dependency provider enabled")
 

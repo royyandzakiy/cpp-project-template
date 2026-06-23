@@ -1,7 +1,7 @@
 [requires]
 fmt/12.1.0
-scnlib/2.0.2
-tracy/0.10
+scnlib/4.0.1
+tracy/0.13.1
 
 [generators]
 CMakeDeps
