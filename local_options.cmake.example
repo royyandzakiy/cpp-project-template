@@ -19,10 +19,12 @@
 # set(PKG_MANAGER none)   # manage dependencies yourself (system / find_package only)
 
 # =============================================================================
-# Conan  (set PKG_MANAGER=conan; switching requires a fresh build dir)
+# Conan  (works with ANY preset; switching requires a fresh build dir)
 # =============================================================================
 # set(PKG_MANAGER conan)
-# set(CONAN_HOST_PROFILE "${CMAKE_SOURCE_DIR}/cmake/conan-profiles/clang-cl-windows-debug.ini")
+# clang-cl profiles are auto-selected; other compilers are auto-detected.
+# Override only if you need a custom one:
+# set(CONAN_HOST_PROFILE "/path/to/your.ini")
 
 # =============================================================================
 # Feature flag overrides (see project_options.cmake for all available options)
