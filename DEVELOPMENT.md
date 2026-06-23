@@ -1,5 +1,12 @@
 # DEVELOPMENT
 
+- add debugging ergonomics
+- add cross IDE/OS compatibility
+- add .devcontainer connected to my wsl2
+- move cecep project to use clangd instead
+- create template min using this as base
+- check if coverage works fine
+
 ## Prio
 
 - add conan

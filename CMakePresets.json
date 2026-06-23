@@ -102,6 +102,29 @@
 			}
 		},
 		{
+			"name": "mac-base",
+			"hidden": true,
+			"inherits": "base",
+			"generator": "Ninja",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Darwin"
+			},
+			"cacheVariables": {
+				"CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/mac"
+			}
+		},
+		{
+			"name": "appleclang-base",
+			"hidden": true,
+			"inherits": "mac-base",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++"
+			}
+		},
+		{
 			"name": "build-debug",
 			"hidden": true,
 			"cacheVariables": {
@@ -200,6 +223,25 @@
 				"gcc-linux-base",
 				"build-release"
 			]
+		},
+		{
+			"name": "appleclang-debug",
+			"displayName": "AppleClang Debug",
+			"inherits": [
+				"appleclang-base",
+				"build-debug"
+			],
+			"cacheVariables": {
+				"ENABLE_COVERAGE": "ON"
+			}
+		},
+		{
+			"name": "appleclang-release",
+			"displayName": "AppleClang Release",
+			"inherits": [
+				"appleclang-base",
+				"build-release"
+			]
 		}
 	],
 	"buildPresets": [
@@ -269,6 +311,16 @@
 			"name": "gcc-linux-release",
 			"inherits": "build-type-release",
 			"configurePreset": "gcc-linux-release"
+		},
+		{
+			"name": "appleclang-debug",
+			"inherits": "build-type-debug",
+			"configurePreset": "appleclang-debug"
+		},
+		{
+			"name": "appleclang-release",
+			"inherits": "build-type-release",
+			"configurePreset": "appleclang-release"
 		}
 	],
 	"testPresets": [
@@ -328,6 +380,16 @@
 			"name": "test-gcc-linux-release",
 			"inherits": "base-test",
 			"configurePreset": "gcc-linux-release"
+		},
+		{
+			"name": "test-appleclang-debug",
+			"inherits": "base-test",
+			"configurePreset": "appleclang-debug"
+		},
+		{
+			"name": "test-appleclang-release",
+			"inherits": "base-test",
+			"configurePreset": "appleclang-release"
 		}
 	]
 }
