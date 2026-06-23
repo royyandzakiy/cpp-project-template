@@ -1,32 +1,44 @@
-# C++ Project Template
+# C++ Project Template (clangd)
 
-A cross-platform C++23 project template with CMake Presets, vcpkg, sanitizers, static analysis, and CI out of the box.
+A cross-platform, **IDE- and OS-agnostic** C++23 project template. Language intelligence comes
+from [clangd](https://clangd.llvm.org/), the build from CMake Presets, and dependencies from
+vcpkg. Ships with sanitizers, static analysis, formatting, profiling hooks, example targets, and
+unit tests.
 
-Targets Windows (MSVC, Clang-CL, MinGW) and Linux (GCC, Clang). Requires CMake 3.23+.
+Targets **Windows** (MSVC, Clang-CL, MinGW), **Linux** (GCC, Clang), and **macOS** (Apple Clang).
+Requires CMake 3.28+.
+
+> New to the project in your editor? See **[EDITOR_SETUP.md](EDITOR_SETUP.md)** for clangd setup in
+> VS Code, CLion, Neovim, Emacs, Zed, Helix, and more.
 
 ---
 
 ## Prerequisites
 
-- CMake 3.23+
-- vcpkg -- auto-detected from PATH and common install locations. See [vcpkg setup](#vcpkg-setup) if not found.
-- A C++23-capable compiler
+- **CMake 3.28+** and **Ninja**
+- A **C++23** compiler (one of the toolchains above)
+- **vcpkg** — auto-detected from PATH and common install locations (see [vcpkg setup](#vcpkg-setup))
+- **LLVM 20.x** (`clangd`, `clang-format`, `clang-tidy`) for editor intelligence and the
+  format/lint targets
 
 ---
 
 ## Quick Start
 
 ```bash
-# Configure (preset is filtered to your platform automatically)
+# Configure (presets are filtered to your platform automatically)
 cmake --preset clang-linux-debug    # Linux
-cmake --preset msvc-debug           # Windows
+cmake --preset clang-cl-debug       # Windows
+cmake --preset appleclang-debug     # macOS
 
-# Build
+# Build (also mirrors compile_commands.json to the project root for clangd)
 cmake --build --preset clang-linux-debug
 
 # Run tests
 ctest --preset test-clang-linux-debug
 ```
+
+List everything available for your OS with `cmake --list-presets`.
 
 ---
 
@@ -34,88 +46,89 @@ ctest --preset test-clang-linux-debug
 
 ```
 .
-├── cmake/                        # CMake utility modules (internal)
-│   ├── analyzers_optimizers.cmake
-│   ├── config_vcpkg.cmake
-│   └── version.cmake
-├── include/cmake_project_template/
-│   └── version.h                 # Auto-generated from version.txt
-├── src/                          # Application sources
-├── test/                         # GoogleTest unit tests
-├── .github/workflows/            # CI pipeline
-├── CMakeLists.txt
-├── CMakePresets.json             # All presets (platform-filtered, no setup needed)
-├── CMakeUserPresets.json.example # Optional: template for custom preset overrides
-├── local_options.cmake.example   # Optional: template for machine-local overrides
+├── .clangd                       # clangd behavior (index, IncludeCleaner, inlay hints)
+├── .clang-format                 # Formatting style (Microsoft base, tabs, 120 cols)
+├── .clang-tidy                   # Static-analysis checks (warnings as errors)
+├── .cmake-format.yaml            # CMake formatting style
+├── .pre-commit-config.yaml       # Git pre-commit hooks (format + lint)
+├── CMakeLists.txt                # Top-level build
+├── CMakePresets.json             # Presets, platform-filtered (no setup needed)
+├── CMakeUserPresets.json.example # Optional: custom preset overrides
+├── local_options.cmake.example   # Optional: machine-local overrides (gitignored)
 ├── project_options.cmake         # Feature toggles (shared, committed)
 ├── vcpkg.json                    # Package manifest
-└── version.txt                   # Project version (1.0.0)
+├── version.txt                   # Project version (1.0.0)
+├── EDITOR_SETUP.md               # Per-editor clangd setup
+├── cmake/                        # CMake utility modules (internal)
+│   ├── config_vcpkg.cmake        #   vcpkg detection + toolchain wiring
+│   ├── config_conan.cmake        #   optional Conan alternative
+│   ├── sanitizer_analyzer.cmake  #   sanitizers, clang-tidy, cppcheck, IWYU, ccache
+│   ├── profiler.cmake            #   Tracy, Perfetto, ClangBuildAnalyzer
+│   ├── format.cmake              #   format / format-check / tidy-all targets
+│   └── version.cmake             #   generates the version header
+├── include/cpp_project_template/
+│   └── version.h                 # Auto-generated from version.txt (gitignored)
+├── src/                          # Application sources
+├── test/                         # GoogleTest unit tests
+└── examples/                     # Sanitizer / Tracy / Perfetto demo targets
 ```
 
 ---
 
-## vcpkg Setup
+## Editor & clangd Setup
 
-vcpkg is auto-detected in this order:
+Language intelligence is editor-agnostic — the same four files drive every clangd-based editor:
 
-1. `VCPKG_ROOT_PATH` set in `local_options.cmake` or via `-D` flag
-2. `VCPKG_ROOT` / `VCPKG_ROOT_PATH` environment variables
-3. `vcpkg` executable found in PATH
-4. Common default paths: `C:/vcpkg`, `/opt/vcpkg`, `~/vcpkg`, etc.
-5. `./vcpkg` project subdirectory
+| File | Purpose |
+|------|---------|
+| `.clangd` | Semantic behavior: background index, IncludeCleaner, inlay hints, clang-tidy integration |
+| `.clang-tidy` | Which static-analysis checks run |
+| `.clang-format` | Formatting style |
+| `compile_commands.json` | Compilation database — mirrored to the project root on each build |
 
-For most setups nothing needs to be configured. If vcpkg is in a non-standard location, create `local_options.cmake` (see [local options](#local-options)).
-
----
-
-## Local Options (`local_options.cmake`)
-
-For machine-specific settings that should never be committed. Copy the example and uncomment what you need:
-
-```bash
-cp local_options.cmake.example local_options.cmake
-```
-
-```cmake
-# local_options.cmake
-set(VCPKG_ROOT_PATH "/my/custom/vcpkg")  # if not auto-detected
-set(CONAN_ROOT_PATH "/path/to/conan")
-set(ENABLE_CLANG_TIDY ON)
-```
-
-This file is gitignored. `local_options.cmake.example` documents all available options.
+CMake exports `compile_commands.json` and the `mirror_compile_commands` target copies the active
+preset's database to the project root, where `.clangd` (`CompilationDatabase: .`) picks it up.
+Editor-specific launch flags (e.g. `--query-driver`) live per-editor — see
+**[EDITOR_SETUP.md](EDITOR_SETUP.md)**.
 
 ---
 
 ## CMake Presets
 
-Presets are defined in `CMakePresets.json`. They are **automatically filtered by platform** -- only presets relevant to your OS appear in the picker.
+Presets are defined in `CMakePresets.json` and **automatically filtered by platform** — only
+presets relevant to your OS appear.
 
-| Preset                                  | Platform | Compiler         |
-| --------------------------------------- | -------- | ---------------- |
-| `msvc-debug` / `msvc-release`           | Windows  | MSVC (VS 2022)   |
-| `clang-cl-debug` / `clang-cl-release`   | Windows  | Clang-CL + Ninja |
-| `mingw-debug` / `mingw-release`         | Windows  | MinGW GCC        |
-| `clang-linux-debug` / `clang-linux-release` | Linux | Clang            |
-| `gcc-linux-debug` / `gcc-linux-release` | Linux    | GCC              |
+| Preset                                      | Platform | Compiler         |
+| ------------------------------------------- | -------- | ---------------- |
+| `msvc-debug` / `msvc-release`               | Windows  | MSVC (VS 2022)   |
+| `clang-cl-debug` / `clang-cl-release`       | Windows  | Clang-CL + Ninja |
+| `mingw-debug` / `mingw-release`             | Windows  | MinGW GCC        |
+| `clang-linux-debug` / `clang-linux-release` | Linux    | Clang            |
+| `gcc-linux-debug` / `gcc-linux-release`     | Linux    | GCC              |
+| `appleclang-debug` / `appleclang-release`   | macOS    | Apple Clang      |
 
-`CMakeUserPresets.json` is optional -- only needed if you want custom preset names or overrides. Copy `CMakeUserPresets.json.example` as a starting point.
+Each has matching `build` and `test` presets. `CMakeUserPresets.json` is optional — copy
+`CMakeUserPresets.json.example` if you want custom names or overrides.
 
 ---
 
 ## Feature Toggles (`project_options.cmake`)
 
-| Option                   | Default | Description                                             |
-| ------------------------ | ------- | ------------------------------------------------------- |
-| `SETUP_VCPKG`            | ON      | Validate vcpkg installation on configure                |
-| `ENABLE_STRICT_COMPILER` | ON      | Warnings as errors (`/W4 /WX`, `-Wall -Wextra -Werror`) |
-| `ENABLE_SANITIZERS`      | OFF     | UBSan + bounds + integer checks                         |
-| `ENABLE_ASAN`            | OFF     | AddressSanitizer + LeakSanitizer                        |
-| `ENABLE_TSAN_MSAN`       | OFF     | ThreadSanitizer or MemorySanitizer                      |
-| `ENABLE_CLANG_TIDY`      | OFF     | Clang-Tidy static analysis                              |
-| `ENABLE_CPPCHECK`        | OFF     | Cppcheck static analysis                                |
-| `ENABLE_CCACHE`          | OFF     | ccache compiler launcher                                |
-| `ENABLE_TRACY`           | OFF     | Tracy profiler (v0.13.1 via FetchContent)               |
+| Option                      | Default | Description                                                  |
+| --------------------------- | ------- | ------------------------------------------------------------ |
+| `SETUP_VCPKG`               | ON      | Validate vcpkg installation on configure                     |
+| `VCPKG_MANIFEST_MODE`       | ON      | Use `vcpkg.json` (manifest) vs. a global install             |
+| `ENABLE_STRICT_COMPILER`    | OFF     | Warnings as errors + hardening (`/WX /GS`, `-Werror -pedantic`) |
+| `ENABLE_SANITIZERS`         | OFF     | UBSan + bounds + integer checks                              |
+| `ENABLE_ASAN`               | OFF     | AddressSanitizer + LeakSanitizer                             |
+| `ENABLE_TSAN_MSAN`          | OFF     | ThreadSanitizer or MemorySanitizer                           |
+| `ENABLE_CLANG_TIDY`         | OFF     | clang-tidy during the build                                  |
+| `ENABLE_CPPCHECK`           | OFF     | Cppcheck static analysis                                     |
+| `ENABLE_IWYU`               | OFF     | include-what-you-use                                         |
+| `ENABLE_CCACHE`             | OFF     | ccache compiler launcher                                     |
+| `ENABLE_CLANG_BUILD_ANALYZER` | OFF   | `-ftime-trace` + ClangBuildAnalyzer target (Clang only)      |
+| `ENABLE_TRACY`              | OFF     | Tracy debug profiler (FetchContent)                          |
+| `ENABLE_PERFETTO`           | OFF     | Perfetto runtime tracing (FetchContent)                      |
 
 Pass at configure time or set permanently in `local_options.cmake`:
 
@@ -125,50 +138,105 @@ cmake --preset clang-linux-debug -DENABLE_ASAN=ON -DENABLE_CLANG_TIDY=ON
 
 ---
 
+## Formatting, Linting & Static Analysis
+
+Styles and checks are split by tool so each is shared and editor-agnostic:
+
+- **`.clang-format`** — Microsoft base, tabs, 120-column limit, C++23.
+- **`.clang-tidy`** — bugprone, modernize, performance, cppcoreguidelines; warnings as errors.
+- **`.cmake-format.yaml`** — CMake formatting.
+
+Convenience build targets (from `cmake/format.cmake`):
+
+```bash
+cmake --build build/<preset> --target format        # rewrite sources in place
+cmake --build build/<preset> --target format-check   # fail if unformatted (CI)
+cmake --build build/<preset> --target tidy-all       # run clang-tidy over all TUs
+```
+
+Git hooks via [pre-commit](https://pre-commit.com/) (`.pre-commit-config.yaml`) run clang-format
+and cmake-format on commit:
+
+```bash
+pip install pre-commit && pre-commit install
+```
+
+---
+
+## Sanitizers & Profilers
+
+Sanitizers are Clang/GCC oriented; on Windows use a `clang-*` or `mingw-*` preset
+(MSVC supports ASan only). Wired by `cmake/sanitizer_analyzer.cmake`:
+
+- **`ENABLE_SANITIZERS`** — `-fsanitize=undefined,bounds,integer`
+- **`ENABLE_ASAN`** — AddressSanitizer + leak detection
+- **`ENABLE_TSAN_MSAN`** — Thread or Memory sanitizer (mutually exclusive with ASan)
+
+Profilers are wired by `cmake/profiler.cmake`: **Tracy** (`ENABLE_TRACY`) and **Perfetto**
+(`ENABLE_PERFETTO`), each exposed as an interface target the main executable links when enabled.
+
+The **`examples/`** directory has runnable demos — `examples/sanitizers/main_fail_sanitizer.cpp`
+(intentional violations to verify sanitizer output), plus Tracy and Perfetto examples that build
+only when their option is enabled.
+
+---
+
+## Dependencies
+
+**vcpkg manifest (`vcpkg.json`):**
+
+| Package  | Use                          |
+| -------- | ---------------------------- |
+| `fmt`    | String formatting            |
+| `scnlib` | Type-safe input parsing      |
+| `tracy`  | Performance profiling        |
+
+**Fetched via `FetchContent`:**
+
+| Package      | Use                                                        |
+| ------------ | ---------------------------------------------------------- |
+| `sml`        | `boost-ext/sml` state machine (header-only)                |
+| `googletest` | Unit testing (in `test/`)                                  |
+| `perfetto`   | Runtime tracing (when `ENABLE_PERFETTO`)                   |
+
+---
+
+## vcpkg Setup
+
+vcpkg is auto-detected in this order:
+
+1. `VCPKG_ROOT_PATH` set in `local_options.cmake` or via `-D`
+2. `VCPKG_ROOT` / `VCPKG_ROOT_PATH` environment variables
+3. `vcpkg` executable found in PATH
+4. Common default paths: `C:/vcpkg`, `/opt/vcpkg`, `~/vcpkg`, etc.
+5. `./vcpkg` project subdirectory
+
+For most setups nothing needs configuring. For a non-standard location, set `VCPKG_ROOT_PATH` in
+`local_options.cmake` (copy `local_options.cmake.example`). Conan is available as an alternative
+via `cmake/config_conan.cmake`.
+
+---
+
 ## cmake/ Modules
 
-**`config_vcpkg.cmake`** -- Locates vcpkg using the resolution order above. Validates the toolchain and reports package status. Do not edit; configure via `local_options.cmake` instead.
-
-**`analyzers_optimizers.cmake`** -- Wires up sanitizers, Clang-Tidy, Cppcheck, ccache, and Tracy based on `project_options.cmake`. All tools are configured per-target.
-
-**`version.cmake`** -- Reads `version.txt`, splits into major/minor/patch, and generates `include/cmake_project_template/version.h` from `version.h.in`.
-
----
-
-## Sanitizers and Static Analysis
-
-Sanitizers are Clang/GCC only. On Windows, use a `clang-*` or `mingw-*` preset.
-
-- **`ENABLE_SANITIZERS`** -- adds `-fsanitize=undefined,bounds,integer`
-- **`ENABLE_ASAN`** -- adds `-fsanitize=address` with leak detection
-- **`ENABLE_TSAN_MSAN`** -- thread or memory sanitizer (mutually exclusive with ASan)
-
-`src/main_fail_sanitizer.cpp` contains intentional violations for verifying sanitizer output.
-
-**Clang-Tidy** rules are in `.clang-tidy` (bugprone, modernize, performance, cppcoreguidelines; warnings as errors). **Cppcheck** runs as a CMake target-level check. Code style is enforced by `.clang-format` (Microsoft base, 120-char line limit, tabs).
-
----
-
-## Dependencies (`vcpkg.json`)
-
-| Package | Use                                              |
-| ------- | ------------------------------------------------ |
-| `fmt`   | String formatting                                |
-| `gtest` | Unit testing (fetched via FetchContent in tests) |
-| `tracy` | Performance profiling (optional, FetchContent)   |
-
----
-
-## CI (`.github/workflows/`)
-
-Runs on push to `main`/`master` and pull requests. Matrix builds on `ubuntu-latest` with GCC 13 and Clang 17. Steps: checkout, install tools, bootstrap vcpkg, configure, build, run. Build artifacts are uploaded with a 7-day retention window.
+- **`config_vcpkg.cmake`** — locates vcpkg, validates the toolchain, reports package status. Don't
+  edit; configure via `local_options.cmake`.
+- **`config_conan.cmake`** — optional Conan-based dependency flow (alternative to vcpkg).
+- **`sanitizer_analyzer.cmake`** — sanitizers, clang-tidy, cppcheck, IWYU, ccache, per
+  `project_options.cmake`.
+- **`profiler.cmake`** — Tracy, Perfetto, and ClangBuildAnalyzer integration.
+- **`format.cmake`** — `format` / `format-check` / `tidy-all` targets.
+- **`version.cmake`** — reads `version.txt` and generates
+  `include/cpp_project_template/version.h` from `version.h.in`.
 
 ---
 
 ## Adapting the Template
 
-1. Rename the project in `CMakeLists.txt` and `vcpkg.json`.
+1. Rename the project in `CMakeLists.txt` and `vcpkg.json` (the generated header path follows the
+   project name).
 2. Update `version.txt`.
 3. Replace sources under `src/` and headers under `include/`.
 4. Add vcpkg dependencies to `vcpkg.json`.
 5. Adjust presets in `CMakePresets.json` as needed.
+6. Replace this README using `README.md.template` as a starting point.
