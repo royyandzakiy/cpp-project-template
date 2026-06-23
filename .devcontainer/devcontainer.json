@@ -1,0 +1,24 @@
+{
+  // Portability tier — use this ONLY if you don't have a WSL/Linux toolbox.
+  // If you already have WSL2 Ubuntu, dismiss the "Reopen in Container" prompt and use
+  // "Reopen in WSL" instead (lighter, shared across all your projects).
+  "name": "cpp-project-template-clangd",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      // Mirrors .vscode/extensions.json so the container is clangd-first too.
+      "extensions": [
+        "llvm-vs-code-extensions.vscode-clangd",
+        "ms-vscode.cmake-tools",
+        "vadimcn.vscode-lldb",
+        "editorconfig.editorconfig"
+      ]
+    }
+  },
+  // Give the runtime user its own Conan default profile.
+  "postCreateCommand": "conan profile detect --force || true",
+  "remoteUser": "vscode"
+}

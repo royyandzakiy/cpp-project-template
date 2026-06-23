@@ -2,8 +2,6 @@
 
 ## Backlog
 
-- add conan
-  - add option to choose vcpkg vs conan
 - add dev-container: use clang-cl, clang, gcc16
   - if needed: add windows-setup.ps1 with winget + microsoft.visualstudio
 
