@@ -4,13 +4,11 @@
 option(ENABLE_STRICT_COMPILER "Strict compiler options, sees warnings as errors!" OFF)
 
 # ------ Package Managers ------
-# Single knob. Swap with -DPKG_MANAGER=conan, set(PKG_MANAGER ...) in local_options.cmake,
-# the IDE's CMake cache UI (dropdown), or a *-conan preset.
-# NOTE: switching needs a fresh configure (toolchain/provider lock in at first configure) —
-# use a separate build dir or the matching preset.
 set(PKG_MANAGER "vcpkg" CACHE STRING "Dependency provider: vcpkg | conan | none")
 set_property(CACHE PKG_MANAGER PROPERTY STRINGS vcpkg conan none)
-option(VCPKG_MANIFEST_MODE "VCPKG in Manifest Mode, else Global Mode" ON)
+if (PKG_MANAGER STREQUAL "vcpkg")
+  option(VCPKG_MANIFEST_MODE "VCPKG in Manifest Mode, else Global Mode" ON)
+endif()
 
 # ------ Sanitizers ------
 option(ENABLE_SANITIZERS "Enable static & runtime sanitizers" OFF)
