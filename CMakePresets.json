@@ -79,8 +79,7 @@
 				"rhs": "Linux"
 			},
 			"cacheVariables": {
-				"VCPKG_TARGET_TRIPLET": "x64-linux",
-				"CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/linux"
+				"VCPKG_TARGET_TRIPLET": "x64-linux"
 			}
 		},
 		{
@@ -89,7 +88,8 @@
 			"inherits": "linux-base",
 			"cacheVariables": {
 				"CMAKE_C_COMPILER": "clang",
-				"CMAKE_CXX_COMPILER": "clang++"
+				"CMAKE_CXX_COMPILER": "clang++",
+				"CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/clang"
 			}
 		},
 		{
@@ -98,7 +98,8 @@
 			"inherits": "linux-base",
 			"cacheVariables": {
 				"CMAKE_C_COMPILER": "gcc",
-				"CMAKE_CXX_COMPILER": "g++"
+				"CMAKE_CXX_COMPILER": "g++",
+				"CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/gcc"
 			}
 		},
 		{
