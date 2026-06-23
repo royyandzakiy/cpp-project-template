@@ -13,6 +13,11 @@ CompileFlags:
     - -fno-omit-frame-pointer
     - -fsanitize=*
     - --analyze*
+    # clang-cl output flags (/Fo object, /Fd PDB) — clangd emits nothing, and the
+    # trailing-backslash /Fd path trips clang's driver into a bogus
+    # "multiple source files" error. Stripping them is the standard clang-cl + clangd fix.
+    - /Fo*
+    - /Fd*
 
 Index:
   Background: Build          # keep the project index warm in the background

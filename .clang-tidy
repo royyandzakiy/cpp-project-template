@@ -1,6 +1,4 @@
----
-Checks: 'bugprone-*,modernize-*,performance-*,cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay'
+Checks: 'bugprone-*,modernize-*,performance-*,cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-modernize-use-trailing-return-type'
 WarningsAsErrors: '*'
 HeaderFilterRegex: 'src/.*|include/.*'
 FormatStyle: file
-...

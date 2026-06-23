@@ -1,20 +1,24 @@
-#include "math.h"
+#include "math.hpp"
 
-int add(int a, int b) {
+namespace mymath {
+
+auto add(int a, int b) -> int {
 	return a + b;
 }
 
-int subtract(int a, int b) {
+auto subtract(int a, int b) -> int {
 	return a - b;
 }
 
-int multiply(int a, int b) {
+auto multiply(int a, int b) -> int {
 	return a * b;
 }
 
-double divide(double a, double b) {
+auto divide(double a, double b) -> double {
 	if (b == 0) {
 		return 0; // Error case
 	}
 	return a / b;
 }
+
+} // namespace mymath
