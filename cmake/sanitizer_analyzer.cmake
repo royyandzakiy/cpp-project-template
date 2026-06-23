@@ -1,4 +1,4 @@
-# cmake/analyzers_optimizers.cmake
+# cmake/sanitizer_analyzer.cmake
 
 # ====== RUNTIME SANITIZERS ======
 if(ENABLE_SANITIZERS)
@@ -97,37 +97,6 @@ if(ENABLE_CLANG_TIDY)
   endif()
 endif()
 
-# ----- Cppcheck -----
-if(ENABLE_CPPCHECK)
-  find_program(CPPCHECK_EXE NAMES "cppcheck")
-  if(CPPCHECK_EXE)
-    set(CMAKE_CXX_CPPCHECK
-        "${CPPCHECK_EXE}"
-        "--enable=warning,performance,portability,style"
-        "--inline-suppr" # Allows you to suppress warnings in code comments
-        "--suppress=missingIncludeSystem"
-        "--suppressions-list=${CMAKE_SOURCE_DIR}/.cppcheck_suppressions.txt"
-        "--inconclusive")
-    message(STATUS "Cppcheck found: ${CPPCHECK_EXE}")
-  else()
-    message(WARNING "Cppcheck not found. Static analysis is disabled.")
-  endif()
-endif()
-
-# ----- IWYU -----
-if(ENABLE_IWYU)
-  find_program(IWYU_EXE NAMES "include-what-you-use" "iwyu")
-  if(IWYU_EXE)
-    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
-        "${IWYU_EXE}"
-        "--transitive_includes_only"
-        "--no_fwd_decls")
-    message(STATUS "IWYU found: ${IWYU_EXE}")
-  else()
-    message(WARNING "IWYU not found. Install include-what-you-use and re-run CMake.")
-  endif()
-endif()
-
 # ====== COMPILATION OPTIMIZERS
 # ----- ccache -----
 if(ENABLE_CCACHE)
@@ -136,6 +105,14 @@ if(ENABLE_CCACHE)
     message(STATUS "ccache found: ${CCACHE_PROGRAM}")
     set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
     set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+
+    # ccache can't cache MSVC/clang-cl separate-PDB debug info (/Zi, the Debug default).
+    # Embed it (/Z7) on Windows so the clang-cl/msvc toolchains actually get cache hits.
+    # Still fully debuggable (cppvsdbg/LLDB). Requires CMake >= 3.25 (CMP0141 NEW).
+    if(WIN32)
+      set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
+      message(STATUS "ccache: using embedded debug info (/Z7) on Windows for cacheability")
+    endif()
   else()
     message(STATUS "ccache not found. Rapid recompilation disabled.")
   endif()

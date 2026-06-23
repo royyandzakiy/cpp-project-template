@@ -16,11 +16,9 @@ endif()
 
 # ------ Linters & Static Analyzers ------
 option(ENABLE_CLANG_TIDY "Enable clang tidy" OFF)
-option(ENABLE_CPPCHECK "Enable cppcheck" OFF)
-option(ENABLE_IWYU "Enable Include What You Use" OFF)
 
 # ------ Compile Optimizations ------
-option(ENABLE_CCACHE "Enable cache" OFF)
+option(ENABLE_CCACHE "Enable compiler cache (ccache) — no-op if ccache isn't installed" ON)
 option(ENABLE_CLANG_BUILD_ANALYZER "Enable Clang -ftime-trace + ClangBuildAnalyzer target (Clang only)" OFF)
 
 # ------ Profilers ------

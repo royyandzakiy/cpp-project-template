@@ -63,7 +63,7 @@ List everything available for your OS with `cmake --list-presets`.
 ├── cmake/                        # CMake utility modules (internal)
 │   ├── config_vcpkg.cmake        #   vcpkg detection + toolchain wiring
 │   ├── config_conan.cmake        #   optional Conan alternative
-│   ├── sanitizer_analyzer.cmake  #   sanitizers, clang-tidy, cppcheck, IWYU, ccache
+│   ├── sanitizer_analyzer.cmake  #   sanitizers, clang-tidy, ccache
 │   ├── profiler.cmake            #   Tracy, Perfetto, ClangBuildAnalyzer
 │   ├── format.cmake              #   format / format-check / tidy-all targets
 │   └── version.cmake             #   generates the version header
@@ -123,10 +123,8 @@ Each has matching `build` and `test` presets. `CMakeUserPresets.json` is optiona
 | `ENABLE_SANITIZERS`         | OFF     | UBSan + bounds + integer checks                              |
 | `ENABLE_ASAN`               | OFF     | AddressSanitizer + LeakSanitizer                             |
 | `ENABLE_TSAN_MSAN`          | OFF     | ThreadSanitizer or MemorySanitizer                           |
-| `ENABLE_CLANG_TIDY`         | OFF     | clang-tidy during the build                                  |
-| `ENABLE_CPPCHECK`           | OFF     | Cppcheck static analysis                                     |
-| `ENABLE_IWYU`               | OFF     | include-what-you-use                                         |
-| `ENABLE_CCACHE`             | OFF     | ccache compiler launcher                                     |
+| `ENABLE_CLANG_TIDY`         | OFF     | clang-tidy during the build (also runs live in clangd)       |
+| `ENABLE_CCACHE`             | **ON**  | ccache compiler launcher (no-op if ccache absent)            |
 | `ENABLE_CLANG_BUILD_ANALYZER` | OFF   | `-ftime-trace` + ClangBuildAnalyzer target (Clang only)      |
 | `ENABLE_TRACY`              | OFF     | Tracy debug profiler (FetchContent)                          |
 | `ENABLE_PERFETTO`           | OFF     | Perfetto runtime tracing (FetchContent)                      |
@@ -224,7 +222,7 @@ via `cmake/config_conan.cmake`.
 - **`config_vcpkg.cmake`** — locates vcpkg, validates the toolchain, reports package status. Don't
   edit; configure via `local_options.cmake`.
 - **`config_conan.cmake`** — optional Conan-based dependency flow (alternative to vcpkg).
-- **`sanitizer_analyzer.cmake`** — sanitizers, clang-tidy, cppcheck, IWYU, ccache, per
+- **`sanitizer_analyzer.cmake`** — sanitizers, clang-tidy, ccache, per
   `project_options.cmake`.
 - **`profiler.cmake`** — Tracy, Perfetto, and ClangBuildAnalyzer integration.
 - **`format.cmake`** — `format` / `format-check` / `tidy-all` targets.
