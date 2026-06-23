@@ -2,9 +2,6 @@
 
 ## Backlog
 
-- add dev-container: use clang-cl, clang, gcc16
-  - if needed: add windows-setup.ps1 with winget + microsoft.visualstudio
-
 - github actions
   - bitbucket pipeline
   - check if coverage works fine
