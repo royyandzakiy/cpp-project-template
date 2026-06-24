@@ -9,8 +9,11 @@
   - check if coverage works fine
   - build, run, test all presets (including sanitizers)
   - add fuzz build matrix option (random seed)
+  - add badges to readme after successful testing
 
 - bitbucket pipeline
+
+- cleanup cmake scripts to make it modular to easily remove without breaking anything
 
 - examples of profiling using tracy, perfetto (compile build time), flanegraph
 - examples of bugs captured with sanitizers
@@ -23,6 +26,8 @@
 
 ## Skip
 
+- docs generator (doxygen but with most modern ui)
+  - create wiki for this project (cleanup current readme, VERY bloated, move content to wiki)
 - open for contributor: issues, discussions, contributions
   - fix readme: logo & badge, pitch (problem to solve), quick start (inline code example), live demo
   - add complete docs suite (tutorials, how-to-guides, understand, reference, release blog, release/change log)
