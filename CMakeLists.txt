@@ -70,6 +70,7 @@ FetchContent_MakeAvailable(sml)
 #=========================
 # Subdirectories
 #=========================
+enable_testing() # required for ctest / gtest_discover_tests to register the unit tests
 add_subdirectory(test)
 add_subdirectory(examples)
 

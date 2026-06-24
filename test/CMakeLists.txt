@@ -2,7 +2,9 @@
 # =============================================================================
 # Test Configuration
 # =============================================================================
-add_executable(unit_tests test_simple.cpp)
+# Compile the real implementation (src/math.cpp) into the test binary so the math tests link.
+add_executable(unit_tests test_simple.cpp test_math.cpp ${CMAKE_SOURCE_DIR}/src/math.cpp)
+target_include_directories(unit_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 # =============================================================================
 # GTest Setup

@@ -1,70 +1,67 @@
-name: Build and Test
+name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
 
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
-    name: Build with ${{ matrix.compiler.name }}
+  linux:
+    name: ${{ matrix.preset }}
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        compiler:
-          - { name: GCC,   cmd: g++-13,      triplet: x64-linux, build_dir: gcc }
-          - { name: Clang, cmd: clang++-18,  triplet: x64-linux, build_dir: clang }
       fail-fast: false
-    
+      matrix:
+        preset:
+          - clang-linux-debug
+          - clang-linux-release
+          - gcc-linux-debug
+          - gcc-linux-release
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y g++-13 clang-18 cmake ninja-build curl zip unzip tar
-    
-    - name: Setup vcpkg
-      run: |
-        git clone https://github.com/Microsoft/vcpkg.git
-        ./vcpkg/bootstrap-vcpkg.sh
-        echo "VCPKG_ROOT=${{ github.workspace }}/vcpkg" >> $GITHUB_ENV
-        echo "${{ github.workspace }}/vcpkg" >> $GITHUB_PATH
-    
-    - name: Install dependencies via vcpkg
-      run: |
-        ./vcpkg/vcpkg install --triplet ${{ matrix.compiler.triplet }}
-        # Or explicitly install from vcpkg.json:
-        # ./vcpkg/vcpkg install fmt gtest --triplet ${{ matrix.compiler.triplet }}
-    
-    - name: Configure CMake with vcpkg
-      run: |
-        cmake -B build/${{ matrix.compiler.build_dir }} \
-          -G Ninja \
-          -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cmd }} \
-          -DCMAKE_BUILD_TYPE=Debug \
-          -DENABLE_SANITIZERS=OFF \
-          -DVCPKG_ROOT_PATH=${{ github.workspace }}/vcpkg \
-          -DVCPKG_SKIP_INSTALL_CHECK=ON \
-          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
-          -DVCPKG_TARGET_TRIPLET=${{ matrix.compiler.triplet }}
-    
-    - name: Build
-      run: cmake --build build/${{ matrix.compiler.build_dir }}
-    
-    - name: Run program
-      run: |
-        echo "=== Running ${{ matrix.compiler.name }} build ==="
-        ./build/${{ matrix.compiler.build_dir }}/cmake_project_template
-        echo "=== Exit code: $? ==="
-    
-    - name: Upload build artifacts (optional)
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.compiler.build_dir }}-binary
-        path: build/${{ matrix.compiler.build_dir }}/cmake_project_template
-        retention-days: 7
+      # submodules: cmake-conan provider lives in cmake/cmake-conan (PKG_MANAGER defaults to conan).
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build gcc g++ clang lld \
+            pkg-config git curl zip unzip tar python3 python3-pip pipx
+
+      - name: Install Conan
+        run: |
+          pipx install conan
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Conan default profile
+        run: conan profile detect --force
+
+      # Cache the Conan package cache so deps (fmt/scnlib/tracy) aren't rebuilt every run.
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('conanfile.txt') }}
+          restore-keys: |
+            conan-${{ runner.os }}-${{ matrix.preset }}-
+            conan-${{ runner.os }}-
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      # NOTE: we run ctest, not the app — src/main.cpp has an intentional `while(true)` loop
+      # that would hang CI. ctest only runs the unit_tests target.
+      - name: Test
+        run: ctest --preset test-${{ matrix.preset }}

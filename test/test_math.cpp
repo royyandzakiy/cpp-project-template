@@ -1,6 +1,8 @@
 #include "../src/math.hpp"
 #include <gtest/gtest.h>
 
+using namespace mymath; // functions are declared in namespace mymath
+
 TEST(MathTest, Add) {
 	EXPECT_EQ(add(2, 3), 5);
 	EXPECT_EQ(add(-1, 1), 0);
