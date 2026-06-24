@@ -12,6 +12,11 @@ if(ENABLE_SANITIZERS)
       string(REGEX REPLACE "/RTC[1csu]+" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
       add_compile_options(/fsanitize=address) # instrumenting; embeds the ASan lib directives
       add_link_options(/INCREMENTAL:NO)        # ASan is incompatible with incremental linking
+      # Prebuilt deps (fmt, etc. from vcpkg/conan) aren't ASan-instrumented, so the MSVC STL's
+      # container annotations mismatch at link (LNK2038 annotate_string/annotate_vector). Disable
+      # them so instrumented and non-instrumented code agree. (Loses container-overflow checks;
+      # heap/use-after-free detection is unaffected.)
+      add_compile_definitions(_DISABLE_STRING_ANNOTATION _DISABLE_VECTOR_ANNOTATION)
       # NOTE: do NOT pass /fsanitize=address as a *link* option — CMake links MSVC-style via
       # lld-link/link.exe directly (not the clang-cl driver), which rejects it.
       if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

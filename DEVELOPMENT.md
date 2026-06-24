@@ -2,9 +2,14 @@
 
 ## Backlog
 
+- make all sanitizers work
+  - have them in proper presets to easily select between them
+
 - github actions
-  - bitbucket pipeline
   - check if coverage works fine
+  - build, run, test all presets (including sanitizers)
+
+- bitbucket pipeline
 
 - examples of profiling using tracy, perfetto, flanegraph
 - examples of bugs captured with sanitizers

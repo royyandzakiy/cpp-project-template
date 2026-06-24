@@ -36,11 +36,15 @@ endif()
 if(MSVC)
   add_compile_options(/W4 /permissive- /utf-8)
   if(ENABLE_STRICT_COMPILER)
-    add_compile_options(/WX /GS) # warning as errors. Stack guards
-    add_compile_options(
-      /Zc:preprocessor # Critical for modern C++ macro-heavy libs
-      /Zc:__cplusplus # Ensures __cplusplus macro reports correctly
-    )
+    add_compile_options(/WX /GS) # warnings as errors, stack guards
+    # /Zc: conformance flags are cl.exe-specific. clang-cl already conforms and reports them as
+    # "unused argument", which /WX turns into an error — so only pass them to real MSVC.
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+      add_compile_options(
+        /Zc:preprocessor # Critical for modern C++ macro-heavy libs
+        /Zc:__cplusplus # Ensures __cplusplus macro reports correctly
+      )
+    endif()
   endif()
 
 else()
