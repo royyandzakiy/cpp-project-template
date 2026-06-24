@@ -1,5 +1,12 @@
 # DEVELOPMENT
 
+- find pkg with pkg mgr guards
+- make pkg mgr as none by default (guard fmts)
+- project opts does not req additional installs - fast linker
+- if user selects compiler that they dlnt hv, is there graceful fallback?
+- generate version to give good msg if version.txt missing
+- gen version off by def
+
 ## Backlog
 
 - cleanup current cmakelists
