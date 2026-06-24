@@ -15,48 +15,49 @@ if(ENABLE_SANITIZERS)
       endif()
     endif()
   else()
-    # 1. Baseline Safety (Always ON if ENABLE_SANITIZERS is active)
-    # These handle Undefined Behavior and are generally compatible with everything.
+    # Baseline: UBSan (composes with one of ASan/TSan/MSan).
+    # -fno-sanitize-recover=all makes UBSan findings fatal (non-zero exit) instead of just
+    # printing and continuing — important so they actually fail a build/test.
     set(SANITIZER_FLAGS
         -fsanitize=undefined
         -fsanitize=bounds
-        -fsanitize=integer
+        -fno-sanitize-recover=all
         -fno-omit-frame-pointer
         -fno-optimize-sibling-calls
         -fstack-protector-strong)
 
-    # 2. Exclusive Profile Selection
-    if(ENABLE_ASAN)
-      # ----- Address Sanitizer -----
-      message(STATUS "Adding ASan: Address and Leak detection")
-      list(
-        APPEND
-        SANITIZER_FLAGS
-        -fsanitize=address
-        -fsanitize=leak)
-    elseif(ENABLE_TSAN_MSAN)
-      # ----- Thread & Memory Sanitizer -----
-      message(STATUS "Adding TSan: Thread/Data-race detection")
-      list(APPEND SANITIZER_FLAGS -fsanitize=thread)
-      message(STATUS "Adding MSan: Uninitialized memory detection")
-      # track-origins provides better backtraces for where the memory was allocated
-      list(
-        APPEND
-        SANITIZER_FLAGS
-        -fsanitize=memory
-        -fsanitize-memory-track-origins)
+    # ASan / TSan / MSan are mutually exclusive — allow at most one.
+    set(_san_choice 0)
+    foreach(_s ENABLE_ASAN ENABLE_TSAN ENABLE_MSAN)
+      if(${_s})
+        math(EXPR _san_choice "${_san_choice} + 1")
+      endif()
+    endforeach()
+    if(_san_choice GREATER 1)
+      message(FATAL_ERROR "ENABLE_ASAN / ENABLE_TSAN / ENABLE_MSAN are mutually exclusive — enable only one.")
     endif()
 
-    # 3. Apply to targets
+    if(ENABLE_ASAN)
+      message(STATUS "Sanitizers: UBSan + ASan + LSan")
+      list(APPEND SANITIZER_FLAGS -fsanitize=address -fsanitize=leak)
+    elseif(ENABLE_TSAN)
+      message(STATUS "Sanitizers: UBSan + TSan")
+      list(APPEND SANITIZER_FLAGS -fsanitize=thread)
+    elseif(ENABLE_MSAN)
+      if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        message(FATAL_ERROR "ENABLE_MSAN requires Clang — MemorySanitizer is Clang-only (compiler: ${CMAKE_CXX_COMPILER_ID}).")
+      endif()
+      message(STATUS "Sanitizers: UBSan + MSan (needs an instrumented libc++ to avoid false positives)")
+      list(APPEND SANITIZER_FLAGS -fsanitize=memory -fsanitize-memory-track-origins)
+    else()
+      message(STATUS "Sanitizers: UBSan baseline only (set ENABLE_ASAN / ENABLE_TSAN / ENABLE_MSAN for more)")
+    endif()
+
     add_compile_options(${SANITIZER_FLAGS})
     add_link_options(${SANITIZER_FLAGS})
 
-    # Reminder: use Debug build for symbols
-    if(NOT
-       CMAKE_BUILD_TYPE
-       STREQUAL
-       "Debug")
-      message(WARNING "Sanitizers work best in 'Debug' for symbolication.")
+    if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+      message(WARNING "Sanitizers work best in a Debug build for readable symbols.")
     endif()
   endif()
 endif()

@@ -14,10 +14,12 @@ if (PKG_MANAGER STREQUAL "vcpkg")
 endif()
 
 # ------ Sanitizers ------
-option(ENABLE_SANITIZERS "Enable static & runtime sanitizers" OFF)
+# UBSan is the baseline; pick AT MOST ONE of ASan / TSan / MSan (they are mutually exclusive).
+option(ENABLE_SANITIZERS "Enable runtime sanitizers (UBSan baseline)" OFF)
 if(ENABLE_SANITIZERS)
-  option(ENABLE_ASAN "Enable Address, Leak, and Undefined sanitizers" OFF)
-  option(ENABLE_TSAN_MSAN "Enable Thread sanitizer (Data races) & Memory sanitizer (Uninitialized reads)" OFF)
+  option(ENABLE_ASAN "AddressSanitizer + LeakSanitizer" OFF)
+  option(ENABLE_TSAN "ThreadSanitizer (data races)" OFF)
+  option(ENABLE_MSAN "MemorySanitizer (uninitialized reads) — Clang only" OFF)
 endif()
 
 # ------ Linters & Static Analyzers ------
