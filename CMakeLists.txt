@@ -29,29 +29,32 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT _is_multi_config AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE
+      RelWithDebInfo
+      CACHE STRING "Build type" FORCE)
+  message(STATUS "No CMAKE_BUILD_TYPE set; defaulting to RelWithDebInfo")
+endif()
+
 if(WIN32)
   set(CMAKE_DEBUG_POSTFIX d)
 endif()
 
 if(MSVC)
+  # Baseline: warnings visible.
   add_compile_options(/W4 /permissive- /utf-8)
-  if(ENABLE_STRICT_COMPILER)
-    add_compile_options(/WX /GS) # warnings as errors, stack guards
-    # /Zc: conformance flags are cl.exe-specific. clang-cl already conforms and reports them as
-    # "unused argument", which /WX turns into an error — so only pass them to real MSVC.
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-      add_compile_options(
-        /Zc:preprocessor # Critical for modern C++ macro-heavy libs
-        /Zc:__cplusplus # Ensures __cplusplus macro reports correctly
-      )
-    endif()
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    add_compile_options(/Zc:preprocessor /Zc:__cplusplus)
   endif()
-
-else()
-  # Clang/GCC
-  add_compile_options(-Wall -Wextra)
   if(ENABLE_STRICT_COMPILER)
-    add_compile_options(-Werror -pedantic) # more strict
+    add_compile_options(/WX) # warnings as errors
+  endif()
+else()
+  # Baseline: warnings visible.
+  add_compile_options(-Wall -Wextra -Wshadow -Wnon-virtual-dtor)
+  if(ENABLE_STRICT_COMPILER)
+    add_compile_options(-Werror -pedantic) # errors + ISO-conformance pedantry
   endif()
 endif()
 
