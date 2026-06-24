@@ -8,10 +8,11 @@
 - github actions
   - check if coverage works fine
   - build, run, test all presets (including sanitizers)
+  - add fuzz build matrix option (random seed)
 
 - bitbucket pipeline
 
-- examples of profiling using tracy, perfetto, flanegraph
+- examples of profiling using tracy, perfetto (compile build time), flanegraph
 - examples of bugs captured with sanitizers
 
 - create template min using this as base
@@ -19,11 +20,6 @@
 
 - add INSTALL to create as library, add in option
   - merge with win lib
-
-- CI github actions:
-  - os: add windows & linux
-  - compilers: gcc16, clang, apple clang, msvc
-  - fuzz build matrix (random seed)
 
 ## Skip
 

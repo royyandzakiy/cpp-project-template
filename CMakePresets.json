@@ -309,7 +309,8 @@
 				"sanitizer-base"
 			],
 			"cacheVariables": {
-				"ENABLE_ASAN": "ON"
+				"ENABLE_ASAN": "ON",
+				"CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-asan.ini"
 			}
 		}
 	],
