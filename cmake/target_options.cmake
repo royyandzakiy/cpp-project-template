@@ -6,6 +6,14 @@
 # (deploy_asan_runtime() is defined in cmake/sanitizer_analyzer.cmake, included before this.)
 
 function(configure_target target)
+  # Clang-tidy — applied here so it lints only first-party production targets you opt in by
+  # calling configure_target(). Tests and third-party FetchContent code are never tidied
+  # (test code legitimately breaks many rules; deps are not ours to lint).
+  if(ENABLE_CLANG_TIDY AND CLANG_TIDY_EXE)
+    set_target_properties(${target} PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+    message(STATUS "Clang-Tidy enabled for ${target}")
+  endif()
+
   # Precompiled headers — TUNE this list to the heavy headers you include everywhere.
   if(ENABLE_PCH)
     target_precompile_headers(

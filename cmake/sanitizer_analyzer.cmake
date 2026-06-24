@@ -142,7 +142,10 @@ endfunction()
 if(ENABLE_CLANG_TIDY)
   find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
   if(CLANG_TIDY_EXE)
-    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+    # NB: applied PER-TARGET in configure_target(), not globally — so tidy lints first-party
+    # production code only, never the unit tests or FetchContent'd deps (gtest/gmock/sml).
+    # A global CMAKE_CXX_CLANG_TIDY tidies third-party sources too, which fails under
+    # WarningsAsErrors. CLANG_TIDY_EXE is cached, so configure_target() can read it.
     message(STATUS "Clang-Tidy found: ${CLANG_TIDY_EXE}")
   else()
     message(WARNING "Clang-Tidy not found. Static analysis is disabled.")

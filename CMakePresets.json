@@ -312,6 +312,23 @@
 				"ENABLE_ASAN": "ON",
 				"CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-asan.ini"
 			}
+		},
+		{
+			"name": "clang-linux-full",
+			"displayName": "Clang Debug + Everything (ASan/LSan/UBSan, strict, tidy, PCH, unity, examples)",
+			"inherits": [
+				"clang-linux-base",
+				"build-debug",
+				"sanitizer-base"
+			],
+			"cacheVariables": {
+				"ENABLE_ASAN": "ON",
+				"ENABLE_STRICT_COMPILER": "ON",
+				"ENABLE_CLANG_TIDY": "ON",
+				"ENABLE_PCH": "ON",
+				"ENABLE_UNITY_BUILD": "ON",
+				"BUILD_EXAMPLES": "ON"
+			}
 		}
 	],
 	"buildPresets": [
@@ -416,6 +433,11 @@
 			"name": "clang-cl-asan",
 			"inherits": "build-type-debug",
 			"configurePreset": "clang-cl-asan"
+		},
+		{
+			"name": "clang-linux-full",
+			"inherits": "build-type-debug",
+			"configurePreset": "clang-linux-full"
 		}
 	],
 	"testPresets": [
@@ -513,6 +535,11 @@
 			"name": "test-clang-cl-asan",
 			"inherits": "base-test",
 			"configurePreset": "clang-cl-asan"
+		},
+		{
+			"name": "test-clang-linux-full",
+			"inherits": "base-test",
+			"configurePreset": "clang-linux-full"
 		}
 	]
 }
