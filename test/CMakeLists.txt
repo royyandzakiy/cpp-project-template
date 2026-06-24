@@ -41,28 +41,21 @@ gtest_discover_tests(unit_tests)
 # sanitizer silently isn't working and the test goes red.
 # =============================================================================
 if(ENABLE_SANITIZERS)
-  # UBSan is always part of the baseline.
-  add_executable(trip_ubsan sanitizers/trip_ubsan.cpp)
-  add_test(NAME sanitizer_ubsan COMMAND trip_ubsan)
-  set_tests_properties(sanitizer_ubsan PROPERTIES PASS_REGULAR_EXPRESSION "runtime error|undefined")
-
+  add_executable(sanitizer_tests sanitizers/sanitizer_tests.cpp)
+  target_link_libraries(sanitizer_tests PRIVATE GTest::gtest GTest::gtest_main)
+  # Tell the source which death tests to compile in. UBSan is always the baseline.
+  target_compile_definitions(sanitizer_tests PRIVATE SANITIZER_UBSAN)
   if(ENABLE_ASAN)
-    add_executable(trip_asan sanitizers/trip_asan.cpp)
-    add_test(NAME sanitizer_asan COMMAND trip_asan)
-    set_tests_properties(sanitizer_asan PROPERTIES PASS_REGULAR_EXPRESSION "AddressSanitizer|heap-buffer-overflow")
-
-    add_executable(trip_lsan sanitizers/trip_lsan.cpp)
-    add_test(NAME sanitizer_lsan COMMAND trip_lsan)
-    set_tests_properties(sanitizer_lsan PROPERTIES PASS_REGULAR_EXPRESSION "LeakSanitizer|detected memory leaks")
+    target_compile_definitions(sanitizer_tests PRIVATE SANITIZER_ASAN SANITIZER_LSAN)
   elseif(ENABLE_TSAN)
     find_package(Threads REQUIRED)
-    add_executable(trip_tsan sanitizers/trip_tsan.cpp)
-    target_link_libraries(trip_tsan PRIVATE Threads::Threads)
-    add_test(NAME sanitizer_tsan COMMAND trip_tsan)
-    set_tests_properties(sanitizer_tsan PROPERTIES PASS_REGULAR_EXPRESSION "ThreadSanitizer|data race")
+    target_link_libraries(sanitizer_tests PRIVATE Threads::Threads)
+    target_compile_definitions(sanitizer_tests PRIVATE SANITIZER_TSAN)
   elseif(ENABLE_MSAN)
-    add_executable(trip_msan sanitizers/trip_msan.cpp)
-    add_test(NAME sanitizer_msan COMMAND trip_msan)
-    set_tests_properties(sanitizer_msan PROPERTIES PASS_REGULAR_EXPRESSION "MemorySanitizer|use-of-uninitialized")
+    target_compile_definitions(sanitizer_tests PRIVATE SANITIZER_MSAN)
   endif()
+  # TSan and MSan default to report-and-continue; force them to terminate on the first
+  # finding so the EXPECT_DEATH death tests actually observe a death. (ASan/UBSan already halt.)
+  gtest_discover_tests(sanitizer_tests PROPERTIES
+    ENVIRONMENT "TSAN_OPTIONS=halt_on_error=1;MSAN_OPTIONS=halt_on_error=1")
 endif()
