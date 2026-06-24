@@ -3,6 +3,9 @@
 # ------ Compiler Options ------
 option(ENABLE_STRICT_COMPILER "Strict compiler options, sees warnings as errors!" OFF)
 
+# ------ Testing ------
+option(BUILD_TESTING "Build the unit tests" OFF)
+
 # ------ Package Managers ------
 set(PKG_MANAGER "vcpkg" CACHE STRING "Dependency provider: vcpkg | conan | none")
 set_property(CACHE PKG_MANAGER PROPERTY STRINGS vcpkg conan none)
