@@ -287,6 +287,30 @@
 			"cacheVariables": {
 				"ENABLE_MSAN": "ON"
 			}
+		},
+		{
+			"name": "msvc-asan",
+			"displayName": "MSVC Debug + ASan",
+			"inherits": [
+				"msvc-base",
+				"build-debug",
+				"sanitizer-base"
+			],
+			"cacheVariables": {
+				"ENABLE_ASAN": "ON"
+			}
+		},
+		{
+			"name": "clang-cl-asan",
+			"displayName": "Clang-CL Debug + ASan",
+			"inherits": [
+				"clang-cl-base",
+				"build-debug",
+				"sanitizer-base"
+			],
+			"cacheVariables": {
+				"ENABLE_ASAN": "ON"
+			}
 		}
 	],
 	"buildPresets": [
@@ -381,6 +405,16 @@
 			"name": "clang-linux-msan",
 			"inherits": "build-type-debug",
 			"configurePreset": "clang-linux-msan"
+		},
+		{
+			"name": "msvc-asan",
+			"inherits": "build-type-debug",
+			"configurePreset": "msvc-asan"
+		},
+		{
+			"name": "clang-cl-asan",
+			"inherits": "build-type-debug",
+			"configurePreset": "clang-cl-asan"
 		}
 	],
 	"testPresets": [
@@ -394,12 +428,14 @@
 		{
 			"name": "test-msvc-debug",
 			"inherits": "base-test",
-			"configurePreset": "msvc-debug"
+			"configurePreset": "msvc-debug",
+			"configuration": "Debug"
 		},
 		{
 			"name": "test-msvc-release",
 			"inherits": "base-test",
-			"configurePreset": "msvc-release"
+			"configurePreset": "msvc-release",
+			"configuration": "Release"
 		},
 		{
 			"name": "test-clang-cl-debug",
@@ -465,6 +501,17 @@
 			"name": "test-clang-linux-msan",
 			"inherits": "base-test",
 			"configurePreset": "clang-linux-msan"
+		},
+		{
+			"name": "test-msvc-asan",
+			"inherits": "base-test",
+			"configurePreset": "msvc-asan",
+			"configuration": "Debug"
+		},
+		{
+			"name": "test-clang-cl-asan",
+			"inherits": "base-test",
+			"configurePreset": "clang-cl-asan"
 		}
 	]
 }

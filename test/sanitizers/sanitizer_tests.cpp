@@ -19,7 +19,7 @@ TEST(SanitizerDeathTest, UndefinedBehavior) {
 			volatile int z = x + one; // signed overflow -> UBSan (fatal via -fno-sanitize-recover)
 			(void)z;
 		},
-		"runtime error|overflow");
+		"runtime error"); // single token: gtest's Windows regex treats '|' as a literal
 }
 #endif
 
@@ -33,7 +33,7 @@ TEST(SanitizerDeathTest, AddressSanitizer) {
 			(void)v;
 			delete[] a;
 		},
-		"AddressSanitizer|heap-buffer-overflow");
+		"AddressSanitizer");
 }
 #endif
 
@@ -56,7 +56,7 @@ TEST(SanitizerDeathTest, LeakSanitizer) {
 				std::abort();
 			}
 		},
-		"LeakSanitizer|detected memory leaks");
+		"LeakSanitizer");
 }
 #endif
 
@@ -76,7 +76,7 @@ TEST(SanitizerDeathTest, ThreadSanitizer) {
 			t1.join();
 			t2.join();
 		},
-		"ThreadSanitizer|data race");
+		"ThreadSanitizer");
 }
 #endif
 
@@ -94,6 +94,6 @@ TEST(SanitizerDeathTest, MemorySanitizer) {
 			std::free(p);
 			std::exit(0);
 		},
-		"MemorySanitizer|uninitialized");
+		"MemorySanitizer");
 }
 #endif

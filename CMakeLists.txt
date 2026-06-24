@@ -121,6 +121,11 @@ if(TARGET project_perfetto_profile)
   target_link_libraries(${PROJECT_NAME} PRIVATE project_perfetto_profile)
 endif()
 
+# --- ASan runtime DLL (Windows) --- must come after the target exists
+if(ENABLE_ASAN)
+  deploy_asan_runtime(${PROJECT_NAME})
+endif()
+
 #=========================
 # clangd Integration
 #=========================
@@ -128,7 +133,9 @@ endif()
 # (it only searches the file's dir, ./build, and ancestors). Mirror the active
 # preset's compile_commands.json to the project root so the checked-in .clangd
 # (CompilationDatabase: .) always reflects the build you last configured.
-if(CMAKE_EXPORT_COMPILE_COMMANDS)
+# The Visual Studio and Xcode generators don't emit compile_commands.json (only Ninja/Makefiles
+# do), so only mirror it for generators that actually produce it.
+if(CMAKE_EXPORT_COMPILE_COMMANDS AND NOT CMAKE_GENERATOR MATCHES "Visual Studio|Xcode")
   add_custom_target(
     mirror_compile_commands ALL
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/compile_commands.json"
