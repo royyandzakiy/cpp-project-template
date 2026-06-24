@@ -2,18 +2,14 @@
 
 ## Backlog
 
-- make all sanitizers work
-  - have them in proper presets to easily select between them
+- cleanup current cmakelists
 
 - github actions
   - check if coverage works fine
   - build, run, test all presets (including sanitizers)
   - add fuzz build matrix option (random seed)
   - add badges to readme after successful testing
-
 - bitbucket pipeline
-
-- cleanup cmake scripts to make it modular to easily remove without breaking anything
 
 - examples of profiling using tracy, perfetto (compile build time), flanegraph
 - examples of bugs captured with sanitizers

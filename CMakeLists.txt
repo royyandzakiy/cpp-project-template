@@ -3,7 +3,9 @@ cmake_minimum_required(VERSION 3.28)
 include(local_options.cmake OPTIONAL)
 include(project_options.cmake)
 include(cmake/package_manager.cmake)
-setup_package_manager()            # dispatches to vcpkg / conan / none per PKG_MANAGER
+setup_package_manager() # dispatches to vcpkg / conan / none per PKG_MANAGER
+
+include(cmake/version.cmake) # reads version.txt -> PROJECT_VERSION_STRING (before project())
 
 #=========================
 # Project Configuration
@@ -11,56 +13,29 @@ setup_package_manager()            # dispatches to vcpkg / conan / none per PKG_
 project(
   cpp_project_template
   LANGUAGES CXX
-  VERSION 1.0.0)
+  VERSION ${PROJECT_VERSION_STRING})
 
-#=========================
-# Version Management
-#=========================
-include(cmake/version.cmake)
-generate_version_header()
-source_group("Generated" FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/version.h")
-message(STATUS "Building ${PROJECT_NAME} version ${PROJECT_VERSION}")
-
-#=========================
-# Compiler Configuration
-#=========================
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(NOT _is_multi_config AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE
-      RelWithDebInfo
-      CACHE STRING "Build type" FORCE)
-  message(STATUS "No CMAKE_BUILD_TYPE set; defaulting to RelWithDebInfo")
-endif()
+#=========================
+# Modules
+#=========================
+include(cmake/compiler.cmake) # warnings, strict, build-type guard, debug postfix
+include(cmake/sanitizer_analyzer.cmake) # sanitizers, clang-tidy, ccache, fast-linker, deploy_asan_runtime()
+include(cmake/profiler.cmake) # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
+include(cmake/format.cmake) # format / format-check / tidy-all targets
+include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
+include(cmake/target_options.cmake) # defines configure_target()
 
-if(WIN32)
-  set(CMAKE_DEBUG_POSTFIX d)
+#=========================
+# Version Header
+#=========================
+if(GENERATE_VERSION_HEADER)
+  generate_version_header()
 endif()
-
-if(MSVC)
-  # Baseline: warnings visible.
-  add_compile_options(/W4 /permissive- /utf-8)
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    add_compile_options(/Zc:preprocessor /Zc:__cplusplus)
-  endif()
-  if(ENABLE_STRICT_COMPILER)
-    add_compile_options(/WX) # warnings as errors
-  endif()
-else()
-  # Baseline: warnings visible.
-  add_compile_options(-Wall -Wextra -Wshadow -Wnon-virtual-dtor)
-  if(ENABLE_STRICT_COMPILER)
-    add_compile_options(-Werror -pedantic) # errors + ISO-conformance pedantry
-  endif()
-endif()
-
-include(cmake/sanitizer_analyzer.cmake)
-include(cmake/profiler.cmake)
-include(cmake/format.cmake)
 
 #=========================
 # Dependencies
@@ -75,79 +50,24 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sml)
 
 #=========================
-# Subdirectories
+# Tests & Examples
 #=========================
 if(BUILD_TESTING)
   enable_testing() # ctest / gtest_discover_tests register the unit tests
   add_subdirectory(test)
 endif()
-add_subdirectory(examples)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 #=========================
 # Main Executable
 #=========================
 add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
-
-# --- Include directories ---
-# Public headers (incl. the generated include/${PROJECT_NAME}/version.h) live here.
 target_include_directories(${PROJECT_NAME} PRIVATE include src)
-# target_include_directories(${PROJECT_NAME} PRIVATE path/to/folder)
 
-# --- Build-time optimizations (per target) ---
-# Precompiled headers: tune this list to the heavy headers you use everywhere.
-if(ENABLE_PCH)
-  target_precompile_headers(
-    ${PROJECT_NAME}
-    PRIVATE
-    <filesystem>
-    <print>
-    <string>
-    <string_view>
-    <vector>
-    <memory>
-    <utility>)
-  message(STATUS "PCH enabled for ${PROJECT_NAME}")
-endif()
-# Unity build: only meaningful once the target has several .cpp files.
-if(ENABLE_UNITY_BUILD)
-  set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
-  message(STATUS "Unity build enabled for ${PROJECT_NAME}")
-endif()
-
-# --- Compile definitions ---
-# target_compile_definitions(${PROJECT_NAME} PRIVATE ANY_MACRO_HERE)
-
-# --- Core Dependencies ---
+# --- Dependencies ---
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 
-# --- Optional Dependencies ---
-if(TARGET project_tracy_profile)
-  target_link_libraries(${PROJECT_NAME} PRIVATE project_tracy_profile)
-endif()
-if(TARGET project_perfetto_profile)
-  target_link_libraries(${PROJECT_NAME} PRIVATE project_perfetto_profile)
-endif()
-
-# --- ASan runtime DLL (Windows) --- must come after the target exists
-if(ENABLE_ASAN)
-  deploy_asan_runtime(${PROJECT_NAME})
-endif()
-
-#=========================
-# clangd Integration
-#=========================
-# Presets build into build/<preset>/, a layout clangd cannot auto-discover
-# (it only searches the file's dir, ./build, and ancestors). Mirror the active
-# preset's compile_commands.json to the project root so the checked-in .clangd
-# (CompilationDatabase: .) always reflects the build you last configured.
-# The Visual Studio and Xcode generators don't emit compile_commands.json (only Ninja/Makefiles
-# do), so only mirror it for generators that actually produce it.
-if(CMAKE_EXPORT_COMPILE_COMMANDS AND NOT CMAKE_GENERATOR MATCHES "Visual Studio|Xcode")
-  add_custom_target(
-    mirror_compile_commands ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/compile_commands.json"
-            "${CMAKE_SOURCE_DIR}/compile_commands.json"
-    BYPRODUCTS "${CMAKE_SOURCE_DIR}/compile_commands.json"
-    COMMENT "Mirroring compile_commands.json to project root for clangd"
-    VERBATIM)
-endif()
+# PCH, unity build, optional profiler links, Windows ASan DLL — see cmake/target_options.cmake
+configure_target(${PROJECT_NAME})
