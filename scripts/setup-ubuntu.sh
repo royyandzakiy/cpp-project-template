@@ -45,9 +45,13 @@ if ! command -v "clang-${CLANG_VERSION}" >/dev/null 2>&1; then
     | $SUDO tee "/etc/apt/sources.list.d/llvm-${CLANG_VERSION}.list" >/dev/null
   $SUDO apt-get update -y
 fi
+# libclang-rt-*-dev = compiler-rt runtime libs (libclang_rt.profile/asan/ubsan/tsan/msan...).
+# The clang-* package does NOT include these, yet coverage (-fprofile-instr-generate) and the
+# sanitizer presets need them — without it the link fails: "cannot open libclang_rt.profile.a".
 $SUDO apt-get install -y --no-install-recommends \
   "clang-${CLANG_VERSION}" "clangd-${CLANG_VERSION}" "clang-tidy-${CLANG_VERSION}" \
-  "clang-format-${CLANG_VERSION}" "lld-${CLANG_VERSION}" "lldb-${CLANG_VERSION}"
+  "clang-format-${CLANG_VERSION}" "lld-${CLANG_VERSION}" "lldb-${CLANG_VERSION}" \
+  "libclang-rt-${CLANG_VERSION}-dev"
 
 # Make the unversioned tools resolve to the pinned version — the project, presets and CI all
 # invoke clang / clangd / clang-tidy / clang-format without a version suffix.
