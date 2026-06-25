@@ -23,9 +23,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Start with one known-good preset; add more (release / gcc / sanitizers) back here later.
+        # Each matrix leg shows as its own named check in the Actions UI, so per-preset pass/fail
+        # is visible natively (no extra dashboard needed). Windows/macOS presets come later.
         preset:
-          - clang-linux-debug
+          - clang-linux-debug # coverage runs here only (same suite ⇒ identical coverage elsewhere)
+          - clang-linux-release
+          - gcc-linux-debug
+          - gcc-linux-release
+          - clang-linux-asan # UBSan + ASan + LSan; the sanitizer_tests trip-wires prove it's live
+          - clang-linux-tsan # UBSan + TSan
+          - clang-linux-full # ASan + strict + tidy + pch + unity + examples
     steps:
       # submodules: the cmake-conan provider lives in cmake/cmake-conan (used when PKG_MANAGER=conan).
       - name: Checkout
@@ -56,7 +63,7 @@ jobs:
 
       # PKG_MANAGER=conan: local_options.cmake (which selects conan) is gitignored, and the
       # presets default to vcpkg — so CI must select the provider it actually provisions above.
-      # BUILD_TESTING=ON so the ctest step below has tests to run.
+      # BUILD_TESTING=ON so the ctest step has tests (sanitizer presets already set it).
       - name: Configure
         run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
 
@@ -64,13 +71,14 @@ jobs:
         run: cmake --build --preset ${{ matrix.preset }}
 
       # NOTE: we run ctest, not the app — src/main.cpp has an intentional `while(true)` loop
-      # that would hang CI. ctest only runs the unit_tests target.
+      # that would hang CI. For sanitizer presets ctest also runs the trip-wires that prove each
+      # sanitizer actually catches its bug class (a silently-off sanitizer would fail them).
       - name: Test
         run: ctest --preset test-${{ matrix.preset }}
 
       # Coverage: clang-linux-debug sets ENABLE_COVERAGE=ON, so the `coverage` target exists.
       # It re-runs the tests under LLVM instrumentation and writes build/<preset>/coverage-html/.
-      # Guarded by preset name so other (non-coverage) presets added to the matrix don't break.
+      # Guarded by preset name so other (non-coverage) presets in the matrix don't break.
       - name: Coverage report
         if: matrix.preset == 'clang-linux-debug'
         run: cmake --build --preset ${{ matrix.preset }} --target coverage
@@ -87,8 +95,9 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       # Publish a shields.io endpoint JSON to the orphan `badges` branch (push to main/master only —
-      # PRs and forks lack write access). The README coverage badge reads this file. The push does
-      # NOT retrigger CI (triggers are push-to-main/master + PR). Same branch will host fuzz.json etc.
+      # PRs and forks lack write access). The README coverage badge reads this file. Only the
+      # clang-linux-debug leg pushes, so there's a single writer and no push race. The push does
+      # NOT retrigger CI ([skip ci] + the branch isn't a trigger).
       - name: Publish coverage badge
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && matrix.preset == 'clang-linux-debug'
         env:
