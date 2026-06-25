@@ -7,6 +7,7 @@
 - github actions
   - check if coverage works fine
   - build, run, test all presets (including sanitizers)
+  - restructure ci scripts to be modular and expandable
   - add fuzz build matrix option (random seed)
   - add badges to readme after successful testing
 - bitbucket pipeline
