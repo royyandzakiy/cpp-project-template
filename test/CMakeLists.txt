@@ -2,8 +2,15 @@
 # =============================================================================
 # Test Configuration
 # =============================================================================
-# Compile the real implementation (src/math.cpp) into the test binary so the math tests link.
-add_executable(unit_tests test_simple.cpp test_math.cpp ${CMAKE_SOURCE_DIR}/src/math.cpp)
+# Compile the real implementations (src/*.cpp) into the test binary so the tests link, and so
+# coverage is measured on them (the `coverage` target reports on the unit_tests binary).
+add_executable(
+  unit_tests
+  test_simple.cpp
+  test_math.cpp
+  test_classify.cpp
+  ${CMAKE_SOURCE_DIR}/src/math.cpp
+  ${CMAKE_SOURCE_DIR}/src/classify.cpp)
 target_include_directories(unit_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 # =============================================================================
