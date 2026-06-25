@@ -1,11 +1,12 @@
 # DEVELOPMENT
 
-- src as addsubdir
-
 - library
-  - use is project top level to consider testing
-  - skip install to not consider library & cpackaging
-  - add sample math lib in include, with export choose to either compile main or jist sample lib
+  - consider, create myapp and mylib. both are generated as seperate things, myapp does not use mylib. examples do use mylib
+  - create install script, based on nexus
+    - keep cmakelists clean, when switching between mylib and myapp. hide grim install & lib export details
+  - for lib, change cpp_project_template to mylib
+    - modify version creation script to only generate header for mylib
+    - use generated_lib folder
 
 - add license
 - move dependencies to single cmake
