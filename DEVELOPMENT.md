@@ -21,7 +21,9 @@
   - add badges to readme after successful testing
 - bitbucket pipeline
 
-- examples of profiling using tracy, perfetto (compile build time), perf + flamegraph (https://github.com/brendangregg/FlameGraph)
+- examples of profiling using tracy, perfetto (compile build time), perf + flamegraph (https://github.com/brendangregg/FlameGraph), valgrind
+  - review: hotspot, coz, heaptrack, gperftools
+  - create profiling wiki
 - examples of bugs captured with sanitizers
 
 - create template min using this as base
