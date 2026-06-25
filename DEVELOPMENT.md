@@ -2,6 +2,8 @@
 
 ## Backlog
 
+- create local_options.debug/release/lib-debug/lib-release.cmake
+
 - github actions
   - check if coverage works fine
   - build, run, test all presets (including sanitizers)
