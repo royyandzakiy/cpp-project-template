@@ -1,14 +1,6 @@
 # DEVELOPMENT
 
-- if user selects compiler that they dont hv, give graceful fallback
-- add sourcetrail somewhere in readme: https://github.com/CoatiSoftware/Sourcetrail/releases/tag/2021.4.19
-
 ## Backlog
-
-- cleanup current cmakelists
-
-- add INSTALL to create as library, add in option
-  - check windows lib template for inspo
 
 - github actions
   - check if coverage works fine
@@ -16,6 +8,9 @@
   - add fuzz build matrix option (random seed)
   - add badges to readme after successful testing
 - bitbucket pipeline
+
+- add INSTALL to create as library, add in option
+  - check windows lib template for inspo
 
 - examples of profiling using tracy, perfetto (compile build time), perf + flamegraph (https://github.com/brendangregg/FlameGraph), valgrind
   - review: hotspot, coz, heaptrack, gperftools
@@ -27,6 +22,7 @@
 
 ## Skip
 
+- if user selects compiler that they dont hv, give graceful fallback
 - docs generator (doxygen but with most modern ui)
   - create wiki for this project (cleanup current readme, VERY bloated, move content to wiki)
 - open for contributor: issues, discussions, contributions
