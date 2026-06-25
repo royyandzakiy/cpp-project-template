@@ -1,5 +1,26 @@
 # DEVELOPMENT
 
+- src as addsubdir
+
+- library
+  - use is project top level to consider testing
+  - skip install to not consider library & cpackaging
+  - add sample math lib in include, with export choose to either compile main or jist sample lib
+
+- add license
+- move dependencies to single cmake
+- set c compilers for each preset
+- if msvc asan, set debugger target
+- add gcovr.cfg
+- set vcenv
+
+- examples
+  - qt qml example
+  - ftxui example
+  
+- fuzz example
+- emscripten compiler for wasm (consider)
+
 ## Backlog
 
 - create local_options.debug/release/lib-debug/lib-release.cmake

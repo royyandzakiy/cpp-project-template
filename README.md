@@ -24,7 +24,7 @@ Requires CMake 3.28+.
 - **CMake 3.28+** and **Ninja**
 - A **C++23** compiler (one of the toolchains above)
 - **vcpkg** — auto-detected from PATH and common install locations (see [vcpkg setup](#vcpkg-setup))
-- **LLVM 20.x** (`clangd`, `clang-format`, `clang-tidy`) for editor intelligence and the
+- **LLVM 21** (`clangd`, `clang-format`, `clang-tidy`) for editor intelligence and the
   format/lint targets
 
 ---
@@ -62,8 +62,9 @@ Windows checkout):
 | **Native Windows** | clang-cl / MSVC without WSL or Docker | `pwsh -File scripts/setup-windows.ps1` (winget) |
 
 Notes:
-- The Dev Container **reuses `scripts/setup-ubuntu.sh`** (its Dockerfile runs it), so there's a
-  single toolchain definition — the WSL and container environments can't drift apart.
+- The Dev Container **and CI both reuse `scripts/setup-ubuntu.sh`** (the Dockerfile and the CI
+  workflow each run it), and it **pins Clang 21** from apt.llvm.org — so WSL, container, and CI
+  share one compiler *version*, not just the same package names. They can't drift apart.
 - Add `--with-vcpkg` (Linux) / `-WithVcpkg` (Windows) to also install vcpkg; otherwise just Conan
   (the `PKG_MANAGER` default) is set up.
 - Native Windows note: clang-cl **and** msvc presets still need the MSVC headers + Windows SDK from
@@ -88,22 +89,28 @@ Notes:
 ├── CMakeUserPresets.json.example # Optional: custom preset overrides
 ├── local_options.cmake.example   # Optional: machine-local overrides (gitignored)
 ├── project_options.cmake         # Feature toggles (shared, committed)
-├── vcpkg.json                    # Package manifest
+├── vcpkg.json                    # vcpkg manifest (empty by default — add your own)
+├── conanfile.txt                 # Conan manifest (fmt, scnlib, tracy)
 ├── version.txt                   # Project version (1.0.0)
 ├── EDITOR_SETUP.md               # Per-editor clangd setup
 ├── cmake/                        # CMake utility modules (internal)
+│   ├── package_manager.cmake     #   dispatches to vcpkg / conan / none (PKG_MANAGER)
 │   ├── config_vcpkg.cmake        #   vcpkg detection + toolchain wiring
-│   ├── config_conan.cmake        #   optional Conan alternative
-│   ├── sanitizer_analyzer.cmake  #   sanitizers, clang-tidy, ccache
+│   ├── config_conan.cmake        #   Conan (cmake-conan) provider wiring
+│   ├── compiler.cmake            #   warnings, strict mode, build-type guard
+│   ├── sanitizer_analyzer.cmake  #   sanitizers, clang-tidy, ccache, fast linker
+│   ├── coverage.cmake            #   coverage instrumentation + `coverage` target
 │   ├── profiler.cmake            #   Tracy, Perfetto, ClangBuildAnalyzer
 │   ├── format.cmake              #   format / format-check / tidy-all targets
-│   └── version.cmake             #   generates the version header
+│   ├── clangd.cmake              #   mirror compile_commands.json to project root
+│   ├── target_options.cmake      #   configure_target(): PCH, unity, tidy, profiler links
+│   └── version.cmake             #   generates the version header (when GENERATE_VERSION_HEADER)
 ├── include/cpp_project_template/
 │   └── version.h                 # Auto-generated from version.txt (gitignored)
-├── src/                          # Application sources
-├── test/                         # GoogleTest unit tests
-├── examples/                     # Sanitizer / Tracy / Perfetto demo targets
-├── scripts/                      # setup-ubuntu.sh (WSL/container) · setup-windows.ps1 (native)
+├── src/                          # Application sources (math, classify — a coverage demo)
+├── test/                         # GoogleTest unit tests (+ sanitizer trip-wires)
+├── examples/                     # Tracy / Perfetto demo targets
+├── scripts/                      # setup-ubuntu.sh · setup-windows.ps1 · cov-to-md.py
 └── .devcontainer/                # Portable container (runs setup-ubuntu.sh — same toolchain)
 ```
 
@@ -141,8 +148,15 @@ presets relevant to your OS appear.
 | `gcc-linux-debug` / `gcc-linux-release`     | Linux    | GCC              |
 | `appleclang-debug` / `appleclang-release`   | macOS    | Apple Clang      |
 
-Each has matching `build` and `test` presets. `CMakeUserPresets.json` is optional — copy
-`CMakeUserPresets.json.example` if you want custom names or overrides.
+Each has matching `build` and `test` presets. The Linux/macOS **debug** presets also enable
+`ENABLE_COVERAGE` (see [Coverage](#coverage)).
+
+On top of those there are **sanitizer** presets — `clang-linux-asan` / `clang-linux-tsan` /
+`clang-linux-msan` (Linux), `msvc-asan` / `clang-cl-asan` (Windows) — and a kitchen-sink
+**`clang-linux-full`** that turns on ASan + strict + clang-tidy + PCH + unity + examples at once.
+
+`CMakeUserPresets.json` is optional — copy `CMakeUserPresets.json.example` if you want custom names
+or overrides.
 
 ---
 
@@ -152,18 +166,26 @@ Each has matching `build` and `test` presets. `CMakeUserPresets.json` is optiona
 | --------------------------- | ------- | ------------------------------------------------------------ |
 | `PKG_MANAGER`               | `vcpkg` | Dependency provider: `vcpkg` \| `conan` \| `none`            |
 | `VCPKG_MANIFEST_MODE`       | ON      | Use `vcpkg.json` (manifest) vs. a global install             |
-| `ENABLE_STRICT_COMPILER`    | OFF     | Warnings as errors + hardening (`/WX /GS`, `-Werror -pedantic`) |
-| `ENABLE_SANITIZERS`         | OFF     | UBSan + bounds + integer checks                              |
-| `ENABLE_ASAN`               | OFF     | AddressSanitizer + LeakSanitizer                             |
-| `ENABLE_TSAN_MSAN`          | OFF     | ThreadSanitizer or MemorySanitizer                           |
-| `ENABLE_CLANG_TIDY`         | OFF     | clang-tidy during the build (also runs live in clangd)       |
-| `ENABLE_CCACHE`             | **ON**  | ccache compiler launcher (no-op if ccache absent)            |
-| `ENABLE_FAST_LINKER`        | **ON**  | Use mold/lld if found (faster linking); no-op if absent / MSVC |
+| `BUILD_TESTING`             | OFF     | Build the GoogleTest unit tests                              |
+| `BUILD_EXAMPLES`            | OFF     | Build the `examples/` demo targets                           |
+| `GENERATE_VERSION_HEADER`   | OFF     | Generate `include/<project>/version.h` from `version.txt`    |
+| `ENABLE_STRICT_COMPILER`    | OFF     | Warnings as errors (`/WX`; `-Werror -pedantic`)              |
+| `ENABLE_SANITIZERS`         | OFF     | UBSan baseline (`-fsanitize=undefined,bounds`)               |
+| `ENABLE_ASAN`               | OFF     | AddressSanitizer + LeakSanitizer (needs `ENABLE_SANITIZERS`) |
+| `ENABLE_TSAN`               | OFF     | ThreadSanitizer — data races (mutually exclusive with ASan/MSan) |
+| `ENABLE_MSAN`               | OFF     | MemorySanitizer — uninit reads, Clang only (mutually exclusive) |
+| `ENABLE_CLANG_TIDY`         | OFF     | clang-tidy on first-party code during the build (also live in clangd) |
+| `ENABLE_COVERAGE`           | OFF     | Instrument + add the `coverage` target (see [Coverage](#coverage)) |
+| `ENABLE_CCACHE`             | OFF     | ccache compiler launcher (no-op if ccache absent)            |
+| `ENABLE_FAST_LINKER`        | OFF     | Use mold/lld if found (faster linking); no-op if absent / MSVC |
 | `ENABLE_PCH`                | OFF     | Precompiled headers (faster full builds, slower incremental) |
 | `ENABLE_UNITY_BUILD`        | OFF     | Unity/jumbo TUs (faster clean/CI builds; incremental-hostile) |
 | `ENABLE_CLANG_BUILD_ANALYZER` | OFF   | `-ftime-trace` + ClangBuildAnalyzer target (Clang only)      |
 | `ENABLE_TRACY`              | OFF     | Tracy debug profiler (FetchContent)                          |
 | `ENABLE_PERFETTO`           | OFF     | Perfetto runtime tracing (FetchContent)                      |
+
+The sanitizer/coverage/strict toggles are usually set for you by the matching presets; flip the
+rest in `local_options.cmake` (copy `local_options.cmake.example`).
 
 Pass at configure time or set permanently in `local_options.cmake`:
 
@@ -204,36 +226,62 @@ pip install pre-commit && pre-commit install
 Sanitizers are Clang/GCC oriented; on Windows use a `clang-*` or `mingw-*` preset
 (MSVC supports ASan only). Wired by `cmake/sanitizer_analyzer.cmake`:
 
-- **`ENABLE_SANITIZERS`** — `-fsanitize=undefined,bounds,integer`
+- **`ENABLE_SANITIZERS`** — UBSan baseline (`-fsanitize=undefined,bounds`)
 - **`ENABLE_ASAN`** — AddressSanitizer + leak detection
-- **`ENABLE_TSAN_MSAN`** — Thread or Memory sanitizer (mutually exclusive with ASan)
+- **`ENABLE_TSAN`** / **`ENABLE_MSAN`** — Thread or Memory sanitizer (mutually exclusive with ASan)
+
+Use the sanitizer presets (`clang-linux-asan` / `-tsan` / `-msan`, `msvc-asan`, `clang-cl-asan`)
+rather than setting these by hand. The sanitizers are verified by **`test/sanitizers/sanitizer_tests.cpp`** —
+gtest death tests that fail if a sanitizer *doesn't* catch its bug class, so a silently-disabled
+sanitizer turns CI red.
 
 Profilers are wired by `cmake/profiler.cmake`: **Tracy** (`ENABLE_TRACY`) and **Perfetto**
 (`ENABLE_PERFETTO`), each exposed as an interface target the main executable links when enabled.
+The **`examples/`** directory has the runnable Tracy and Perfetto demos, built only when their
+option is on.
 
-The **`examples/`** directory has runnable demos — `examples/sanitizers/main_fail_sanitizer.cpp`
-(intentional violations to verify sanitizer output), plus Tracy and Perfetto examples that build
-only when their option is enabled.
+---
+
+## Coverage
+
+`ENABLE_COVERAGE` instruments the build and adds a **`coverage`** target (wired by
+`cmake/coverage.cmake`). The Linux/macOS **debug** presets enable it automatically:
+
+```bash
+cmake --build --preset clang-linux-debug --target coverage
+```
+
+This re-runs the unit tests under instrumentation and writes an HTML report to
+`build/<preset>/coverage-html/`. Clang/AppleClang use LLVM source-based coverage
+(`llvm-profdata` + `llvm-cov`); GCC uses `gcov` summarised by `gcovr`.
+
+CI runs this on every push and, on `main`/`master`, publishes the shields.io endpoint behind the
+**coverage badge** at the top of this README (to an orphan `badges` branch via
+`scripts/cov-to-md.py`). It also renders a coverage table into the Actions run summary and uploads
+the HTML report as a build artifact.
 
 ---
 
 ## Dependencies
 
-**vcpkg manifest (`vcpkg.json`):**
+Dependencies resolve through whichever `PKG_MANAGER` you pick (see below). The **Conan** manifest
+(`conanfile.txt`) is the practical default:
 
-| Package  | Use                          |
-| -------- | ---------------------------- |
-| `fmt`    | String formatting            |
-| `scnlib` | Type-safe input parsing      |
-| `tracy`  | Performance profiling        |
+| Package  | Source             | Use                                          |
+| -------- | ------------------ | -------------------------------------------- |
+| `fmt`    | `conanfile.txt`    | String formatting (the one actively used)    |
+| `scnlib` | `conanfile.txt`    | Type-safe input parsing (available, unused)  |
+| `tracy`  | `conanfile.txt`    | Profiling client                             |
 
-**Fetched via `FetchContent`:**
+`vcpkg.json` ships **empty** — add your packages there if you build with vcpkg.
+
+**Fetched via `FetchContent`** (independent of the package manager):
 
 | Package      | Use                                                        |
 | ------------ | ---------------------------------------------------------- |
 | `sml`        | `boost-ext/sml` state machine (header-only)                |
 | `googletest` | Unit testing (in `test/`)                                  |
-| `perfetto`   | Runtime tracing (when `ENABLE_PERFETTO`)                   |
+| `tracy` / `perfetto` | Profiler runtimes (when `ENABLE_TRACY` / `ENABLE_PERFETTO`) |
 
 ---
 
@@ -277,14 +325,21 @@ via `cmake/config_conan.cmake`.
 
 ## cmake/ Modules
 
+- **`package_manager.cmake`** — `setup_package_manager()` dispatches to vcpkg / Conan / none per
+  `PKG_MANAGER`.
 - **`config_vcpkg.cmake`** — locates vcpkg, validates the toolchain, reports package status. Don't
   edit; configure via `local_options.cmake`.
-- **`config_conan.cmake`** — optional Conan-based dependency flow (alternative to vcpkg).
-- **`sanitizer_analyzer.cmake`** — sanitizers, clang-tidy, ccache, per
+- **`config_conan.cmake`** — Conan dependency flow via the cmake-conan provider.
+- **`compiler.cmake`** — warning flags, strict mode, the no-build-type guard, debug postfix.
+- **`sanitizer_analyzer.cmake`** — sanitizers, clang-tidy discovery, ccache, fast linker, per
   `project_options.cmake`.
+- **`coverage.cmake`** — coverage instrumentation + `setup_coverage_target()` (the `coverage` target).
 - **`profiler.cmake`** — Tracy, Perfetto, and ClangBuildAnalyzer integration.
 - **`format.cmake`** — `format` / `format-check` / `tidy-all` targets.
-- **`version.cmake`** — reads `version.txt` and generates
+- **`clangd.cmake`** — mirrors `compile_commands.json` to the project root for clangd.
+- **`target_options.cmake`** — `configure_target()`: PCH, unity build, clang-tidy, profiler links,
+  Windows ASan DLL deploy.
+- **`version.cmake`** — when `GENERATE_VERSION_HEADER` is on, reads `version.txt` and generates
   `include/cpp_project_template/version.h` from `version.h.in`.
 
 ---
@@ -321,6 +376,6 @@ delete the directory and let each clone build its own index.
    project name).
 2. Update `version.txt`.
 3. Replace sources under `src/` and headers under `include/`.
-4. Add vcpkg dependencies to `vcpkg.json`.
+4. Add dependencies to `vcpkg.json` and/or `conanfile.txt` (whichever `PKG_MANAGER` you use).
 5. Adjust presets in `CMakePresets.json` as needed.
 6. Replace this README using `README.md.template` as a starting point.
