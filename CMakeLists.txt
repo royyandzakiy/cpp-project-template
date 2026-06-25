@@ -51,6 +51,21 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sml)
 
 #=========================
+# Targets
+#=========================
+# Default the install tree to <repo>/generated_lib/ — MyLib auto-stages there after each build.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/generated_lib" CACHE PATH "Install prefix" FORCE)
+endif()
+
+if(BUILD_LIB)
+  add_subdirectory(src/mylib) # shared library + installable MyLib package
+endif()
+if(BUILD_APP)
+  add_subdirectory(src/myapp) # standalone hello-world binary
+endif()
+
+#=========================
 # Tests & Examples
 #=========================
 if(BUILD_TESTING)
@@ -61,17 +76,5 @@ if(BUILD_TESTING)
   endif()
 endif()
 if(BUILD_EXAMPLES)
-  add_subdirectory(examples)
+  add_subdirectory(examples) # AFTER src/mylib so the example can link the MyLib target
 endif()
-
-#=========================
-# Main Executable
-#=========================
-add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
-target_include_directories(${PROJECT_NAME} PRIVATE include src)
-
-# --- Dependencies ---
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
-
-# PCH, unity build, optional profiler links, Windows ASan DLL — see cmake/target_options.cmake
-configure_target(${PROJECT_NAME})

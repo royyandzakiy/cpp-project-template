@@ -4,9 +4,11 @@
 option(ENABLE_STRICT_COMPILER "Strict compiler options, sees warnings as errors!" OFF)
 
 # ------ Project Features ------
+option(BUILD_APP "Build the application binary (src/myapp)" ON)
+option(BUILD_LIB "Build the shared library (src/mylib)" ON)
 option(BUILD_TESTING "Build the unit tests" OFF)
 option(BUILD_EXAMPLES "Build the examples/ demos" OFF)
-option(GENERATE_VERSION_HEADER "Generate include/<project>/version.h from version.txt" OFF)
+option(GENERATE_VERSION_HEADER "Generate include/MyLib/version.h from version.txt" OFF)
 
 # ------ Package Managers ------
 set(PKG_MANAGER "vcpkg" CACHE STRING "Dependency provider: vcpkg | conan | none")

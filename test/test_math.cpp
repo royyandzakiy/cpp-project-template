@@ -1,4 +1,4 @@
-#include "../src/math.hpp"
+#include "MyLib/math.hpp"
 #include <gtest/gtest.h>
 
 using namespace mymath; // functions are declared in namespace mymath

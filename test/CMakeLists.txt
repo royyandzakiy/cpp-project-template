@@ -1,20 +1,6 @@
 # test/CMakeLists.txt
 # =============================================================================
-# Test Configuration
-# =============================================================================
-# Compile the real implementations (src/*.cpp) into the test binary so the tests link, and so
-# coverage is measured on them (the `coverage` target reports on the unit_tests binary).
-add_executable(
-  unit_tests
-  test_simple.cpp
-  test_math.cpp
-  test_classify.cpp
-  ${CMAKE_SOURCE_DIR}/src/math.cpp
-  ${CMAKE_SOURCE_DIR}/src/classify.cpp)
-target_include_directories(unit_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
-
-# =============================================================================
-# GTest Setup
+# GTest Setup (shared by unit_tests and the sanitizer trip-wires)
 # =============================================================================
 # find_package(GTest CONFIG REQUIRED) # need to add `gtest` in vcpkg.json
 include(FetchContent)
@@ -26,6 +12,7 @@ FetchContent_Declare(
 set(gtest_force_shared_crt
     ON
     CACHE BOOL "" FORCE)
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE) # don't let gtest's install rules pollute generated_lib/
 FetchContent_MakeAvailable(googletest)
 
 # surpress warnings from gtest libraries
@@ -35,13 +22,33 @@ foreach(t gtest gtest_main gmock gmock_main)
   endif()
 endforeach()
 
-target_link_libraries(unit_tests PRIVATE GTest::gtest GTest::gmock)
-
 include(GoogleTest)
 # Discover tests at ctest time, not build time: under Windows ASan the test exe needs a runtime
 # DLL that's only deployed during the build, so a build-time test run can fail to start.
 set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
-gtest_discover_tests(unit_tests)
+
+# =============================================================================
+# Unit tests — exercise MyLib's code (math + classify). Built only with BUILD_LIB, since that is
+# what they test. The lib sources are compiled directly into the test binary (not linked against
+# the DLL) so coverage is measured on them; MYLIB_STATIC_DEFINE makes MYLIB_EXPORT a no-op for
+# this in-binary build (no dllimport).
+# =============================================================================
+if(BUILD_LIB)
+  add_executable(
+    unit_tests
+    test_simple.cpp
+    test_math.cpp
+    test_classify.cpp
+    ${CMAKE_SOURCE_DIR}/src/mylib/math.cpp
+    ${CMAKE_SOURCE_DIR}/src/mylib/classify.cpp)
+  # Pull MyLib's public + generated (build-tree mylib_export.h) include dirs without linking the DLL.
+  target_include_directories(
+    unit_tests PRIVATE ${CMAKE_SOURCE_DIR}/include
+                       $<TARGET_PROPERTY:MyLib,INTERFACE_INCLUDE_DIRECTORIES>)
+  target_compile_definitions(unit_tests PRIVATE MYLIB_STATIC_DEFINE)
+  target_link_libraries(unit_tests PRIVATE GTest::gtest GTest::gmock)
+  gtest_discover_tests(unit_tests)
+endif()
 
 # =============================================================================
 # Sanitizer trip-wires — verify each sanitizer actually CATCHES its bug class.
