@@ -3,7 +3,9 @@ cmake_minimum_required(VERSION 3.28)
 include(local_options.cmake OPTIONAL)
 include(project_options.cmake)
 include(cmake/package_manager.cmake)
-setup_package_manager()            # dispatches to vcpkg / conan / none per PKG_MANAGER
+setup_package_manager() # dispatches to vcpkg / conan / none per PKG_MANAGER
+
+include(cmake/version.cmake) # reads version.txt -> PROJECT_VERSION_STRING (before project())
 
 #=========================
 # Project Configuration
@@ -11,49 +13,30 @@ setup_package_manager()            # dispatches to vcpkg / conan / none per PKG_
 project(
   cpp_project_template
   LANGUAGES CXX
-  VERSION 1.0.0)
+  VERSION ${PROJECT_VERSION_STRING})
 
-#=========================
-# Version Management
-#=========================
-include(cmake/version.cmake)
-generate_version_header()
-source_group("Generated" FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/version.h")
-message(STATUS "Building ${PROJECT_NAME} version ${PROJECT_VERSION}")
-
-#=========================
-# Compiler Configuration
-#=========================
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(WIN32)
-  set(CMAKE_DEBUG_POSTFIX d)
+#=========================
+# Modules
+#=========================
+include(cmake/compiler.cmake) # warnings, strict, build-type guard, debug postfix
+include(cmake/sanitizer_analyzer.cmake) # sanitizers, clang-tidy, ccache, fast-linker, deploy_asan_runtime()
+include(cmake/coverage.cmake) # coverage instrumentation + setup_coverage_target() (when ENABLE_COVERAGE)
+include(cmake/profiler.cmake) # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
+include(cmake/format.cmake) # format / format-check / tidy-all targets
+include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
+include(cmake/target_options.cmake) # defines configure_target()
+
+#=========================
+# Version Header
+#=========================
+if(GENERATE_VERSION_HEADER)
+  generate_version_header()
 endif()
-
-if(MSVC)
-  add_compile_options(/W4 /permissive- /utf-8)
-  if(ENABLE_STRICT_COMPILER)
-    add_compile_options(/WX /GS) # warning as errors. Stack guards
-    add_compile_options(
-      /Zc:preprocessor # Critical for modern C++ macro-heavy libs
-      /Zc:__cplusplus # Ensures __cplusplus macro reports correctly
-    )
-  endif()
-
-else()
-  # Clang/GCC
-  add_compile_options(-Wall -Wextra)
-  if(ENABLE_STRICT_COMPILER)
-    add_compile_options(-Werror -pedantic) # more strict
-  endif()
-endif()
-
-include(cmake/sanitizer_analyzer.cmake)
-include(cmake/profiler.cmake)
-include(cmake/format.cmake)
 
 #=========================
 # Dependencies
@@ -68,72 +51,27 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sml)
 
 #=========================
-# Subdirectories
+# Tests & Examples
 #=========================
 if(BUILD_TESTING)
   enable_testing() # ctest / gtest_discover_tests register the unit tests
   add_subdirectory(test)
+  if(ENABLE_COVERAGE AND TARGET unit_tests)
+    setup_coverage_target(unit_tests) # adds the `coverage` target (runs tests + reports)
+  endif()
 endif()
-add_subdirectory(examples)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 #=========================
 # Main Executable
 #=========================
 add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
-
-# --- Include directories ---
-# Public headers (incl. the generated include/${PROJECT_NAME}/version.h) live here.
 target_include_directories(${PROJECT_NAME} PRIVATE include src)
-# target_include_directories(${PROJECT_NAME} PRIVATE path/to/folder)
 
-# --- Build-time optimizations (per target) ---
-# Precompiled headers: tune this list to the heavy headers you use everywhere.
-if(ENABLE_PCH)
-  target_precompile_headers(
-    ${PROJECT_NAME}
-    PRIVATE
-    <filesystem>
-    <print>
-    <string>
-    <string_view>
-    <vector>
-    <memory>
-    <utility>)
-  message(STATUS "PCH enabled for ${PROJECT_NAME}")
-endif()
-# Unity build: only meaningful once the target has several .cpp files.
-if(ENABLE_UNITY_BUILD)
-  set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
-  message(STATUS "Unity build enabled for ${PROJECT_NAME}")
-endif()
-
-# --- Compile definitions ---
-# target_compile_definitions(${PROJECT_NAME} PRIVATE ANY_MACRO_HERE)
-
-# --- Core Dependencies ---
+# --- Dependencies ---
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 
-# --- Optional Dependencies ---
-if(TARGET project_tracy_profile)
-  target_link_libraries(${PROJECT_NAME} PRIVATE project_tracy_profile)
-endif()
-if(TARGET project_perfetto_profile)
-  target_link_libraries(${PROJECT_NAME} PRIVATE project_perfetto_profile)
-endif()
-
-#=========================
-# clangd Integration
-#=========================
-# Presets build into build/<preset>/, a layout clangd cannot auto-discover
-# (it only searches the file's dir, ./build, and ancestors). Mirror the active
-# preset's compile_commands.json to the project root so the checked-in .clangd
-# (CompilationDatabase: .) always reflects the build you last configured.
-if(CMAKE_EXPORT_COMPILE_COMMANDS)
-  add_custom_target(
-    mirror_compile_commands ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/compile_commands.json"
-            "${CMAKE_SOURCE_DIR}/compile_commands.json"
-    BYPRODUCTS "${CMAKE_SOURCE_DIR}/compile_commands.json"
-    COMMENT "Mirroring compile_commands.json to project root for clangd"
-    VERBATIM)
-endif()
+# PCH, unity build, optional profiler links, Windows ASan DLL — see cmake/target_options.cmake
+configure_target(${PROJECT_NAME})

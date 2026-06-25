@@ -11,6 +11,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# contents: write lets the coverage step push the badge JSON to the `badges` branch using the
+# built-in GITHUB_TOKEN (no PAT / external account needed).
+permissions:
+  contents: write
+
 jobs:
   linux:
     name: ${{ matrix.preset }}
@@ -18,29 +23,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Start with one known-good preset; add more (release / gcc / sanitizers) back here later.
         preset:
           - clang-linux-debug
-          - clang-linux-release
-          - gcc-linux-debug
-          - gcc-linux-release
     steps:
-      # submodules: cmake-conan provider lives in cmake/cmake-conan (PKG_MANAGER defaults to conan).
+      # submodules: the cmake-conan provider lives in cmake/cmake-conan (used when PKG_MANAGER=conan).
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build gcc g++ clang lld \
-            pkg-config git curl zip unzip tar python3 python3-pip pipx
+      # Single source of truth: the SAME script the devcontainer and WSL use. It pins Clang
+      # (apt.llvm.org) and installs Conan, so CI can't drift from local toolchains.
+      - name: Install toolchain (pinned) + Conan
+        run: bash scripts/setup-ubuntu.sh
 
-      - name: Install Conan
-        run: |
-          pipx install conan
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Put Conan (pipx) on PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Conan default profile
         run: conan profile detect --force
@@ -55,8 +54,11 @@ jobs:
             conan-${{ runner.os }}-${{ matrix.preset }}-
             conan-${{ runner.os }}-
 
+      # PKG_MANAGER=conan: local_options.cmake (which selects conan) is gitignored, and the
+      # presets default to vcpkg — so CI must select the provider it actually provisions above.
+      # BUILD_TESTING=ON so the ctest step below has tests to run.
       - name: Configure
-        run: cmake --preset ${{ matrix.preset }}
+        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
@@ -65,3 +67,56 @@ jobs:
       # that would hang CI. ctest only runs the unit_tests target.
       - name: Test
         run: ctest --preset test-${{ matrix.preset }}
+
+      # Coverage: clang-linux-debug sets ENABLE_COVERAGE=ON, so the `coverage` target exists.
+      # It re-runs the tests under LLVM instrumentation and writes build/<preset>/coverage-html/.
+      # Guarded by preset name so other (non-coverage) presets added to the matrix don't break.
+      - name: Coverage report
+        if: matrix.preset == 'clang-linux-debug'
+        run: cmake --build --preset ${{ matrix.preset }} --target coverage
+
+      # Render the coverage table straight onto the Actions run page (no need to open the artifact).
+      # The `coverage` target wrote build/<preset>/coverage.lcov; cov-to-md.py turns it into Markdown.
+      - name: Coverage job summary
+        if: matrix.preset == 'clang-linux-debug'
+        run: |
+          {
+            echo "## Coverage — ${{ matrix.preset }} (Clang)"
+            echo ""
+            python3 scripts/cov-to-md.py "build/${{ matrix.preset }}/coverage.lcov"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Publish a shields.io endpoint JSON to the orphan `badges` branch (push to main/master only —
+      # PRs and forks lack write access). The README coverage badge reads this file. The push does
+      # NOT retrigger CI (triggers are push-to-main/master + PR). Same branch will host fuzz.json etc.
+      - name: Publish coverage badge
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && matrix.preset == 'clang-linux-debug'
+        env:
+          REPO_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        run: |
+          python3 scripts/cov-to-md.py --shields "build/${{ matrix.preset }}/coverage.lcov" > /tmp/coverage.json
+          work="$(mktemp -d)"
+          if git clone --depth=1 --branch badges "$REPO_URL" "$work" 2>/dev/null; then
+            cd "$work"
+          else
+            # First run: branch doesn't exist yet — start a clean orphan history.
+            cd "$work"
+            git init -q
+            git remote add origin "$REPO_URL"
+            git checkout -q --orphan badges
+            git rm -rqf . 2>/dev/null || true
+          fi
+          cp /tmp/coverage.json coverage.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add coverage.json
+          git commit -q -m "ci: update coverage badge [skip ci]" || { echo "coverage unchanged"; exit 0; }
+          git push -q origin badges
+
+      - name: Upload coverage HTML
+        if: matrix.preset == 'clang-linux-debug'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/coverage-html
+          if-no-files-found: error

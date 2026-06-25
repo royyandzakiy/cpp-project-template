@@ -243,6 +243,92 @@
 				"appleclang-base",
 				"build-release"
 			]
+		},
+		{
+			"name": "sanitizer-base",
+			"hidden": true,
+			"cacheVariables": {
+				"ENABLE_SANITIZERS": "ON",
+				"BUILD_TESTING": "ON"
+			}
+		},
+		{
+			"name": "clang-linux-asan",
+			"displayName": "Clang Debug + ASan/LSan",
+			"inherits": [
+				"clang-linux-base",
+				"build-debug",
+				"sanitizer-base"
+			],
+			"cacheVariables": {
+				"ENABLE_ASAN": "ON"
+			}
+		},
+		{
+			"name": "clang-linux-tsan",
+			"displayName": "Clang Debug + TSan",
+			"inherits": [
+				"clang-linux-base",
+				"build-debug",
+				"sanitizer-base"
+			],
+			"cacheVariables": {
+				"ENABLE_TSAN": "ON"
+			}
+		},
+		{
+			"name": "clang-linux-msan",
+			"displayName": "Clang Debug + MSan",
+			"inherits": [
+				"clang-linux-base",
+				"build-debug",
+				"sanitizer-base"
+			],
+			"cacheVariables": {
+				"ENABLE_MSAN": "ON"
+			}
+		},
+		{
+			"name": "msvc-asan",
+			"displayName": "MSVC Debug + ASan",
+			"inherits": [
+				"msvc-base",
+				"build-debug",
+				"sanitizer-base"
+			],
+			"cacheVariables": {
+				"ENABLE_ASAN": "ON"
+			}
+		},
+		{
+			"name": "clang-cl-asan",
+			"displayName": "Clang-CL Debug + ASan",
+			"inherits": [
+				"clang-cl-base",
+				"build-debug",
+				"sanitizer-base"
+			],
+			"cacheVariables": {
+				"ENABLE_ASAN": "ON",
+				"CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-asan.ini"
+			}
+		},
+		{
+			"name": "clang-linux-full",
+			"displayName": "Clang Debug + Everything (ASan/LSan/UBSan, strict, tidy, PCH, unity, examples)",
+			"inherits": [
+				"clang-linux-base",
+				"build-debug",
+				"sanitizer-base"
+			],
+			"cacheVariables": {
+				"ENABLE_ASAN": "ON",
+				"ENABLE_STRICT_COMPILER": "ON",
+				"ENABLE_CLANG_TIDY": "ON",
+				"ENABLE_PCH": "ON",
+				"ENABLE_UNITY_BUILD": "ON",
+				"BUILD_EXAMPLES": "ON"
+			}
 		}
 	],
 	"buildPresets": [
@@ -322,6 +408,36 @@
 			"name": "appleclang-release",
 			"inherits": "build-type-release",
 			"configurePreset": "appleclang-release"
+		},
+		{
+			"name": "clang-linux-asan",
+			"inherits": "build-type-debug",
+			"configurePreset": "clang-linux-asan"
+		},
+		{
+			"name": "clang-linux-tsan",
+			"inherits": "build-type-debug",
+			"configurePreset": "clang-linux-tsan"
+		},
+		{
+			"name": "clang-linux-msan",
+			"inherits": "build-type-debug",
+			"configurePreset": "clang-linux-msan"
+		},
+		{
+			"name": "msvc-asan",
+			"inherits": "build-type-debug",
+			"configurePreset": "msvc-asan"
+		},
+		{
+			"name": "clang-cl-asan",
+			"inherits": "build-type-debug",
+			"configurePreset": "clang-cl-asan"
+		},
+		{
+			"name": "clang-linux-full",
+			"inherits": "build-type-debug",
+			"configurePreset": "clang-linux-full"
 		}
 	],
 	"testPresets": [
@@ -335,12 +451,14 @@
 		{
 			"name": "test-msvc-debug",
 			"inherits": "base-test",
-			"configurePreset": "msvc-debug"
+			"configurePreset": "msvc-debug",
+			"configuration": "Debug"
 		},
 		{
 			"name": "test-msvc-release",
 			"inherits": "base-test",
-			"configurePreset": "msvc-release"
+			"configurePreset": "msvc-release",
+			"configuration": "Release"
 		},
 		{
 			"name": "test-clang-cl-debug",
@@ -391,6 +509,37 @@
 			"name": "test-appleclang-release",
 			"inherits": "base-test",
 			"configurePreset": "appleclang-release"
+		},
+		{
+			"name": "test-clang-linux-asan",
+			"inherits": "base-test",
+			"configurePreset": "clang-linux-asan"
+		},
+		{
+			"name": "test-clang-linux-tsan",
+			"inherits": "base-test",
+			"configurePreset": "clang-linux-tsan"
+		},
+		{
+			"name": "test-clang-linux-msan",
+			"inherits": "base-test",
+			"configurePreset": "clang-linux-msan"
+		},
+		{
+			"name": "test-msvc-asan",
+			"inherits": "base-test",
+			"configurePreset": "msvc-asan",
+			"configuration": "Debug"
+		},
+		{
+			"name": "test-clang-cl-asan",
+			"inherits": "base-test",
+			"configurePreset": "clang-cl-asan"
+		},
+		{
+			"name": "test-clang-linux-full",
+			"inherits": "base-test",
+			"configurePreset": "clang-linux-full"
 		}
 	]
 }

@@ -1,50 +1,26 @@
 # cmake/version.cmake
+# Single source of truth for the project version: version.txt.
+#
+#   - This file is included BEFORE project(): it reads version.txt into PROJECT_VERSION_STRING so
+#     project(... VERSION ${PROJECT_VERSION_STRING}) uses it — no duplicated version literal.
+#   - generate_version_header() is called AFTER project() (gated by GENERATE_VERSION_HEADER) to
+#     write include/<project>/version.h. It relies on the PROJECT_VERSION_* variables that
+#     project() parsed, so there's no manual version splitting anymore.
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../version.txt")
+  file(READ "${CMAKE_CURRENT_LIST_DIR}/../version.txt" _version_raw)
+  string(STRIP "${_version_raw}" PROJECT_VERSION_STRING)
+  unset(_version_raw)
+else()
+  set(PROJECT_VERSION_STRING "0.1.0")
+  message(WARNING "version.txt not found; defaulting to ${PROJECT_VERSION_STRING}. else, create version.txt with values X.Y.Z (can have more than 1 digit for each)")
+endif()
+
 function(generate_version_header)
-  # Read version from version.txt
-  set(VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/version.txt")
-  if(EXISTS "${VERSION_FILE}")
-    file(READ "${VERSION_FILE}" VERSION_CONTENT)
-    string(STRIP "${VERSION_CONTENT}" VERSION_CONTENT)
-    string(REPLACE "." ";" VERSION_LIST "${VERSION_CONTENT}")
-    list(LENGTH VERSION_LIST VERSION_LENGTH)
-
-    if(VERSION_LENGTH GREATER 0)
-      list(GET VERSION_LIST 0 PROJECT_VERSION_MAJOR)
-    else()
-      set(PROJECT_VERSION_MAJOR 0)
-    endif()
-
-    if(VERSION_LENGTH GREATER 1)
-      list(GET VERSION_LIST 1 PROJECT_VERSION_MINOR)
-    else()
-      set(PROJECT_VERSION_MINOR 0)
-    endif()
-
-    if(VERSION_LENGTH GREATER 2)
-      list(GET VERSION_LIST 2 PROJECT_VERSION_PATCH)
-    else()
-      set(PROJECT_VERSION_PATCH 0)
-    endif()
-  else()
-    # Fallback if version.txt doesn't exist
-    set(PROJECT_VERSION_MAJOR 0)
-    set(PROJECT_VERSION_MINOR 1)
-    set(PROJECT_VERSION_PATCH 0)
-    message(
-      WARNING
-        "version.txt not found, using default version: ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
-    )
-  endif()
-
-  # Set CMake project version
-  set(PROJECT_VERSION
-      "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
-  )
-
-  # Configure the version header in the source include directory
+  # NB: CMAKE_CURRENT_LIST_DIR inside a function is the CALLER's dir, so use an explicit path.
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.h.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/version.h @ONLY)
-
-  message(STATUS "Project version: ${PROJECT_VERSION}")
+    "${CMAKE_SOURCE_DIR}/cmake/version.h.in"
+    "${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}/version.h" @ONLY)
+  source_group("Generated" FILES "${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}/version.h")
+  message(STATUS "Version header: ${PROJECT_NAME} v${PROJECT_VERSION}")
 endfunction()

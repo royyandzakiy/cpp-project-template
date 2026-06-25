@@ -2,8 +2,9 @@
 #include <thread>
 
 // Uncomment ONE scenario at a time, then rebuild with the matching sanitizer option.
-// ASan:          -DENABLE_SANITIZERS=ON -DENABLE_ASAN=ON          (Windows + Linux)
-// TSan / MSan:   -DENABLE_SANITIZERS=ON -DENABLE_TSAN_MSAN=ON     (Linux only)
+// ASan:  -DENABLE_SANITIZERS=ON -DENABLE_ASAN=ON   (Windows + Linux + macOS)
+// TSan:  -DENABLE_SANITIZERS=ON -DENABLE_TSAN=ON   (Linux + macOS)
+// MSan:  -DENABLE_SANITIZERS=ON -DENABLE_MSAN=ON   (Linux, Clang only)
 
 static int add(int a, int b) {
 	return a + b;

@@ -228,6 +228,49 @@ wire it to your cmake-tools.nvim launch target for the same preset-agnostic beha
 
 ---
 
+## Sanitizers
+
+Sanitizers are exposed as **debug-profile presets** (each builds + runs the sanitizer "trip-wire"
+death tests via ctest):
+
+| Preset | Sanitizers | Platform |
+|--------|-----------|----------|
+| `clang-linux-asan` | UBSan + ASan + LSan | Linux |
+| `clang-linux-tsan` | UBSan + TSan | Linux |
+| `clang-linux-msan` | UBSan + MSan | Linux (clang only) |
+| `msvc-asan` | ASan | Windows (MSVC) |
+| `clang-cl-asan` | ASan | Windows (clang-cl) |
+
+```bash
+cmake --preset clang-linux-asan && cmake --build --preset clang-linux-asan && ctest --preset test-clang-linux-asan
+```
+
+ASan/TSan/MSan are **mutually exclusive** (one per build); UBSan is the Linux baseline. TSan/MSan/LSan
+do **not** exist on Windows — only ASan.
+
+### Sanitizers on Windows (the sharp edges)
+
+Windows ASan needs more care than Linux. Two things to know:
+
+- **`msvc-asan` is the easy path.** cl.exe ASan uses the debug CRT (`/MDd`), which matches the
+  default debug dependencies from vcpkg/Conan — so it just works.
+- **`clang-cl-asan` requires the *release* CRT (`/MD`)** — clang-cl ASan cannot link `/MDd`. That
+  means its **dependencies must also be `/MD`**, or you hit `_ITERATOR_DEBUG_LEVEL mismatch (0 vs 2)`
+  at link. This template handles it for Conan via `cmake/conan-profiles/clang-cl-windows-asan.ini`
+  (`compiler.runtime_type=Release`), auto-selected by the `clang-cl-asan` preset.
+  - **Using vcpkg instead of Conan?** You'd need a release-CRT triplet for `clang-cl-asan` (vcpkg's
+    default debug triplet is `/MDd`). Conan is handled out of the box.
+- **STL container annotations are disabled under Windows ASan** (`_DISABLE_STRING_ANNOTATION` /
+  `_DISABLE_VECTOR_ANNOTATION`). Prebuilt deps aren't ASan-instrumented, so leaving annotations on
+  causes `LNK2038 annotate_string/annotate_vector` mismatches. Trade-off: no STL container-overflow
+  detection; heap-buffer-overflow and use-after-free detection are unaffected.
+- The **ASan runtime DLL** (`clang_rt.asan_dynamic-x86_64.dll`) is deployed next to the executables
+  automatically (`deploy_asan_runtime` in `cmake/sanitizer_analyzer.cmake`).
+
+Rule of thumb: on Windows, prefer **`msvc-asan`** unless you specifically build with clang-cl.
+
+---
+
 ## Alternative: machine-wide clangd flags
 
 If you'd rather not repeat the flags per editor, put them in your **user** clangd config — it
