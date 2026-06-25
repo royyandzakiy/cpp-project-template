@@ -70,6 +70,17 @@ jobs:
         if: matrix.preset == 'clang-linux-debug'
         run: cmake --build --preset ${{ matrix.preset }} --target coverage
 
+      # Render the coverage table straight onto the Actions run page (no need to open the artifact).
+      # The `coverage` target wrote build/<preset>/coverage.lcov; cov-to-md.py turns it into Markdown.
+      - name: Coverage job summary
+        if: matrix.preset == 'clang-linux-debug'
+        run: |
+          {
+            echo "## Coverage — ${{ matrix.preset }} (Clang)"
+            echo ""
+            python3 scripts/cov-to-md.py "build/${{ matrix.preset }}/coverage.lcov"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload coverage HTML
         if: matrix.preset == 'clang-linux-debug'
         uses: actions/upload-artifact@v4

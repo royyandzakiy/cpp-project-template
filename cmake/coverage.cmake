@@ -61,6 +61,8 @@ function(setup_coverage_target test_target)
               "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}" --output-on-failure
       # Merge raw profiles (glob needs a shell — coverage is a Clang/Unix path).
       COMMAND bash -c "'${LLVM_PROFDATA}' merge -sparse ${_cov}/*.profraw -o '${_cov}/merged.profdata'"
+      # Emit an lcov tracefile (consumed by Codecov/Coveralls and scripts/cov-to-md.py).
+      COMMAND bash -c "'${LLVM_COV}' export -format=lcov '$<TARGET_FILE:${test_target}>' -instr-profile='${_cov}/merged.profdata' -ignore-filename-regex='${_ignore}' > '${CMAKE_BINARY_DIR}/coverage.lcov'"
       COMMAND "${LLVM_COV}" report "$<TARGET_FILE:${test_target}>"
               "-instr-profile=${_cov}/merged.profdata" "-ignore-filename-regex=${_ignore}"
       COMMAND "${LLVM_COV}" show "$<TARGET_FILE:${test_target}>"

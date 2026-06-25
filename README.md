@@ -1,5 +1,11 @@
 # C++ Project Template (clangd)
 
+[![CI](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+![C++23](https://img.shields.io/badge/C%2B%2B-23-00599C?logo=cplusplus&logoColor=white)
+![Clang 21](https://img.shields.io/badge/Clang-21-262D3A?logo=llvm&logoColor=white)
+![Tested on Ubuntu 24.04](https://img.shields.io/badge/tested%20on-Ubuntu%2024.04-E95420?logo=ubuntu&logoColor=white)
+<!-- coverage badge goes here once a backend is chosen (Codecov / dynamic gist) -->
+
 A cross-platform, **IDE- and OS-agnostic** C++23 project template. Language intelligence comes
 from [clangd](https://clangd.llvm.org/), the build from CMake Presets, and dependencies from
 vcpkg. Ships with sanitizers, static analysis, formatting, profiling hooks, example targets, and
