@@ -1,10 +1,6 @@
 # DEVELOPMENT
 
-- find pkg with pkg mgr guards
-- project opts does not req additional installs - fast linker off
 - if user selects compiler that they dont hv, give graceful fallback
-- generate version to give good msg if version.txt missing
-- gen version off by def (keep the file)
 - add sourcetrail somewhere in readme: https://github.com/CoatiSoftware/Sourcetrail/releases/tag/2021.4.19
 
 ## Backlog

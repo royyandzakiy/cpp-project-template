@@ -13,7 +13,7 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../version.txt")
   unset(_version_raw)
 else()
   set(PROJECT_VERSION_STRING "0.1.0")
-  message(WARNING "version.txt not found; defaulting to ${PROJECT_VERSION_STRING}")
+  message(WARNING "version.txt not found; defaulting to ${PROJECT_VERSION_STRING}. else, create version.txt with values X.Y.Z (can have more than 1 digit for each)")
 endif()
 
 function(generate_version_header)
