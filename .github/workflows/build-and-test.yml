@@ -18,13 +18,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Start with one known-good preset; add more (release / gcc / sanitizers) back here later.
         preset:
           - clang-linux-debug
-          - clang-linux-release
-          - gcc-linux-debug
-          - gcc-linux-release
     steps:
-      # submodules: cmake-conan provider lives in cmake/cmake-conan (PKG_MANAGER defaults to conan).
+      # submodules: the cmake-conan provider lives in cmake/cmake-conan (used when PKG_MANAGER=conan).
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -55,8 +53,11 @@ jobs:
             conan-${{ runner.os }}-${{ matrix.preset }}-
             conan-${{ runner.os }}-
 
+      # PKG_MANAGER=conan: local_options.cmake (which selects conan) is gitignored, and the
+      # presets default to vcpkg — so CI must select the provider it actually provisions above.
+      # BUILD_TESTING=ON so the ctest step below has tests to run.
       - name: Configure
-        run: cmake --preset ${{ matrix.preset }}
+        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}

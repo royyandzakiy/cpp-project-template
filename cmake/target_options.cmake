@@ -20,7 +20,6 @@ function(configure_target target)
       ${target}
       PRIVATE
       <filesystem>
-      <print>
       <string>
       <string_view>
       <vector>
