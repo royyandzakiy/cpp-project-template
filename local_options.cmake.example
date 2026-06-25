@@ -1,0 +1,43 @@
+# local_options.cmake.example — copy to `local_options.cmake` (gitignored) and uncomment what you want.
+#
+# CMakeLists.txt includes local_options.cmake BEFORE project_options.cmake, so (under CMP0077, NEW
+# at cmake_minimum_required 3.28) the plain set()s here win over the option() defaults. Use this for
+# machine-local choices — package manager, toolchain paths, and feature flags — without editing any
+# tracked file. See project_options.cmake for the full list of options.
+
+# ------ Package manager: vcpkg | conan | none ------
+# set(PKG_MANAGER conan)
+# set(PKG_MANAGER none)                 # bring your own deps via system find_package()
+
+# vcpkg only — set if vcpkg isn't on PATH / a standard location (auto-detects PATH, /opt/vcpkg,
+# C:/vcpkg, ~/vcpkg, ...):
+# set(VCPKG_ROOT_PATH "C:/vcpkg")       # Windows
+# set(VCPKG_ROOT_PATH "/opt/vcpkg")     # Linux / macOS
+
+# Conan only — override the auto-detected host profile if you need a custom one:
+# set(CONAN_HOST_PROFILE "/path/to/your.ini")
+
+# ------ Build everything while developing ------
+# set(BUILD_TESTING ON)
+# set(BUILD_EXAMPLES ON)
+# set(GENERATE_VERSION_HEADER ON)
+
+# ------ Code quality ------
+# set(ENABLE_STRICT_COMPILER ON)        # warnings as errors
+# set(ENABLE_CLANG_TIDY ON)             # tidy on first-party code (no-op if clang-tidy absent)
+
+# ------ Build speed (no-op if the tool is missing) ------
+# set(ENABLE_CCACHE ON)
+# set(ENABLE_FAST_LINKER ON)            # mold / lld
+
+# ------ Sanitizers — prefer a preset (clang-linux-asan / clang-cl-asan / clang-linux-full).
+# Forcing one here makes EVERY build use it and collides with the tsan/msan presets:
+# set(ENABLE_SANITIZERS ON)
+# set(ENABLE_ASAN ON)
+
+# ------ Coverage / throughput / profiling — situational ------
+# set(ENABLE_COVERAGE ON)
+# set(ENABLE_PCH ON)                    # faster clean builds; can slow incremental
+# set(ENABLE_UNITY_BUILD ON)            # faster clean/CI builds; incremental-hostile
+# set(ENABLE_TRACY ON)
+# set(ENABLE_PERFETTO ON)
