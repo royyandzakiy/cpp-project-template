@@ -3,8 +3,17 @@
 [![CI](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 ![C++23](https://img.shields.io/badge/C%2B%2B-23-00599C?logo=cplusplus&logoColor=white)
 ![Clang 21](https://img.shields.io/badge/Clang-21-262D3A?logo=llvm&logoColor=white)
+![GCC 13](https://img.shields.io/badge/GCC-13-262D3A?logo=gnu&logoColor=white)
 ![Tested on Ubuntu 24.04](https://img.shields.io/badge/tested%20on-Ubuntu%2024.04-E95420?logo=ubuntu&logoColor=white)
 [![coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/coverage.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+
+<!-- Badges:
+     • Coverage is DYNAMIC: the clang-linux-debug CI job publishes coverage.json to the orphan
+       `badges` branch (push to main) and the badge above reads it via the shields endpoint.
+     • Compiler/OS badges are STATIC — hand-maintained. Clang is pinned (21); GCC is the runner's
+       distro default, so bump its number if a gcc CI job reports a different major. Add
+       Windows/macOS rows here when those presets join the matrix. -->
+
 
 A cross-platform, **IDE- and OS-agnostic** C++23 project template. Language intelligence comes
 from [clangd](https://clangd.llvm.org/), the build from CMake Presets, and dependencies from
