@@ -27,6 +27,10 @@ endif()
 # ------ Linters & Static Analyzers ------
 option(ENABLE_CLANG_TIDY "Enable clang tidy" OFF)
 
+# ------ Coverage ------
+# Instrument the build and provide a `coverage` target (Clang: LLVM source-based; GCC: gcov/gcovr).
+option(ENABLE_COVERAGE "Instrument for code coverage and add the 'coverage' target" OFF)
+
 # ------ Compile Optimizations ------
 option(ENABLE_CCACHE "Enable compiler cache (ccache) — no-op if ccache isn't installed" OFF)
 option(ENABLE_FAST_LINKER "Use mold/lld if available (much faster linking) — auto-detected, no-op if absent" OFF)
