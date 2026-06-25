@@ -5,11 +5,10 @@
 - create local_options.debug/release/lib-debug/lib-release.cmake
 
 - github actions
-  - check if coverage works fine
   - build, run, test all presets (including sanitizers)
   - restructure ci scripts to be modular and expandable
   - add fuzz build matrix option (random seed)
-  - add badges to readme after successful testing
+  - add badges for all preset variant, or add into table
 - bitbucket pipeline
 
 - add INSTALL to create as library, add in option
