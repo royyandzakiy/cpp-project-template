@@ -25,6 +25,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #=========================
 include(cmake/compiler.cmake) # warnings, strict, build-type guard, debug postfix
 include(cmake/sanitizer_analyzer.cmake) # sanitizers, clang-tidy, ccache, fast-linker, deploy_asan_runtime()
+include(cmake/coverage.cmake) # coverage instrumentation + setup_coverage_target() (when ENABLE_COVERAGE)
 include(cmake/profiler.cmake) # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
 include(cmake/format.cmake) # format / format-check / tidy-all targets
 include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
@@ -55,6 +56,9 @@ FetchContent_MakeAvailable(sml)
 if(BUILD_TESTING)
   enable_testing() # ctest / gtest_discover_tests register the unit tests
   add_subdirectory(test)
+  if(ENABLE_COVERAGE AND TARGET unit_tests)
+    setup_coverage_target(unit_tests) # adds the `coverage` target (runs tests + reports)
+  endif()
 endif()
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
