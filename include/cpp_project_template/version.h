@@ -3,7 +3,12 @@
 #pragma once
 
 #define PROJECT_NAME "cpp_project_template"
-#define PROJECT_VERSION_MAJOR "1"
-#define PROJECT_VERSION_MINOR "0"
-#define PROJECT_VERSION_PATCH "0"
-#define PROJECT_VERSION "1.0.0"
+
+// Numeric components — usable in preprocessor #if comparisons, e.g.
+//   #if PROJECT_VERSION_MAJOR >= 2 || (PROJECT_VERSION_MAJOR == 1 && PROJECT_VERSION_MINOR >= 5)
+#define PROJECT_VERSION_MAJOR 1
+#define PROJECT_VERSION_MINOR 0
+#define PROJECT_VERSION_PATCH 0
+
+// Human-readable string, e.g. for logging / --version output.
+#define PROJECT_VERSION_STRING "1.0.0"
