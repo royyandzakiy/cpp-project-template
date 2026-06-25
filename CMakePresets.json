@@ -204,10 +204,7 @@
 			"inherits": [
 				"gcc-linux-base",
 				"build-debug"
-			],
-			"cacheVariables": {
-				"ENABLE_COVERAGE": "ON"
-			}
+			]
 		},
 		{
 			"name": "clang-linux-release",
