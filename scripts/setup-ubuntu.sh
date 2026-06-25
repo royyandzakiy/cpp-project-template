@@ -48,14 +48,16 @@ fi
 # libclang-rt-*-dev = compiler-rt runtime libs (libclang_rt.profile/asan/ubsan/tsan/msan...).
 # The clang-* package does NOT include these, yet coverage (-fprofile-instr-generate) and the
 # sanitizer presets need them — without it the link fails: "cannot open libclang_rt.profile.a".
+# llvm-* provides the LLVM tools (llvm-cov, llvm-profdata) the `coverage` target uses to merge
+# profiles and report — without it the target isn't created and `--target coverage` fails.
 $SUDO apt-get install -y --no-install-recommends \
   "clang-${CLANG_VERSION}" "clangd-${CLANG_VERSION}" "clang-tidy-${CLANG_VERSION}" \
   "clang-format-${CLANG_VERSION}" "lld-${CLANG_VERSION}" "lldb-${CLANG_VERSION}" \
-  "libclang-rt-${CLANG_VERSION}-dev"
+  "libclang-rt-${CLANG_VERSION}-dev" "llvm-${CLANG_VERSION}"
 
 # Make the unversioned tools resolve to the pinned version — the project, presets and CI all
 # invoke clang / clangd / clang-tidy / clang-format without a version suffix.
-for tool in clang clang++ clangd clang-tidy clang-format lld ld.lld lldb; do
+for tool in clang clang++ clangd clang-tidy clang-format lld ld.lld lldb llvm-cov llvm-profdata; do
   if [ -x "/usr/bin/${tool}-${CLANG_VERSION}" ]; then
     # High priority (1000) so the pinned version beats any pre-installed clang on a CI runner.
     $SUDO update-alternatives --install "/usr/bin/${tool}" "${tool}" "/usr/bin/${tool}-${CLANG_VERSION}" 1000
