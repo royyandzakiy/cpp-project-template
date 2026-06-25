@@ -62,3 +62,18 @@ jobs:
       # that would hang CI. ctest only runs the unit_tests target.
       - name: Test
         run: ctest --preset test-${{ matrix.preset }}
+
+      # Coverage: clang-linux-debug sets ENABLE_COVERAGE=ON, so the `coverage` target exists.
+      # It re-runs the tests under LLVM instrumentation and writes build/<preset>/coverage-html/.
+      # Guarded by preset name so other (non-coverage) presets added to the matrix don't break.
+      - name: Coverage report
+        if: matrix.preset == 'clang-linux-debug'
+        run: cmake --build --preset ${{ matrix.preset }} --target coverage
+
+      - name: Upload coverage HTML
+        if: matrix.preset == 'clang-linux-debug'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/coverage-html
+          if-no-files-found: error
