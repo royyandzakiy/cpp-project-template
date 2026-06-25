@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
-"""Convert an lcov tracefile to a GitHub-flavoured Markdown coverage table.
+"""Convert an lcov tracefile to a GitHub-flavoured Markdown table or a shields.io badge.
 
 Usage:
-    python3 scripts/cov-to-md.py coverage.lcov        # from a file
-    llvm-cov export -format=lcov ... | python3 scripts/cov-to-md.py   # from stdin
+    python3 scripts/cov-to-md.py coverage.lcov            # Markdown table (default)
+    llvm-cov export -format=lcov ... | python3 scripts/cov-to-md.py   # table from stdin
+    python3 scripts/cov-to-md.py --shields coverage.lcov  # shields.io endpoint JSON
 
 Reads the per-file LF/LH (lines), FNF/FNH (functions), BRF/BRH (branches) records that
-llvm-cov (or gcov/lcov) emit, and prints one row per file plus a TOTAL row.
+llvm-cov (or gcov/lcov) emit. The default mode prints one row per file plus a TOTAL row;
+--shields prints a shields.io endpoint object built from total LINE coverage.
 """
+import json
 import os
 import sys
 
 
-def read_text() -> str:
-    if len(sys.argv) > 1:
-        with open(sys.argv[1], encoding="utf-8") as handle:
+def read_text(path: str | None) -> str:
+    if path:
+        with open(path, encoding="utf-8") as handle:
             return handle.read()
     return sys.stdin.read()
 
@@ -44,8 +47,44 @@ def parse(text: str):
     return files, totals
 
 
+def badge_color(percent: float) -> str:
+    for threshold, color in (
+        (90, "brightgreen"),
+        (80, "green"),
+        (70, "yellowgreen"),
+        (60, "yellow"),
+        (50, "orange"),
+    ):
+        if percent >= threshold:
+            return color
+    return "red"
+
+
+def shields_json(totals: dict) -> str:
+    found, hit = totals["LF"], totals["LH"]
+    percent = 100.0 * hit / found if found else 0.0
+    return json.dumps(
+        {
+            "schemaVersion": 1,
+            "label": "coverage",
+            "message": f"{percent:.1f}%",
+            "color": badge_color(percent),
+        }
+    )
+
+
 def main() -> None:
-    files, totals = parse(read_text())
+    args = sys.argv[1:]
+    shields = "--shields" in args
+    args = [a for a in args if a != "--shields"]
+    path = args[0] if args else None
+
+    files, totals = parse(read_text(path))
+
+    if shields:
+        print(shields_json(totals))
+        return
+
     rows = ["| File | Lines | Functions | Branches |", "|---|---|---|---|"]
     for f in sorted(files, key=lambda x: x["file"]):
         rows.append(
