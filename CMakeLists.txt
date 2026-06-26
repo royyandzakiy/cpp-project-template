@@ -33,6 +33,8 @@ include(cmake/coverage.cmake) # coverage instrumentation + setup_coverage_target
 include(cmake/profiler.cmake) # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
 include(cmake/target_options.cmake) # defines configure_target()
 if(PROJECT_IS_TOP_LEVEL)
+  # include(cmake/package_manager.cmake)
+  # setup_package_manager() # dispatches to vcpkg / conan / none per PKG_MANAGER
   include(cmake/format.cmake) # format / format-check / tidy-all targets
   include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
 endif()
@@ -49,6 +51,7 @@ endif()
 #=========================
 # Only the app/examples need these; MyLib is self-contained and the tests fetch GoogleTest
 # themselves. This lets a lib-only (or add_subdirectory) build configure with no third-party deps.
+# if(PROJECT_IS_TOP_LEVEL)
 if(BUILD_APP OR BUILD_EXAMPLES)
   find_package(fmt CONFIG REQUIRED)
   # find_package(scn CONFIG REQUIRED)

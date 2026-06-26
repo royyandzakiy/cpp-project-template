@@ -39,11 +39,11 @@ if(BUILD_LIB)
     test_simple.cpp
     test_math.cpp
     test_classify.cpp
-    ${CMAKE_SOURCE_DIR}/src/mylib/math.cpp
-    ${CMAKE_SOURCE_DIR}/src/mylib/classify.cpp)
+    ${PROJECT_SOURCE_DIR}/src/mylib/math.cpp
+    ${PROJECT_SOURCE_DIR}/src/mylib/classify.cpp)
   # Pull MyLib's public + generated (build-tree mylib_export.h) include dirs without linking the DLL.
   target_include_directories(
-    unit_tests PRIVATE ${CMAKE_SOURCE_DIR}/include
+    unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/include
                        $<TARGET_PROPERTY:MyLib,INTERFACE_INCLUDE_DIRECTORIES>)
   target_compile_definitions(unit_tests PRIVATE MYLIB_STATIC_DEFINE)
   target_link_libraries(unit_tests PRIVATE GTest::gtest GTest::gmock)
@@ -55,8 +55,8 @@ endif()
 # BUILD_APP, since that is what they test. gmock_main provides main() + InitGoogleMock.
 # =============================================================================
 if(BUILD_APP)
-  add_executable(app_tests test_app.cpp ${CMAKE_SOURCE_DIR}/src/myapp/greeter.cpp)
-  target_include_directories(app_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
+  add_executable(app_tests test_app.cpp ${PROJECT_SOURCE_DIR}/src/myapp/greeter.cpp)
+  target_include_directories(app_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
   target_link_libraries(app_tests PRIVATE GTest::gmock_main fmt::fmt)
   gtest_discover_tests(app_tests)
 endif()

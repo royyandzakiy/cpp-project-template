@@ -39,19 +39,19 @@ generate_export_header(
 target_include_directories(
   MyLib
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/exports> # generated mylib_export.h
-         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>         # hand-written public headers
+         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>         # hand-written public headers
          $<INSTALL_INTERFACE:include>)
 
 # Two header file sets so install() lays both source and generated headers under include/MyLib/.
 set(_mylib_public_headers
-    "${CMAKE_SOURCE_DIR}/include/MyLib/math.hpp"
-    "${CMAKE_SOURCE_DIR}/include/MyLib/classify.hpp")
+    "${PROJECT_SOURCE_DIR}/include/MyLib/math.hpp"
+    "${PROJECT_SOURCE_DIR}/include/MyLib/classify.hpp")
 if(GENERATE_VERSION_HEADER) # version.h is platform-independent, lives in the source tree
-  list(APPEND _mylib_public_headers "${CMAKE_SOURCE_DIR}/include/MyLib/version.h")
+  list(APPEND _mylib_public_headers "${PROJECT_SOURCE_DIR}/include/MyLib/version.h")
 endif()
 target_sources(
   MyLib
-  PUBLIC FILE_SET HEADERS BASE_DIRS "${CMAKE_SOURCE_DIR}/include" FILES ${_mylib_public_headers}
+  PUBLIC FILE_SET HEADERS BASE_DIRS "${PROJECT_SOURCE_DIR}/include" FILES ${_mylib_public_headers}
          FILE_SET generated_headers TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/exports"
          FILES "${CMAKE_CURRENT_BINARY_DIR}/exports/MyLib/mylib_export.h")
 
@@ -83,7 +83,7 @@ install(
   COMPONENT MyLib)
 
 configure_package_config_file(
-  "${CMAKE_SOURCE_DIR}/cmake/MyLibConfig.cmake.in"
+  "${PROJECT_SOURCE_DIR}/cmake/MyLibConfig.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfig.cmake"
   INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyLib)
 
@@ -107,7 +107,7 @@ if(PROJECT_IS_TOP_LEVEL)
     TARGET MyLib
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} --install "${CMAKE_BINARY_DIR}" --config $<CONFIG> --component MyLib
-            --prefix "${CMAKE_SOURCE_DIR}/generated_lib/${_mylib_platform}/$<CONFIG>"
+            --prefix "${PROJECT_SOURCE_DIR}/generated_lib/${_mylib_platform}/$<CONFIG>"
     COMMENT "Staging MyLib into generated_lib/${_mylib_platform}/$<CONFIG>"
     VERBATIM)
 endif()

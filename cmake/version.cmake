@@ -20,8 +20,8 @@ function(generate_version_header)
   # NB: CMAKE_CURRENT_LIST_DIR inside a function is the CALLER's dir, so use an explicit path.
   # Generated under include/MyLib/ so it ships as part of MyLib's installed public headers.
   configure_file(
-    "${CMAKE_SOURCE_DIR}/cmake/version.h.in"
-    "${CMAKE_SOURCE_DIR}/include/MyLib/version.h" @ONLY)
-  source_group("Generated" FILES "${CMAKE_SOURCE_DIR}/include/MyLib/version.h")
+    "${PROJECT_SOURCE_DIR}/cmake/version.h.in"
+    "${PROJECT_SOURCE_DIR}/include/MyLib/version.h" @ONLY)
+  source_group("Generated" FILES "${PROJECT_SOURCE_DIR}/include/MyLib/version.h")
   message(STATUS "Version header: ${PROJECT_NAME} v${PROJECT_VERSION}")
 endfunction()
