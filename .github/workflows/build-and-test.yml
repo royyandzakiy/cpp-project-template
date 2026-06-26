@@ -11,10 +11,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# contents: write lets the coverage step push the badge JSON to the `badges` branch using the
-# built-in GITHUB_TOKEN (no PAT / external account needed).
+# Least privilege by default; only the publish-badges job below elevates to contents: write
+# (to push the badges branch via the built-in GITHUB_TOKEN — no PAT / external account needed).
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   linux:
@@ -94,16 +94,60 @@ jobs:
             python3 scripts/cov-to-md.py "build/${{ matrix.preset }}/coverage.lcov"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Publish a shields.io endpoint JSON to the orphan `badges` branch (push to main/master only —
-      # PRs and forks lack write access). The README coverage badge reads this file. Only the
-      # clang-linux-debug leg pushes, so there's a single writer and no push race. The push does
-      # NOT retrigger CI ([skip ci] + the branch isn't a trigger).
-      - name: Publish coverage badge
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && matrix.preset == 'clang-linux-debug'
+      # Stage shields.io endpoint JSONs as artifacts (no pushing here — see the publish-badges job).
+      # Compiler/version come from build/<preset>/toolchain.txt (written by cmake/compiler.cmake),
+      # so the badge can never drift from what actually built. The clang leg also owns coverage + OS.
+      - name: Stage badges (clang)
+        if: matrix.preset == 'clang-linux-debug'
+        run: |
+          mkdir -p badges-out
+          python3 scripts/cov-to-md.py --shields "build/${{ matrix.preset }}/coverage.lcov" > badges-out/coverage.json
+          python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/clang.json
+          . /etc/os-release
+          python3 scripts/make-badge.py --label "tested on" --message "$NAME $VERSION_ID" --color E95420 --logo ubuntu > badges-out/os.json
+      - name: Stage badges (gcc)
+        if: matrix.preset == 'gcc-linux-debug'
+        run: |
+          mkdir -p badges-out
+          python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/gcc.json
+      - name: Upload staged badges
+        if: matrix.preset == 'clang-linux-debug' || matrix.preset == 'gcc-linux-debug'
+        uses: actions/upload-artifact@v4
+        with:
+          name: badges-${{ matrix.preset }}
+          path: badges-out
+          if-no-files-found: error
+
+      - name: Upload coverage HTML
+        if: matrix.preset == 'clang-linux-debug'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/coverage-html
+          if-no-files-found: error
+
+  # Single writer: collect every leg's staged badge JSONs and commit them to the orphan `badges`
+  # branch in ONE push (no inter-job race). Runs only when the whole matrix passed (needs: linux)
+  # and only on push to main/master (PRs/forks can't push). The push does NOT retrigger CI
+  # ([skip ci] + the branch isn't a trigger). New badges (Windows compilers, fuzz stats, ...) just
+  # need another leg to stage a *.json artifact — this job picks them up automatically.
+  publish-badges:
+    needs: linux
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    permissions:
+      contents: write
+    steps:
+      - name: Download staged badges
+        uses: actions/download-artifact@v4
+        with:
+          pattern: badges-*
+          path: badges-in
+          merge-multiple: true
+      - name: Commit to badges branch
         env:
           REPO_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         run: |
-          python3 scripts/cov-to-md.py --shields "build/${{ matrix.preset }}/coverage.lcov" > /tmp/coverage.json
           work="$(mktemp -d)"
           if git clone --depth=1 --branch badges "$REPO_URL" "$work" 2>/dev/null; then
             cd "$work"
@@ -115,17 +159,9 @@ jobs:
             git checkout -q --orphan badges
             git rm -rqf . 2>/dev/null || true
           fi
-          cp /tmp/coverage.json coverage.json
+          cp "$GITHUB_WORKSPACE"/badges-in/*.json .
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add coverage.json
-          git commit -q -m "ci: update coverage badge [skip ci]" || { echo "coverage unchanged"; exit 0; }
+          git add ./*.json
+          git commit -q -m "ci: update badges [skip ci]" || { echo "badges unchanged"; exit 0; }
           git push -q origin badges
-
-      - name: Upload coverage HTML
-        if: matrix.preset == 'clang-linux-debug'
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ matrix.preset }}
-          path: build/${{ matrix.preset }}/coverage-html
-          if-no-files-found: error
