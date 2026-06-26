@@ -3,15 +3,27 @@
 # package and auto-stages it into <repo>/generated_lib/ after every build.
 # =============================================================================
 
-# ----- The shared library -----
-add_library(MyLib SHARED math.cpp classify.cpp)
+# ----- The library (SHARED by default, STATIC when BUILD_LIB_SHARED=OFF) -----
+if(BUILD_LIB_SHARED)
+  set(_mylib_type SHARED)
+else()
+  set(_mylib_type STATIC)
+endif()
+add_library(MyLib ${_mylib_type} math.cpp classify.cpp)
 add_library(MyLib::MyLib ALIAS MyLib) # so in-tree consumers can use the same name as installed ones
+message(STATUS "MyLib: building ${_mylib_type} library")
 
 set_target_properties(
   MyLib PROPERTIES
   CXX_VISIBILITY_PRESET hidden # only MYLIB_EXPORT-annotated symbols are exported (matches Windows)
   VISIBILITY_INLINES_HIDDEN ON
-  DEBUG_POSTFIX d) # MyLibd.dll in Debug, so debug/release artifacts can coexist
+  DEBUG_POSTFIX d) # MyLibd.{dll,lib,a} in Debug, so debug/release artifacts can coexist
+
+# STATIC: neutralize the export macro for the lib AND its consumers (PUBLIC propagates the define
+# through the exported target, so example_mylib / find_package users get it automatically too).
+if(NOT BUILD_LIB_SHARED)
+  target_compile_definitions(MyLib PUBLIC MYLIB_STATIC_DEFINE)
+endif()
 
 # ----- Export macro header (cross-platform: __declspec on Windows, visibility on GCC/Clang) -----
 # Generated into the BUILD tree (not the source tree): the content is compiler/platform specific,
@@ -85,11 +97,17 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfig.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyLib
         COMPONENT MyLib)
 
-# ----- Seamless artifact staging: auto-install into <repo>/generated_lib/ after each build -----
-add_custom_command(
-  TARGET MyLib
-  POST_BUILD
-  COMMAND ${CMAKE_COMMAND} --install "${CMAKE_BINARY_DIR}" --config $<CONFIG> --component MyLib
-          --prefix "${CMAKE_SOURCE_DIR}/generated_lib"
-  COMMENT "Staging MyLib into generated_lib/ (bin, lib, include, lib/cmake/MyLib)"
-  VERBATIM)
+# ----- Seamless artifact staging into <repo>/generated_lib/<platform>/<config>/ -----
+# Per-platform AND per-config: Debug/Release binaries are not interchangeable (e.g. different CRT
+# on Windows), and different toolchains/OSes must not overwrite each other. Top-level only — when
+# consumed via add_subdirectory() the parent project owns installation.
+if(PROJECT_IS_TOP_LEVEL)
+  set(_mylib_platform "${CMAKE_SYSTEM_NAME}-${CMAKE_CXX_COMPILER_ID}")
+  add_custom_command(
+    TARGET MyLib
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} --install "${CMAKE_BINARY_DIR}" --config $<CONFIG> --component MyLib
+            --prefix "${CMAKE_SOURCE_DIR}/generated_lib/${_mylib_platform}/$<CONFIG>"
+    COMMENT "Staging MyLib into generated_lib/${_mylib_platform}/$<CONFIG>"
+    VERBATIM)
+endif()

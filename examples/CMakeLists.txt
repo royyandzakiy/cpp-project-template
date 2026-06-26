@@ -4,7 +4,8 @@
 if(BUILD_LIB AND TARGET MyLib)
   add_executable(example_mylib mylib_consumer/main.cpp)
   target_link_libraries(example_mylib PRIVATE MyLib::MyLib fmt::fmt)
-  if(WIN32)
+  # Only a SHARED MyLib produces a runtime DLL to deploy; a STATIC MyLib is linked in directly.
+  if(WIN32 AND BUILD_LIB_SHARED)
     # Drop MyLib.dll (and any other runtime DLL deps) next to the exe so it runs in place.
     add_custom_command(
       TARGET example_mylib

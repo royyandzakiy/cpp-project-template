@@ -51,6 +51,17 @@ if(BUILD_LIB)
 endif()
 
 # =============================================================================
+# App module tests — exercise src/myapp/greeter with a MOCKED clock (gmock). Built only with
+# BUILD_APP, since that is what they test. gmock_main provides main() + InitGoogleMock.
+# =============================================================================
+if(BUILD_APP)
+  add_executable(app_tests test_app.cpp ${CMAKE_SOURCE_DIR}/src/myapp/greeter.cpp)
+  target_include_directories(app_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
+  target_link_libraries(app_tests PRIVATE GTest::gmock_main fmt::fmt)
+  gtest_discover_tests(app_tests)
+endif()
+
+# =============================================================================
 # Sanitizer trip-wires — verify each sanitizer actually CATCHES its bug class.
 # Built only when ENABLE_SANITIZERS (so they inherit the sanitizer flags from
 # cmake/sanitizer_analyzer.cmake). Each is a ctest test that PASSES when the

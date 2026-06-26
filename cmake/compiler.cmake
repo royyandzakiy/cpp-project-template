@@ -11,7 +11,8 @@ endif()
 # `cmake -S . -B build` isn't an unoptimized, debug-info-less build. (Presets always set one;
 # multi-config generators like Visual Studio choose the config at build time.)
 get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(NOT _is_multi_config AND NOT CMAKE_BUILD_TYPE)
+# Top-level only: a parent project (add_subdirectory) owns the global build type.
+if(PROJECT_IS_TOP_LEVEL AND NOT _is_multi_config AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE
       RelWithDebInfo
       CACHE STRING "Build type" FORCE)
