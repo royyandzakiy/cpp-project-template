@@ -1,7 +1,8 @@
 # DEVELOPMENT
 
-- add libraries to vcpkg, same as in conan
-- 
+- fix badge issues
+- test on clion for all features
+- test in vs for all features
 
 - library
   - consider, create myapp and mylib. both are generated as seperate things, myapp does not use mylib. examples do use mylib
