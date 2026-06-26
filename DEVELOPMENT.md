@@ -1,5 +1,8 @@
 # DEVELOPMENT
 
+- add libraries to vcpkg, same as in conan
+- 
+
 - library
   - consider, create myapp and mylib. both are generated as seperate things, myapp does not use mylib. examples do use mylib
   - create install script, based on nexus
