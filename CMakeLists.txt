@@ -37,7 +37,7 @@ if(PROJECT_IS_TOP_LEVEL) # format & setup clangd
 endif()
 
 include(cmake/compiler.cmake)            # warnings, strict, build-type guard, debug postfix
-include(cmake/sanitizer_analyzer.cmake)          # ASan/TSan/MSan/UBSan flags + deploy_asan_runtime()
+include(cmake/sanitizers.cmake)          # ASan/TSan/MSan/UBSan flags + deploy_asan_runtime()
 include(cmake/analyzers.cmake)           # clang-tidy discovery
 include(cmake/build_acceleration.cmake)  # fast linker (mold/lld) + ccache
 include(cmake/profiler.cmake)            # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
