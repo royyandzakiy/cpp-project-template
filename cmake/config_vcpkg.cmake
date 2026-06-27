@@ -93,7 +93,7 @@ else()
         " 3. Pass the path directly to the CMake command:\n"
         "    cmake -DVCPKG_ROOT_PATH=/path/to/vcpkg .\n\n"
         " 4. Create a local configuration file:\n"
-        "    Create 'local_options.cmake' and add:\n"
+        "    Create 'project_options.local.cmake' and add:\n"
         "    set(VCPKG_ROOT_PATH \"/path/to/vcpkg\")\n"
         "----------------------------------------------------------------------\n")
   endif()

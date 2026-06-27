@@ -1,6 +1,6 @@
-# local_options.cmake.example — copy to `local_options.cmake` (gitignored) and uncomment what you want.
+# project_options.local.cmake.example — copy to `project_options.local.cmake` (gitignored) and uncomment what you want.
 #
-# CMakeLists.txt includes local_options.cmake BEFORE project_options.cmake, so (under CMP0077, NEW
+# CMakeLists.txt includes project_options.local.cmake BEFORE project_options.cmake, so (under CMP0077, NEW
 # at cmake_minimum_required 3.28) the plain set()s here win over the option() defaults. Use this for
 # machine-local choices — package manager, toolchain paths, and feature flags — without editing any
 # tracked file. See project_options.cmake for the full list of options.

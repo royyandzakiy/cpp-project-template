@@ -35,7 +35,7 @@ generated_lib/
 # ----- Package managers / local config -----
 vcpkg_installed/
 CMakeUserPresets.json
-local_options.cmake
+project_options.local.cmake
 
 # ----- Compiled artifacts -----
 *.o

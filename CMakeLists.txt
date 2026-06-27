@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.28)
 #=========================
 # Project Options & Package Manager
 #=========================
-include(local_options.cmake OPTIONAL) # create & modify to change locally (only for you)
+include(project_options.local.cmake OPTIONAL) # create & modify to change locally (only for you)
 include(project_options.cmake) # modify to change for all developers
 
 # If this project is consumed via add_subdirectory(), the parent owns the provider/toolchain, hence
