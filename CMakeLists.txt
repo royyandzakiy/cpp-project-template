@@ -1,19 +1,23 @@
 cmake_minimum_required(VERSION 3.28)
 
-include(local_options.cmake OPTIONAL)
-include(project_options.cmake)
+#=========================
+# Project Options & Package Manager
+#=========================
+include(local_options.cmake OPTIONAL) # create & modify to change locally (only for you)
+include(project_options.cmake) # modify to change for all developers
+
+# If this project is consumed via add_subdirectory(), the parent owns the provider/toolchain, hence
+# omit this setup_package_maanager(). But because before project(), PROJECT_IS_TOP_LEVEL isn't set yet
+# hence use the source-dir check
 include(cmake/package_manager.cmake)
-# Top-level only. This runs before project(), so PROJECT_IS_TOP_LEVEL isn't set yet — use the
-# source-dir check. When consumed via add_subdirectory(), the parent owns the provider/toolchain.
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   setup_package_manager() # dispatches to vcpkg / conan / none per PKG_MANAGER
 endif()
 
-include(cmake/version.cmake) # reads version.txt -> PROJECT_VERSION_STRING (before project())
-
 #=========================
 # Project Configuration
 #=========================
+include(cmake/version.cmake) # reads version.txt -> PROJECT_VERSION_STRING (before project())
 project(
   cpp_project_template
   LANGUAGES CXX
@@ -33,8 +37,6 @@ include(cmake/coverage.cmake) # coverage instrumentation + setup_coverage_target
 include(cmake/profiler.cmake) # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
 include(cmake/target_options.cmake) # defines configure_target()
 if(PROJECT_IS_TOP_LEVEL)
-  # include(cmake/package_manager.cmake)
-  # setup_package_manager() # dispatches to vcpkg / conan / none per PKG_MANAGER
   include(cmake/format.cmake) # format / format-check / tidy-all targets
   include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
 endif()
@@ -49,12 +51,10 @@ endif()
 #=========================
 # Dependencies
 #=========================
-# Only the app/examples need these; MyLib is self-contained and the tests fetch GoogleTest
-# themselves. This lets a lib-only (or add_subdirectory) build configure with no third-party deps.
-# if(PROJECT_IS_TOP_LEVEL)
+# Lets a lib-only (or add_subdirectory) build configure with no third-party deps.
 if(BUILD_APP OR BUILD_EXAMPLES)
   find_package(fmt CONFIG REQUIRED)
-  # find_package(scn CONFIG REQUIRED)
+  find_package(scn CONFIG REQUIRED)
   include(FetchContent)
   FetchContent_Declare(
     sml
@@ -66,15 +66,19 @@ endif()
 #=========================
 # Targets
 #=========================
-if(BUILD_LIB)
-  add_subdirectory(src/mylib) # library + installable MyLib package (handles its own staging)
-endif()
+# Add or remove targets as needed
 if(BUILD_APP)
   add_subdirectory(src/myapp) # standalone hello-world binary
 endif()
+if(BUILD_LIB)
+  add_subdirectory(src/mylib) # library + installable MyLib package (handles its own staging)
+endif()
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples) # AFTER src/mylib so the example can link the MyLib target
+endif()
 
 #=========================
-# Tests & Examples
+# Tests & Coverage
 #=========================
 if(BUILD_TESTING)
   enable_testing() # ctest / gtest_discover_tests register the unit tests
@@ -82,7 +86,4 @@ if(BUILD_TESTING)
   if(ENABLE_COVERAGE AND TARGET unit_tests)
     setup_coverage_target(unit_tests) # adds the `coverage` target (runs tests + reports)
   endif()
-endif()
-if(BUILD_EXAMPLES)
-  add_subdirectory(examples) # AFTER src/mylib so the example can link the MyLib target
 endif()
