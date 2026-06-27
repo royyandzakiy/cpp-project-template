@@ -36,10 +36,12 @@ if(PROJECT_IS_TOP_LEVEL) # format & setup clangd
   include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
 endif()
 
-include(cmake/compiler.cmake) # warnings, strict, build-type guard, debug postfix
-include(cmake/sanitizer_analyzer.cmake) # sanitizers, clang-tidy, ccache, fast-linker, deploy_asan_runtime()
-include(cmake/profiler.cmake) # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
-include(cmake/target_options.cmake) # defines configure_target()
+include(cmake/compiler.cmake)            # warnings, strict, build-type guard, debug postfix
+include(cmake/sanitizer_analyzer.cmake)          # ASan/TSan/MSan/UBSan flags + deploy_asan_runtime()
+include(cmake/analyzers.cmake)           # clang-tidy discovery
+include(cmake/build_acceleration.cmake)  # fast linker (mold/lld) + ccache
+include(cmake/profiler.cmake)            # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
+include(cmake/configure_target.cmake)    # defines configure_target() — PCH, unity, tidy, profiler link, ASan deploy
 
 #=========================
 # Version Header
