@@ -1,5 +1,9 @@
 # DEVELOPMENT
 
+- makw win ci
+
+---
+
 - add cpack
 
 - library
