@@ -53,14 +53,7 @@ endif()
 #=========================
 # Lets a lib-only (or add_subdirectory) build configure with no third-party deps.
 if(BUILD_APP OR BUILD_EXAMPLES)
-  find_package(fmt CONFIG REQUIRED)
-  find_package(scn CONFIG REQUIRED)
-  include(FetchContent)
-  FetchContent_Declare(
-    sml
-    GIT_REPOSITORY https://github.com/boost-ext/sml.git
-    GIT_TAG v1.1.13)
-  FetchContent_MakeAvailable(sml)
+  include(project_dependencies.cmake)
 endif()
 
 #=========================

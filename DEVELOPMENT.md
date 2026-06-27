@@ -4,10 +4,10 @@
 - create local_options.debug/release/lib-debug/lib-release.cmake
 
 - library
-  - create install script, based on nexus
-    - groom generated_lib files (mylib_export.h???)
   - add INSTALL to create as library, add in option
     - check windows lib template for inspo
+    - install script, based on nexus
+  - call cpack to create package
 
 - move dependencies to single cmake
 - set c compilers for each preset
