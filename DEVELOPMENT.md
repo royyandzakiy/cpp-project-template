@@ -1,29 +1,32 @@
 # DEVELOPMENT
 
-- src as addsubdir
+- fix badge issues
+- create local_options.debug/release/lib-debug/lib-release.cmake
 
 - library
-  - use is project top level to consider testing
-  - skip install to not consider library & cpackaging
-  - add sample math lib in include, with export choose to either compile main or jist sample lib
+  - create install script, based on nexus
+    - groom generated_lib files (mylib_export.h???)
+  - add INSTALL to create as library, add in option
+    - check windows lib template for inspo
 
-- add license
 - move dependencies to single cmake
 - set c compilers for each preset
-- if msvc asan, set debugger target
-- add gcovr.cfg
 - set vcenv
+  - if msvc asan, set debugger target
+
+## Backlog
+
+- test on clion for all features
+- test in vs for all features
 
 - examples
   - qt qml example
   - ftxui example
+
+- add gcovr.cfg
   
 - fuzz example
 - emscripten compiler for wasm (consider)
-
-## Backlog
-
-- create local_options.debug/release/lib-debug/lib-release.cmake
 
 - github actions
   - build, run, test all presets (including sanitizers)
@@ -32,27 +35,22 @@
   - add badges for all preset variant, or add into table
 - bitbucket pipeline
 
-- add INSTALL to create as library, add in option
-  - check windows lib template for inspo
+- if user selects compiler that they dont hv, give graceful fallback
 
 - examples of profiling using tracy, perfetto (compile build time), perf + flamegraph (https://github.com/brendangregg/FlameGraph), valgrind
   - review: hotspot, coz, heaptrack, gperftools
   - create profiling wiki
 - examples of bugs captured with sanitizers
 
-- create template min using this as base
 - move cecep project to use clangd instead
 
 ## Skip
 
-- if user selects compiler that they dont hv, give graceful fallback
+- add license
 - docs generator (doxygen but with most modern ui)
+  - add doxyfile & doxygen
   - create wiki for this project (cleanup current readme, VERY bloated, move content to wiki)
 - open for contributor: issues, discussions, contributions
   - fix readme: logo & badge, pitch (problem to solve), quick start (inline code example), live demo
   - add complete docs suite (tutorials, how-to-guides, understand, reference, release blog, release/change log)
   - add compiler explore quick test
-- add more hardenning
-  - use sourcetrail app
-  - code coverage: find out whats best practice todo in CI after generate coverage report XML (other than via codecov)
-- add doxyfile & doxygen

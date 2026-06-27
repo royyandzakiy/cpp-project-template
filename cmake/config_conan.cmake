@@ -7,7 +7,16 @@
 # failing. PKG_MANAGER stays 'conan' in the cache, so fixing the environment and
 # re-configuring picks Conan back up automatically.
 
-set(CONAN_PROVIDER "${CMAKE_SOURCE_DIR}/cmake/cmake-conan/conan_provider.cmake")
+include(FetchContent)
+FetchContent_Declare(
+  cmake-conan
+  GIT_REPOSITORY https://github.com/conan-io/cmake-conan.git
+  GIT_TAG        develop2
+)
+FetchContent_MakeAvailable(cmake-conan)
+
+set(CONAN_PROVIDER "${cmake-conan_SOURCE_DIR}/conan_provider.cmake")
+
 find_program(CONAN_EXECUTABLE NAMES conan)
 
 set(_conan_ready TRUE)

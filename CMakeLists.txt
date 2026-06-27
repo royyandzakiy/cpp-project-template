@@ -1,15 +1,23 @@
 cmake_minimum_required(VERSION 3.28)
 
-include(local_options.cmake OPTIONAL)
-include(project_options.cmake)
-include(cmake/package_manager.cmake)
-setup_package_manager() # dispatches to vcpkg / conan / none per PKG_MANAGER
+#=========================
+# Project Options & Package Manager
+#=========================
+include(local_options.cmake OPTIONAL) # create & modify to change locally (only for you)
+include(project_options.cmake) # modify to change for all developers
 
-include(cmake/version.cmake) # reads version.txt -> PROJECT_VERSION_STRING (before project())
+# If this project is consumed via add_subdirectory(), the parent owns the provider/toolchain, hence
+# omit this setup_package_maanager(). But because before project(), PROJECT_IS_TOP_LEVEL isn't set yet
+# hence use the source-dir check
+include(cmake/package_manager.cmake)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  setup_package_manager() # dispatches to vcpkg / conan / none per PKG_MANAGER
+endif()
 
 #=========================
 # Project Configuration
 #=========================
+include(cmake/version.cmake) # reads version.txt -> PROJECT_VERSION_STRING (before project())
 project(
   cpp_project_template
   LANGUAGES CXX
@@ -27,9 +35,11 @@ include(cmake/compiler.cmake) # warnings, strict, build-type guard, debug postfi
 include(cmake/sanitizer_analyzer.cmake) # sanitizers, clang-tidy, ccache, fast-linker, deploy_asan_runtime()
 include(cmake/coverage.cmake) # coverage instrumentation + setup_coverage_target() (when ENABLE_COVERAGE)
 include(cmake/profiler.cmake) # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
-include(cmake/format.cmake) # format / format-check / tidy-all targets
-include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
 include(cmake/target_options.cmake) # defines configure_target()
+if(PROJECT_IS_TOP_LEVEL)
+  include(cmake/format.cmake) # format / format-check / tidy-all targets
+  include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
+endif()
 
 #=========================
 # Version Header
@@ -41,17 +51,34 @@ endif()
 #=========================
 # Dependencies
 #=========================
-find_package(fmt CONFIG REQUIRED)
-# find_package(scn CONFIG REQUIRED)
-include(FetchContent)
-FetchContent_Declare(
-  sml
-  GIT_REPOSITORY https://github.com/boost-ext/sml.git
-  GIT_TAG v1.1.13)
-FetchContent_MakeAvailable(sml)
+# Lets a lib-only (or add_subdirectory) build configure with no third-party deps.
+if(BUILD_APP OR BUILD_EXAMPLES)
+  find_package(fmt CONFIG REQUIRED)
+  find_package(scn CONFIG REQUIRED)
+  include(FetchContent)
+  FetchContent_Declare(
+    sml
+    GIT_REPOSITORY https://github.com/boost-ext/sml.git
+    GIT_TAG v1.1.13)
+  FetchContent_MakeAvailable(sml)
+endif()
 
 #=========================
-# Tests & Examples
+# Targets
+#=========================
+# Add or remove targets as needed
+if(BUILD_APP)
+  add_subdirectory(src/myapp) # standalone hello-world binary
+endif()
+if(BUILD_LIB)
+  add_subdirectory(src/mylib) # library + installable MyLib package (handles its own staging)
+endif()
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples) # AFTER src/mylib so the example can link the MyLib target
+endif()
+
+#=========================
+# Tests & Coverage
 #=========================
 if(BUILD_TESTING)
   enable_testing() # ctest / gtest_discover_tests register the unit tests
@@ -60,18 +87,3 @@ if(BUILD_TESTING)
     setup_coverage_target(unit_tests) # adds the `coverage` target (runs tests + reports)
   endif()
 endif()
-if(BUILD_EXAMPLES)
-  add_subdirectory(examples)
-endif()
-
-#=========================
-# Main Executable
-#=========================
-add_executable(${PROJECT_NAME} src/main.cpp src/math.cpp)
-target_include_directories(${PROJECT_NAME} PRIVATE include src)
-
-# --- Dependencies ---
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
-
-# PCH, unity build, optional profiler links, Windows ASan DLL — see cmake/target_options.cmake
-configure_target(${PROJECT_NAME})

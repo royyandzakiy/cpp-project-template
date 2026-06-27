@@ -7,11 +7,17 @@ if(WIN32)
   set(CMAKE_DEBUG_POSTFIX d) # e.g. app.exe -> appd.exe in Debug, so configs can coexist
 endif()
 
+# Record the toolchain CMake actually configured, so CI can publish accurate, drift-proof
+# compiler badges (read by scripts/make-badge.py). Works for every compiler incl. MSVC.
+file(WRITE "${CMAKE_BINARY_DIR}/toolchain.txt"
+     "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}\n")
+
 # Default to RelWithDebInfo for single-config generators when no build type is set, so a bare
 # `cmake -S . -B build` isn't an unoptimized, debug-info-less build. (Presets always set one;
 # multi-config generators like Visual Studio choose the config at build time.)
 get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(NOT _is_multi_config AND NOT CMAKE_BUILD_TYPE)
+# Top-level only: a parent project (add_subdirectory) owns the global build type.
+if(PROJECT_IS_TOP_LEVEL AND NOT _is_multi_config AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE
       RelWithDebInfo
       CACHE STRING "Build type" FORCE)
