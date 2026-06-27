@@ -2,17 +2,21 @@
 
 [![CI](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 ![C++23](https://img.shields.io/badge/C%2B%2B-23-00599C?logo=cplusplus&logoColor=white)
-![Clang 21](https://img.shields.io/badge/Clang-21-262D3A?logo=llvm&logoColor=white)
-![GCC 13](https://img.shields.io/badge/GCC-13-262D3A?logo=gnu&logoColor=white)
-![Tested on Ubuntu 24.04](https://img.shields.io/badge/tested%20on-Ubuntu%2024.04-E95420?logo=ubuntu&logoColor=white)
+[![Clang](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/clang.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+[![GCC](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/gcc.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+[![OS](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/coverage.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 
 <!-- Badges:
-     • Coverage is DYNAMIC: the clang-linux-debug CI job publishes coverage.json to the orphan
-       `badges` branch (push to main) and the badge above reads it via the shields endpoint.
-     • Compiler/OS badges are STATIC — hand-maintained. Clang is pinned (21); GCC is the runner's
-       distro default, so bump its number if a gcc CI job reports a different major. Add
-       Windows/macOS rows here when those presets join the matrix. -->
+     • Coverage, Clang, GCC and OS are all DYNAMIC. Each CI leg stages a shields-endpoint JSON
+       (coverage.json from llvm-cov; clang/gcc.json from build/<preset>/toolchain.txt written by
+       cmake/compiler.cmake; os.json from the runner's /etc/os-release). The publish-badges job
+       commits them to the orphan `badges` branch on push to main; the badges read them via the
+       shields endpoint, so versions track what actually built+passed and never drift.
+     • To add a badge (e.g. Windows MSVC/clang-cl, or fuzzing stats): have a CI leg stage another
+       <name>.json artifact and add a matching endpoint badge here — no other plumbing needed.
+     • C++23 is intentionally STATIC: it's a project invariant (CMAKE_CXX_STANDARD), not a
+       CI-detected fact. -->
 
 
 A cross-platform, **IDE- and OS-agnostic** C++23 project template. Language intelligence comes

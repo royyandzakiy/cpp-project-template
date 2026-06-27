@@ -1,4 +1,4 @@
-#include "../src/classify.hpp"
+#include "MyLib/classify.hpp"
 #include <gtest/gtest.h>
 
 using namespace demo; // declared in namespace demo

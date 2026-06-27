@@ -26,6 +26,11 @@ compile_commands.json
 # ----- Generated sources -----
 # Produced at configure time by cmake/version.cmake from version.h.in
 include/*/version.h
+# (mylib_export.h is generated into the build tree, not here — see src/mylib/CMakeLists.txt)
+
+# ----- Library install staging -----
+# Auto-populated by MyLib's POST_BUILD `cmake --install` into the repo root.
+generated_lib/
 
 # ----- Package managers / local config -----
 vcpkg_installed/
