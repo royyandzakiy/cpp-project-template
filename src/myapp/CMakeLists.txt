@@ -13,8 +13,7 @@ target_sources(MyApp
     PRIVATE
         main.cpp
         greeter.cpp
-        # Headers are NOT listed here - they're found via include paths
-        # greeter.hpp  # ← Optional: add for IDE visibility
+        greeter.hpp # Optional: Add headers for IDE visibility
 )
 
 # ---- Include Paths ----------------------------------------------------------
@@ -22,6 +21,27 @@ target_include_directories(MyApp
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+# ---- Properties -------------------------------------------------------------
+set_target_properties(MyApp PROPERTIES
+    CXX_EXTENSIONS OFF           # Matches root setting (good practice)
+    # OUTPUT_NAME myapp          # Optional: lower-case output name
+    # VERSION ${PROJECT_VERSION} # Optional: version info
+)
+
+# ---- Compile Features -------------------------------------------------------
+# Even though root sets it globally, this makes it explicit
+target_compile_features(MyApp
+    PRIVATE
+        cxx_std_23
+)
+
+# ---- Compile Options --------------------------------------------------------
+# target_compile_options(MyApp
+#     PRIVATE
+#         $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+#         $<$<CXX_COMPILER_ID:GCC>:-Wno-sign-compare>
+# )
 
 # ---- Dependencies -----------------------------------------------------------
 target_link_libraries(MyApp
