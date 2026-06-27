@@ -1,4 +1,4 @@
-#include "myapp/greeter.hpp"
+#include "greeter.hpp"
 
 #include <fmt/base.h>
 
