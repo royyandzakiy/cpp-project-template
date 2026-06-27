@@ -51,10 +51,7 @@ endif()
 #=========================
 # Dependencies
 #=========================
-# Lets a lib-only (or add_subdirectory) build configure with no third-party deps.
-if(BUILD_APP OR BUILD_EXAMPLES)
-  include(project_dependencies.cmake)
-endif()
+include(project_dependencies.cmake)
 
 #=========================
 # Targets

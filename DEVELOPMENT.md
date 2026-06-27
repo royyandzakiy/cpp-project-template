@@ -1,15 +1,11 @@
 # DEVELOPMENT
 
-- fix badge issues
-- create local_options.debug/release/lib-debug/lib-release.cmake
-
 - library
   - add INSTALL to create as library, add in option
     - check windows lib template for inspo
     - install script, based on nexus
   - call cpack to create package
 
-- move dependencies to single cmake
 - set c compilers for each preset
 - set vcenv
   - if msvc asan, set debugger target
