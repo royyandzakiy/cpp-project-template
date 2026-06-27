@@ -1,7 +1,6 @@
 # DEVELOPMENT
 
-- ensure cmake scripts has minimum dep one ach other
-- modernize cmake, use target sources, and target rpoperties properly
+- add cpack
 
 - library
   - add INSTALL to create as library, add in option

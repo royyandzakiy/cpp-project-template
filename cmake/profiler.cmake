@@ -30,77 +30,60 @@ if(ENABLE_CLANG_BUILD_ANALYZER)
 endif()
 
 # ===== Runtime Profiling: Perfetto =====
+# =============================================================================
+# Perfetto Profiler Configuration
+# =============================================================================
+# This module provides a reusable interface target for Perfetto profiling.
+# Usage:
+#   include(cmake/perfetto.cmake)
+#   target_link_libraries(my_target PRIVATE project_perfetto_profile)
+# =============================================================================
+
+# Option to enable/disable Perfetto
+option(ENABLE_PERFETTO "Enable Perfetto profiling" OFF)
+
 if(ENABLE_PERFETTO)
-  include(FetchContent)
-  FetchContent_Declare(
-    perfetto
-    GIT_REPOSITORY https://github.com/google/perfetto.git
-    GIT_TAG v47.0 # check https://github.com/google/perfetto/releases for latest
-    GIT_SHALLOW TRUE)
-  FetchContent_GetProperties(perfetto)
-  FetchContent_Populate(perfetto)
+    # ---- Try vcpkg first (preferred) ----
+    find_package(perfetto CONFIG QUIET)
 
-  add_library(project_perfetto_profile INTERFACE)
-  target_sources(project_perfetto_profile INTERFACE "${perfetto_SOURCE_DIR}/sdk/perfetto.cc")
-  target_include_directories(project_perfetto_profile INTERFACE "${perfetto_SOURCE_DIR}/sdk")
-  target_compile_definitions(project_perfetto_profile INTERFACE PERFETTO_ENABLE_TRACING)
+    if(perfetto_FOUND)
+        message(STATUS "Perfetto found!")
 
-  if(MSVC OR (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-    set_source_files_properties("${perfetto_SOURCE_DIR}/sdk/perfetto.cc" PROPERTIES COMPILE_FLAGS "/W0")
-  else()
-    set_source_files_properties("${perfetto_SOURCE_DIR}/sdk/perfetto.cc" PROPERTIES COMPILE_FLAGS "-w")
-  endif()
+        # Create interface target
+        if(NOT TARGET project_perfetto_profile)
+            add_library(project_perfetto_profile INTERFACE)
+            target_link_libraries(project_perfetto_profile INTERFACE perfetto::perfetto)
+            target_compile_definitions(project_perfetto_profile INTERFACE
+                PERFETTO_ENABLE_TRACING
+            )
+        endif()
+    endif()
 
-  if(WIN32)
-    target_link_libraries(project_perfetto_profile INTERFACE ws2_32)
-  else()
-    target_link_libraries(project_perfetto_profile INTERFACE pthread)
-  endif()
-
-  message(STATUS "Perfetto runtime profiling enabled via project_perfetto_profile")
+    message(STATUS "Perfetto profiling ENABLED via project_perfetto_profile")
+else()
+    # ---- Perfetto disabled ----
+    if(NOT TARGET project_perfetto_profile)
+        add_library(project_perfetto_profile INTERFACE)
+        # Empty interface target - does nothing
+        target_compile_definitions(project_perfetto_profile INTERFACE)
+    endif()
+    message(STATUS "Perfetto profiling DISABLED")
 endif()
 
 # ===== Debug Profiling: Tracy =====
 if(ENABLE_TRACY)
-  include(FetchContent)
-  FetchContent_Declare(
-    tracy
-    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-    GIT_TAG v0.13.1 # NEED TO MATCH the tracy-profiler.exe VERSION or monitoring won't connect
-  )
-  FetchContent_GetProperties(tracy)
-  FetchContent_Populate(tracy)
+  find_package(tracy CONFIG QUIET)
 
-  add_library(project_tracy_profile INTERFACE)
-  target_sources(project_tracy_profile INTERFACE "${tracy_SOURCE_DIR}/public/TracyClient.cpp")
-  target_include_directories(project_tracy_profile INTERFACE "${tracy_SOURCE_DIR}/public")
-  target_compile_definitions(project_tracy_profile INTERFACE TRACY_ENABLE)
+    if(tracy_FOUND)
+        message(STATUS "Tracy found!")
 
-  if(MSVC OR (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-    set_source_files_properties("${tracy_SOURCE_DIR}/public/TracyClient.cpp" PROPERTIES COMPILE_FLAGS "/W0")
-  else()
-    set_source_files_properties("${tracy_SOURCE_DIR}/public/TracyClient.cpp" PROPERTIES COMPILE_FLAGS "-w")
-  endif()
+        # Create interface target
+        if(NOT TARGET project_tracy_profile)
+            add_library(project_tracy_profile INTERFACE)
+            target_link_libraries(project_tracy_profile INTERFACE Tracy::TracyClient)
+            target_compile_definitions(project_tracy_profile INTERFACE TRACY_ENABLE)
+        endif()
 
-  if(WIN32)
-    target_link_libraries(project_tracy_profile INTERFACE ws2_32 dbghelp)
-    target_compile_definitions(project_tracy_profile INTERFACE _CRT_SECURE_NO_WARNINGS)
-  else()
-    target_link_libraries(project_tracy_profile INTERFACE pthread dl)
-  endif()
-
-  message(STATUS "Tracy debug profiling enabled via project_tracy_profile")
-
-  message(
-    STATUS "--------------------------------------------------------\n"
-           "Tracy Profiler Configuration:\n"
-           "  * call tracy via find_package of vcpkg\n"
-           "    find_package(tracy CONFIG REQUIRED)\n"
-           "  * Create an internal interface target to hold Tracy settings\n"
-           "    add_library(project_tracy_profile INTERFACE)\n"
-           "  * Link the vcpkg tracy target\n"
-           "    target_link_libraries(project_tracy_profile INTERFACE Tracy::TracyClient)\n"
-           "  * Enable tracy macros globally for anyone using this profile\n"
-           "    target_compile_definitions(project_tracy_profile INTERFACE TRACY_ENABLE)\n"
-           "--------------------------------------------------------")
+        message(STATUS "Tracy runtime profiling ENABLED via project_tracy_profile")
+    endif()
 endif()

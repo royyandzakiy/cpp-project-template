@@ -29,7 +29,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #=========================
-# Modules
+# Formatter, Linter, Profiler, Accelerator
 #=========================
 if(PROJECT_IS_TOP_LEVEL) # format & setup clangd
   include(cmake/format.cmake) # format / format-check / tidy-all targets
@@ -37,9 +37,10 @@ if(PROJECT_IS_TOP_LEVEL) # format & setup clangd
 endif()
 
 include(cmake/compiler.cmake)            # warnings, strict, build-type guard, debug postfix
+include(cmake/build_acceleration.cmake)  # fast linker (mold/lld) + ccache
+
 include(cmake/sanitizers.cmake)          # ASan/TSan/MSan/UBSan flags + deploy_asan_runtime()
 include(cmake/analyzers.cmake)           # clang-tidy discovery
-include(cmake/build_acceleration.cmake)  # fast linker (mold/lld) + ccache
 include(cmake/profiler.cmake)            # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
 include(cmake/configure_target.cmake)    # defines configure_target() — PCH, unity, tidy, profiler link, ASan deploy
 
