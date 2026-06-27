@@ -4,7 +4,7 @@
 # =============================================================================
 add_executable(MyApp main.cpp greeter.cpp)
 target_include_directories(MyApp PRIVATE ${PROJECT_SOURCE_DIR}/src) # so "myapp/greeter.hpp" resolves
-target_link_libraries(MyApp PRIVATE fmt::fmt)
+target_link_libraries(MyApp PRIVATE fmt::fmt sml::sml)
 
 # PCH, unity build, optional profiler links, clang-tidy, Windows ASan DLL — see cmake/target_options.cmake
 configure_target(MyApp)
