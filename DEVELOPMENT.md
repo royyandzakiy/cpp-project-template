@@ -1,5 +1,6 @@
 # DEVELOPMENT
 
+- ensure cmake scripts has minimum dep one ach other
 - modernize cmake, use target sources, and target rpoperties properly
 
 - library
@@ -9,10 +10,12 @@
   - call cpack to create package
 
 - set c compilers for each preset
-- set vcenv
+- set vcenv (needed or not?)
   - if msvc asan, set debugger target
 
 ## Backlog
+
+- expand tests to have unit, integ, e2e
 
 - test on clion for all features
 - test in vs for all features
