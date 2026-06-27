@@ -1,6 +1,6 @@
 # DEVELOPMENT
 
-- 
+- modernize cmake, use target sources, and target rpoperties properly
 
 - library
   - add INSTALL to create as library, add in option
