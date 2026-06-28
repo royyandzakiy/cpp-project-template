@@ -9,7 +9,7 @@ on:
       pkg-manager:
         description: 'Package manager'
         required: false
-        default: 'vcpkg'
+        default: 'conan'
         type: choice
         options:
           - vcpkg
