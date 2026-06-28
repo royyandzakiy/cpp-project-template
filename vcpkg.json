@@ -4,11 +4,5 @@
     "scnlib",
     "tracy",
     "bext-sml"
-  ],
-  "override": [
-	{
-		"name": "fmt",
-		"version": "12.1.0"
-	}
   ]
 }
