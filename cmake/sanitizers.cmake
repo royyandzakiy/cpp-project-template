@@ -100,42 +100,78 @@ if(ENABLE_SANITIZERS)
   endif()
 endif()
 
-# ----- Deploy the ASan runtime DLL next to a target (Windows only) -----
+# ----- Deploy the ASan runtime DLL (Windows only) -----
 # On Windows, ASan links a dynamic runtime DLL (clang_rt.asan_dynamic-x86_64.dll) that must sit
-# beside the .exe. MSVC keeps it next to cl.exe; clang-cl keeps it in its resource dir (found via
-# --print-runtime-dir). No-op on Linux/macOS, where ASan is linked statically.
+# beside every .exe. Multiple executables in the same output directory cause a file-locking race
+# during parallel builds. To avoid this, we deploy the DLL exactly once via a custom target that
+# all ASan executables depend on.
+#
+# Usage:
+#   deploy_asan_runtime(<target>)   — adds a dependency from <target> to the deploy step
+#   Call this AFTER the target is created (e.g. from configure_target()).
+
+# Internal flag: only create the deployment target once.
+set(_ASAN_DLL_DEPLOY_TARGET "")
+
 function(deploy_asan_runtime target)
   if(NOT (MSVC AND ENABLE_ASAN))
     return()
   endif()
-  set(_dll "clang_rt.asan_dynamic-x86_64.dll")
-  get_filename_component(_cxx_dir "${CMAKE_CXX_COMPILER}" DIRECTORY)
-  set(_search "${_cxx_dir}")
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # clang-cl: runtime is under lib/clang/<v>/lib/windows
-    execute_process(
-      COMMAND "${CMAKE_CXX_COMPILER}" --print-runtime-dir
-      OUTPUT_VARIABLE _rt
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      ERROR_QUIET)
-    if(_rt)
-      list(APPEND _search "${_rt}")
-      get_filename_component(_rt_parent "${_rt}" DIRECTORY) # .../lib/clang/<v>/lib
-      list(APPEND _search "${_rt_parent}/windows")          # where the DLL actually lives
+
+  # --- Create the one-shot deployment target on first call ---
+  if(NOT _ASAN_DLL_DEPLOY_TARGET)
+    set(_dll "clang_rt.asan_dynamic-x86_64.dll")
+    get_filename_component(_cxx_dir "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    set(_search "${_cxx_dir}")
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # clang-cl
+      execute_process(
+        COMMAND "${CMAKE_CXX_COMPILER}" --print-runtime-dir
+        OUTPUT_VARIABLE _rt
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET)
+      if(_rt)
+        list(APPEND _search "${_rt}")
+        get_filename_component(_rt_parent "${_rt}" DIRECTORY)
+        list(APPEND _search "${_rt_parent}/windows")
+      endif()
+    endif()
+
+    find_file(
+      ASAN_RUNTIME_DLL
+      NAMES ${_dll}
+      PATHS ${_search}
+      NO_DEFAULT_PATH)
+
+    if(ASAN_RUNTIME_DLL)
+      # Determine the shared output directory (where all ASan binaries land).
+      # If CMAKE_RUNTIME_OUTPUT_DIRECTORY is set, use it; otherwise fall back to the
+      # build root (which is where executables go by default).
+      if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+        set(_deploy_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+      else()
+        set(_deploy_dir "${CMAKE_BINARY_DIR}")
+      endif()
+
+      # One-shot custom target: runs once per build, copies the DLL, never races.
+      add_custom_target(_deploy_asan_dll ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${ASAN_RUNTIME_DLL}"
+          "${_deploy_dir}/${_dll}"
+        COMMENT "Deploying ASan runtime DLL (${_dll}) to ${_deploy_dir}"
+        BYPRODUCTS "${_deploy_dir}/${_dll}"
+      )
+      set(_ASAN_DLL_DEPLOY_TARGET _deploy_asan_dll PARENT_SCOPE)
+    else()
+      message(WARNING "deploy_asan_runtime: ${_dll} not found near ${CMAKE_CXX_COMPILER}; ASan targets may fail to start.")
+      set(_ASAN_DLL_DEPLOY_TARGET "" PARENT_SCOPE)
+      return()
     endif()
   endif()
-  find_file(
-    ASAN_RUNTIME_DLL
-    NAMES ${_dll}
-    PATHS ${_search}
-    NO_DEFAULT_PATH)
-  if(ASAN_RUNTIME_DLL)
-    add_custom_command(
-      TARGET ${target}
-      POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASAN_RUNTIME_DLL}" "$<TARGET_FILE_DIR:${target}>"
-      COMMENT "Deploying ASan runtime (${_dll}) next to ${target}")
-  else()
-    message(WARNING "deploy_asan_runtime: ${_dll} not found near ${CMAKE_CXX_COMPILER}; ${target} may fail to start.")
+
+  # --- Wire the target to depend on the one-shot DLL deployment ---
+  if(TARGET ${_ASAN_DLL_DEPLOY_TARGET})
+    add_dependencies(${target} ${_ASAN_DLL_DEPLOY_TARGET})
   endif()
 endfunction()
 # NOTE: call deploy_asan_runtime(<target>) AFTER the target is created. This module is included
