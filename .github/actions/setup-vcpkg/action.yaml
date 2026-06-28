@@ -1,0 +1,24 @@
+name: Setup vcpkg
+inputs:
+  os:
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Clone vcpkg
+      if: inputs.os != 'linux'
+      shell: bash
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git "$HOME/vcpkg"
+        "$HOME/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
+        echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
+        echo "$HOME/vcpkg" >> "$GITHUB_PATH"
+
+    - name: Cache vcpkg
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ runner.home }}/vcpkg
+          !${{ runner.home }}/vcpkg/.git
+        key: vcpkg-${{ inputs.os }}-${{ hashFiles('vcpkg.json') }}
+        restore-keys: vcpkg-${{ inputs.os }}-

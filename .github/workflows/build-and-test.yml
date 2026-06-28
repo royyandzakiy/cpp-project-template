@@ -1,3 +1,4 @@
+# .github/workflows/build-and-test.yml
 name: CI
 
 on:
@@ -6,12 +7,10 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Cancel superseded runs on the same ref.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Least privilege by default; only the publish-badges job below elevates to contents: write
 permissions:
   contents: read
 
@@ -22,106 +21,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        preset:
-          - clang-linux-debug
-          - clang-linux-release
-          - gcc-linux-debug
-          - gcc-linux-release
-          - clang-linux-asan
-          - clang-linux-tsan
-          - clang-linux-full
+        preset: [clang-linux-debug, clang-linux-release, gcc-linux-debug, gcc-linux-release, clang-linux-asan, clang-linux-tsan, clang-linux-full]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
 
-      - name: Install toolchain (pinned) + Conan + VCPKG
+      - name: Install toolchain + vcpkg
         run: bash scripts/setup-ubuntu.sh --with-vcpkg
 
-      - name: Verify vcpkg location
-        run: |
-          echo "VCPKG_ROOT=$HOME/vcpkg"
-          ls "$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake" || echo "MISSING!"
+      - uses: ./.github/actions/setup-vcpkg
+        with: { os: linux }
 
-      - name: Check Ninja
-        run: |
-          which ninja || echo "ninja NOT FOUND"
-          cmake --version
-
-      - name: Put Conan (pipx) on PATH
-        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-      - name: Conan default profile
-        run: conan profile detect --force
-
-      - name: Cache Conan packages
-        uses: actions/cache@v4
+      - uses: ./.github/actions/cmake-build-test
         with:
-          path: ~/.conan2
-          key: conan-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('conanfile.txt') }}
-          restore-keys: |
-            conan-${{ runner.os }}-${{ matrix.preset }}-
-            conan-${{ runner.os }}-
+          preset: ${{ matrix.preset }}
+          cmake-args: -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
+          retry: true
 
-      - name: Configure (with retry)
-        run: |
-          for i in 1 2 3; do
-            cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON && exit 0
-            echo "Attempt $i failed, retrying..."
-            sleep 10
-          done
-          exit 1
-        env:
-          VCPKG_ROOT: /home/runner/vcpkg
-
-      - name: Build
-        run: cmake --build --preset ${{ matrix.preset }}
-
-      - name: Test
-        run: ctest --preset test-${{ matrix.preset }}
-
-      - name: Coverage report
-        if: matrix.preset == 'clang-linux-debug'
-        run: cmake --build --preset ${{ matrix.preset }} --target coverage
-
-      - name: Coverage job summary
-        if: matrix.preset == 'clang-linux-debug'
-        run: |
-          {
-            echo "## Coverage — ${{ matrix.preset }} (Clang)"
-            echo ""
-            python3 scripts/cov-to-md.py "build/${{ matrix.preset }}/coverage.lcov"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Stage badges (clang)
-        if: matrix.preset == 'clang-linux-debug'
-        run: |
-          mkdir -p badges-out
-          python3 scripts/cov-to-md.py --shields "build/${{ matrix.preset }}/coverage.lcov" > badges-out/coverage.json
-          python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/clang.json
-          . /etc/os-release
-          python3 scripts/make-badge.py --label "tested on" --message "$NAME $VERSION_ID" --color E95420 --logo ubuntu > badges-out/os-linux.json
-      - name: Stage badges (gcc)
-        if: matrix.preset == 'gcc-linux-debug'
-        run: |
-          mkdir -p badges-out
-          python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/gcc.json
-      - name: Upload staged badges
-        if: matrix.preset == 'clang-linux-debug' || matrix.preset == 'gcc-linux-debug'
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/stage-badges
         with:
-          name: badges-${{ matrix.preset }}
-          path: badges-out
-          if-no-files-found: error
-
-      - name: Upload coverage HTML
-        if: matrix.preset == 'clang-linux-debug'
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ matrix.preset }}
-          path: build/${{ matrix.preset }}/coverage-html
-          if-no-files-found: error
+          preset: ${{ matrix.preset }}
+          badges: |
+            - { label: "Clang", file: "clang.json", condition: "clang-linux-debug" }
+            - { label: "GCC", file: "gcc.json", condition: "gcc-linux-debug" }
+            - { label: "tested on", file: "os-linux.json", message: "$NAME $VERSION_ID", color: "E95420", logo: "ubuntu", condition: "clang-linux-debug" }
+          coverage-preset: clang-linux-debug
 
   windows:
     name: ${{ matrix.preset }}
@@ -129,113 +53,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        preset:
-          - msvc-debug
-          - msvc-release
-          #- msvc-asan
-          - clang-cl-debug
-          - clang-cl-release
-          #- clang-cl-asan
-          - mingw-debug
-          - mingw-release
+        preset: [msvc-debug, msvc-release, clang-cl-debug, clang-cl-release, mingw-debug, mingw-release]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        with: { arch: x64 }
+
+      - uses: ./.github/actions/setup-vcpkg
+        with: { os: windows }
+
+      - uses: ./.github/actions/cmake-build-test
         with:
-          submodules: recursive
+          preset: ${{ matrix.preset }}
+          cmake-args: -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
+          msvc-vcvars: true
 
-      # Setup MSVC environment
-      - name: Add MSVC to PATH
-        uses: ilammy/msvc-dev-cmd@v1
+      - uses: ./.github/actions/stage-badges
         with:
-          arch: x64
-
-      # Install vcpkg
-      - name: Setup vcpkg
-        run: |
-          git clone https://github.com/Microsoft/vcpkg.git
-          .\vcpkg\bootstrap-vcpkg.bat
-          echo "VCPKG_ROOT=$env:GITHUB_WORKSPACE\vcpkg" >> $env:GITHUB_ENV
-          echo "$env:GITHUB_WORKSPACE\vcpkg" >> $env:GITHUB_PATH
-
-      # Cache vcpkg packages
-      - name: Cache vcpkg
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/vcpkg
-            !${{ github.workspace }}/vcpkg/.git
-          key: vcpkg-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}
-          restore-keys: |
-            vcpkg-${{ runner.os }}-${{ matrix.preset }}-
-            vcpkg-${{ runner.os }}-
-
-      # For MSVC presets (using vcpkg by default)
-      - name: Configure (MSVC)
-        if: contains(matrix.preset, 'msvc') || contains(matrix.preset, 'clang-cl')
-        shell: cmd
-        run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          cmake --preset ${{ matrix.preset }} -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
-
-      # For MinGW presets (using vcpkg)
-      - name: Configure (MinGW)
-        if: contains(matrix.preset, 'mingw')
-        run: cmake --preset ${{ matrix.preset }} -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
-        env:
-          CMAKE_GENERATOR: Ninja
-
-      - name: Build
-        run: cmake --build --preset ${{ matrix.preset }}
-
-      - name: Test
-        run: ctest --preset test-${{ matrix.preset }}
-
-      # Stage badges for Windows compilers — versioned via --from-toolchain
-      - name: Stage badges (MSVC)
-        if: contains(matrix.preset, 'msvc-debug') && !contains(matrix.preset, 'asan')
-        run: |
-          New-Item -ItemType Directory -Force -Path badges-out
-          python scripts/make-badge.py --label "MSVC" --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/msvc.json
-        shell: pwsh
-
-      - name: Stage badges (Clang-CL)
-        if: contains(matrix.preset, 'clang-cl-debug') && !contains(matrix.preset, 'asan')
-        run: |
-          New-Item -ItemType Directory -Force -Path badges-out
-          python scripts/make-badge.py --label "Clang-CL" --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/clang-cl.json
-        shell: pwsh
-
-      - name: Stage badges (MinGW)
-        if: contains(matrix.preset, 'mingw-debug')
-        run: |
-          New-Item -ItemType Directory -Force -Path badges-out
-          python scripts/make-badge.py --label "MinGW" --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/mingw.json
-        shell: pwsh
-
-      - name: Stage badges (OS)
-        if: contains(matrix.preset, 'msvc-debug') && !contains(matrix.preset, 'asan')
-        run: |
-          New-Item -ItemType Directory -Force -Path badges-out
-          $os = (Get-CimInstance Win32_OperatingSystem).Caption -replace "Microsoft ", ""
-          python scripts/make-badge.py --label "tested on" --message $os --color 0078D6 --logo windows > badges-out/os-windows.json
-        shell: pwsh
-
-      - name: Upload Windows badges
-        if: contains(matrix.preset, 'debug') && !contains(matrix.preset, 'asan')
-        uses: actions/upload-artifact@v4
-        with:
-          name: badges-${{ matrix.preset }}
-          path: badges-out
-          if-no-files-found: error
-
-      - name: Upload test results (optional)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.preset }}
-          path: build/${{ matrix.preset }}/Testing/Temporary
-          if-no-files-found: ignore
+          preset: ${{ matrix.preset }}
+          badges: |
+            - { label: "MSVC", file: "msvc.json", condition: "msvc-debug" }
+            - { label: "Clang-CL", file: "clang-cl.json", condition: "clang-cl-debug" }
+            - { label: "MinGW", file: "mingw.json", condition: "mingw-debug" }
+            - { label: "tested on", file: "os-windows.json", message: "$(Get-CimInstance Win32_OperatingSystem).Caption", color: "0078D6", logo: "windows", condition: "msvc-debug" }
 
   macos:
     name: ${{ matrix.preset }}
@@ -243,82 +85,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        preset:
-          - appleclang-debug
-          - appleclang-release
+        preset: [appleclang-debug, appleclang-release]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+
+      - run: brew install cmake ninja
+
+      - uses: ./.github/actions/setup-vcpkg
+        with: { os: macos }
+
+      - uses: ./.github/actions/cmake-build-test
         with:
-          submodules: recursive
+          preset: ${{ matrix.preset }}
+          cmake-args: -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
 
-      - name: Install dependencies
-        run: |
-          brew install cmake ninja conan
-          conan profile detect --force
-          which ninja
-          ninja --version
-
-      - name: Setup vcpkg
-        run: |
-          git clone https://github.com/Microsoft/vcpkg.git "$HOME/vcpkg"
-          "$HOME/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
-          echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
-          echo "$HOME/vcpkg" >> "$GITHUB_PATH"
-
-      - name: Cache vcpkg packages
-        uses: actions/cache@v4
+      - uses: ./.github/actions/stage-badges
         with:
-          path: |
-            ${{ runner.home }}/vcpkg
-            !${{ runner.home }}/vcpkg/.git
-          key: vcpkg-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}
-          restore-keys: |
-            vcpkg-${{ runner.os }}-${{ matrix.preset }}-
-            vcpkg-${{ runner.os }}-
+          preset: ${{ matrix.preset }}
+          badges: |
+            - { label: "AppleClang", file: "appleclang.json", condition: "appleclang-debug" }
+            - { label: "tested on", file: "os-macos.json", message: "macOS $(sw_vers -productVersion)", color: "999999", logo: "apple", condition: "appleclang-debug" }
 
-      - name: Cache Conan packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.conan2
-          key: conan-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('conanfile.txt') }}
-          restore-keys: |
-            conan-${{ runner.os }}-${{ matrix.preset }}-
-            conan-${{ runner.os }}-
-
-      - name: Configure
-        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
-        env:
-          # VCPKG_ROOT: ${{ runner.home }}/vcpkg
-          VCPKG_ROOT: /home/runner/vcpkg
-
-      - name: Build
-        run: cmake --build --preset ${{ matrix.preset }}
-
-      - name: Test
-        run: ctest --preset test-${{ matrix.preset }}
-
-      - name: Stage badges (AppleClang)
-        if: matrix.preset == 'appleclang-debug'
-        run: |
-          mkdir -p badges-out
-          python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/appleclang.json
-
-      - name: Stage badges (OS)
-        if: matrix.preset == 'appleclang-debug'
-        run: |
-          mkdir -p badges-out
-          python3 scripts/make-badge.py --label "tested on" --message "macOS $(sw_vers -productVersion)" --color 999999 --logo apple > badges-out/os-macos.json
-
-      - name: Upload Apple badges
-        if: matrix.preset == 'appleclang-debug'
-        uses: actions/upload-artifact@v4
-        with:
-          name: badges-${{ matrix.preset }}
-          path: badges-out
-          if-no-files-found: error
-
-  # Single writer: collect every leg's staged badge JSONs and commit them to the orphan `badges` branch
   publish-badges:
     needs: [linux, windows, macos]
     runs-on: ubuntu-latest
@@ -326,25 +114,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download staged badges
-        uses: actions/download-artifact@v4
-        with:
-          pattern: badges-*
-          path: badges-in
-          merge-multiple: true
-      - name: Commit to badges branch
-        env:
-          REPO_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-        run: |
+      - uses: actions/download-artifact@v4
+        with: { pattern: badges-*, path: badges-in, merge-multiple: true }
+      - run: |
           work="$(mktemp -d)"
-          if git clone --depth=1 --branch badges "$REPO_URL" "$work" 2>/dev/null; then
+          if git clone --depth=1 --branch badges "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" "$work" 2>/dev/null; then
             cd "$work"
           else
             cd "$work"
-            git init -q
-            git remote add origin "$REPO_URL"
-            git checkout -q --orphan badges
-            git rm -rqf . 2>/dev/null || true
+            git init -q && git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+            git checkout -q --orphan badges && git rm -rqf . 2>/dev/null || true
           fi
           cp "$GITHUB_WORKSPACE"/badges-in/*.json .
           git config user.name "github-actions[bot]"

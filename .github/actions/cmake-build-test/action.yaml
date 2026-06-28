@@ -1,0 +1,34 @@
+name: CMake Build & Test
+inputs:
+  preset:
+    required: true
+  cmake-args:
+    default: ''
+  retry:
+    default: 'false'
+  msvc-vcvars:
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: Configure
+      shell: bash
+      run: |
+        if [ "${{ inputs.retry }}" = "true" ]; then
+          for i in 1 2 3; do
+            cmake --preset ${{ inputs.preset }} ${{ inputs.cmake-args }} && exit 0
+            echo "Attempt $i failed, retrying..."
+            sleep 10
+          done
+          exit 1
+        else
+          cmake --preset ${{ inputs.preset }} ${{ inputs.cmake-args }}
+        fi
+
+    - name: Build
+      shell: bash
+      run: cmake --build --preset ${{ inputs.preset }}
+
+    - name: Test
+      shell: bash
+      run: ctest --preset test-${{ inputs.preset }}
