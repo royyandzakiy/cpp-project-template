@@ -55,7 +55,7 @@ jobs:
             conan-${{ runner.os }}-
 
       - name: Configure
-        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
+        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
@@ -249,7 +249,7 @@ jobs:
             conan-${{ runner.os }}-
 
       - name: Configure
-        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
+        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
