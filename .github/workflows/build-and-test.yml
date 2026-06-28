@@ -161,8 +161,11 @@ jobs:
       # For MSVC presets (using vcpkg by default)
       - name: Configure (MSVC)
         if: contains(matrix.preset, 'msvc') || contains(matrix.preset, 'clang-cl')
-        run: cmake --preset ${{ matrix.preset }} -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
-
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          cmake --preset ${{ matrix.preset }} -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
+      
       # For MinGW presets (using vcpkg)
       - name: Configure (MinGW)
         if: contains(matrix.preset, 'mingw')
