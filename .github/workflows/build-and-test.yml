@@ -44,6 +44,11 @@ jobs:
           echo "VCPKG_ROOT=$HOME/vcpkg"
           ls "$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake" || echo "MISSING!"
 
+      - name: Check Ninja
+        run: |
+          which ninja || echo "ninja NOT FOUND"
+          cmake --version
+
       - name: Put Conan (pipx) on PATH
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
@@ -59,10 +64,15 @@ jobs:
             conan-${{ runner.os }}-${{ matrix.preset }}-
             conan-${{ runner.os }}-
 
-      - name: Configure
-        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
+      - name: Configure (with retry)
+        run: |
+          for i in 1 2 3; do
+            cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON && exit 0
+            echo "Attempt $i failed, retrying..."
+            sleep 10
+          done
+          exit 1
         env:
-          # VCPKG_ROOT: ${{ runner.home }}/vcpkg
           VCPKG_ROOT: /home/runner/vcpkg
 
       - name: Build
