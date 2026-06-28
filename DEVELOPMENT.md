@@ -13,6 +13,12 @@
   - raylib example
   - crow example
   - emscripten example
+  - cppwinrt scan
+  - bluez scan
+
+- continue create zephyr nrf
+
+- recreate nxsdgldr
 
 ## Skip
 
