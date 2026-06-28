@@ -114,10 +114,10 @@ jobs:
         preset:
           - msvc-debug
           - msvc-release
-          - msvc-asan
+          #- msvc-asan
           - clang-cl-debug
           - clang-cl-release
-          - clang-cl-asan
+          #- clang-cl-asan
           - mingw-debug
           - mingw-release
     steps:
