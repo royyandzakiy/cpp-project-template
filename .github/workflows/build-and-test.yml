@@ -83,7 +83,7 @@ jobs:
           python3 scripts/cov-to-md.py --shields "build/${{ matrix.preset }}/coverage.lcov" > badges-out/coverage.json
           python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/clang.json
           . /etc/os-release
-          python3 scripts/make-badge.py --label "tested on" --message "$NAME $VERSION_ID" --color E95420 --logo ubuntu > badges-out/os.json
+          python3 scripts/make-badge.py --label "tested on" --message "$NAME $VERSION_ID" --color E95420 --logo ubuntu > badges-out/os-linux.json
       - name: Stage badges (gcc)
         if: matrix.preset == 'gcc-linux-debug'
         run: |
@@ -195,6 +195,14 @@ jobs:
           python scripts/make-badge.py --label "MinGW" --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/mingw.json
         shell: pwsh
 
+      - name: Stage badges (OS)
+        if: contains(matrix.preset, 'msvc-debug') && !contains(matrix.preset, 'asan')
+        run: |
+          New-Item -ItemType Directory -Force -Path badges-out
+          $os = (Get-CimInstance Win32_OperatingSystem).Caption -replace "Microsoft ", ""
+          python scripts/make-badge.py --label "tested on" --message $os --color 0078D6 --logo windows > badges-out/os-windows.json
+        shell: pwsh
+
       - name: Upload Windows badges
         if: contains(matrix.preset, 'debug') && !contains(matrix.preset, 'asan')
         uses: actions/upload-artifact@v4
@@ -254,6 +262,13 @@ jobs:
         run: |
           mkdir -p badges-out
           python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/appleclang.json
+
+      - name: Stage badges (OS)
+        if: matrix.preset == 'appleclang-debug'
+        run: |
+          mkdir -p badges-out
+          python3 scripts/make-badge.py --label "tested on" --message "macOS $(sw_vers -productVersion)" --color 999999 --logo apple > badges-out/os-macos.json
+
       - name: Upload Apple badges
         if: matrix.preset == 'appleclang-debug'
         uses: actions/upload-artifact@v4
