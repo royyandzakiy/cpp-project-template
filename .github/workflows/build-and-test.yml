@@ -39,6 +39,11 @@ jobs:
       - name: Install toolchain (pinned) + Conan + VCPKG
         run: bash scripts/setup-ubuntu.sh --with-vcpkg
 
+      - name: Verify vcpkg location
+        run: |
+          echo "VCPKG_ROOT=$HOME/vcpkg"
+          ls "$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake" || echo "MISSING!"
+
       - name: Put Conan (pipx) on PATH
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
@@ -57,7 +62,8 @@ jobs:
       - name: Configure
         run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
         env:
-          VCPKG_ROOT: ${{ runner.home }}/vcpkg
+          # VCPKG_ROOT: ${{ runner.home }}/vcpkg
+          VCPKG_ROOT: /home/runner/vcpkg
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
@@ -272,6 +278,7 @@ jobs:
         run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
         env:
           VCPKG_ROOT: ${{ runner.home }}/vcpkg
+          # VCPKG_ROOT: /home/runner/vcpkg
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
