@@ -4,8 +4,12 @@
 ![C++23](https://img.shields.io/badge/C%2B%2B-23-00599C?logo=cplusplus&logoColor=white)
 [![Clang](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/clang.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![GCC](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/gcc.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+[![MSVC](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/msvc.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+[![Clang-CL](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/clang-cl.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+[![MinGW](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/mingw.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+[![AppleClang](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/appleclang.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![OS](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
-[![coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/coverage.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+[![coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/coverage.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml))
 
 <!-- Badges:
      • Coverage, Clang, GCC and OS are all DYNAMIC. Each CI leg stages a shields-endpoint JSON
