@@ -6,8 +6,6 @@ inputs:
     default: ''
   retry:
     default: 'false'
-  msvc-vcvars:
-    default: 'false'
 runs:
   using: composite
   steps:
