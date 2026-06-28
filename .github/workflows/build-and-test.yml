@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        preset: [msvc-debug, msvc-release, clang-cl-debug, clang-cl-release, mingw-debug, mingw-release]
+        preset: [msvc-debug, msvc-release, msvc-asan, clang-cl-debug, clang-cl-release, clang-cl-asan, mingw-debug, mingw-release]
     env:
       PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
