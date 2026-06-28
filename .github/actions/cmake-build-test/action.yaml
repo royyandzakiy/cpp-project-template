@@ -1,3 +1,4 @@
+# .github/actions/cmake-build-test/action.yaml
 name: CMake Build & Test
 description: 'Configures, builds, and tests a CMake project using presets'
 inputs:

@@ -1,56 +1,50 @@
 # DEVELOPMENT
 
-- win ci fix asan (clang-cl & msvc)
-  - investigate if still able to use Visual Studio 17 2022 as generator
-- refactor ci script
-
----
-
-- add cpack
-
-- library
-  - add INSTALL to create as library, add in option
-    - check windows lib template for inspo
-    - install script, based on nexus
-  - call cpack to create package
-
-- set c compilers for each preset
-- set vcenv (needed or not?)
-  - if msvc asan, set debugger target
-
 ## Backlog
 
-- expand tests to have unit, integ, e2e
+- add conan to ci
 
-- test on clion for all features
-- test in vs for all features
+- revamp readme
+  - create wiki
+
+- add cpack
+- expand tests to have unit, integ, e2e (pytest)
+- add doxygen with good ui
+- groom readme, maybe into wiki or doxygen idk, then use github pages
 
 - examples
   - qt qml example
   - ftxui example
+  - raylib example
+  - crow example
+  - emscripten example
+  - cppwinrt scan
+  - bluez scan
+
+- continue create zephyr nrf
+
+- recreate nxsdgldr
+
+## Skip
+
+- win ci fix asan (clang-cl & msvc)
+
+- set vcenv (needed or not?)
+  - if msvc asan, set debugger target
+
+- test on clion for all features
+- test in vs for all features
 
 - add gcovr.cfg
   
 - fuzz example
 - emscripten compiler for wasm (consider)
 
-- github actions
-  - build, run, test all presets (including sanitizers)
-  - restructure ci scripts to be modular and expandable
-  - add fuzz build matrix option (random seed)
-  - add badges for all preset variant, or add into table
-- bitbucket pipeline
-
 - if user selects compiler that they dont hv, give graceful fallback
 
-- examples of profiling using tracy, perfetto (compile build time), perf + flamegraph (https://github.com/brendangregg/FlameGraph), valgrind
-  - review: hotspot, coz, heaptrack, gperftools
-  - create profiling wiki
 - examples of bugs captured with sanitizers
 
 - move cecep project to use clangd instead
-
-## Skip
 
 - add license
 - docs generator (doxygen but with most modern ui)
