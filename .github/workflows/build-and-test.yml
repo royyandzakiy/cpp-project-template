@@ -178,21 +178,21 @@ jobs:
         if: contains(matrix.preset, 'msvc-debug') && !contains(matrix.preset, 'asan')
         run: |
           New-Item -ItemType Directory -Force -Path badges-out
-          python scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/msvc.json
+          python scripts/make-badge.py --label "MSVC" --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/msvc.json
         shell: pwsh
 
       - name: Stage badges (Clang-CL)
         if: contains(matrix.preset, 'clang-cl-debug') && !contains(matrix.preset, 'asan')
         run: |
           New-Item -ItemType Directory -Force -Path badges-out
-          python scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/clang-cl.json
+          python scripts/make-badge.py --label "Clang-CL" --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/clang-cl.json
         shell: pwsh
 
       - name: Stage badges (MinGW)
         if: contains(matrix.preset, 'mingw-debug')
         run: |
           New-Item -ItemType Directory -Force -Path badges-out
-          python scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/mingw.json
+          python scripts/make-badge.py --label "MinGW" --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/mingw.json
         shell: pwsh
 
       - name: Upload Windows badges
