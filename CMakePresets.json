@@ -37,7 +37,9 @@
                                 "strategy": "external"
                         },
                         "cacheVariables": {
-                                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/msvc"
+                                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/msvc",
+								"CMAKE_C_COMPILER": "cl.exe",
+        						"CMAKE_CXX_COMPILER": "cl.exe"
                         }
                 },
                 {

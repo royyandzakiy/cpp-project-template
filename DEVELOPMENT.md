@@ -2,7 +2,7 @@
 
 ## Backlog
 
-- add conan to ci
+- fix msvc-asan, clang-cl-asan
 
 - revamp readme
   - create wiki
