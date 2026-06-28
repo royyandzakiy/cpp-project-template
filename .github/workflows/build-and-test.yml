@@ -12,7 +12,6 @@ concurrency:
   cancel-in-progress: true
 
 # Least privilege by default; only the publish-badges job below elevates to contents: write
-# (to push the badges branch via the built-in GITHUB_TOKEN — no PAT / external account needed).
 permissions:
   contents: read
 
@@ -23,25 +22,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Each matrix leg shows as its own named check in the Actions UI, so per-preset pass/fail
-        # is visible natively (no extra dashboard needed). Windows/macOS presets come later.
         preset:
-          - clang-linux-debug # coverage runs here only (same suite ⇒ identical coverage elsewhere)
+          - clang-linux-debug
           - clang-linux-release
           - gcc-linux-debug
           - gcc-linux-release
-          - clang-linux-asan # UBSan + ASan + LSan; the sanitizer_tests trip-wires prove it's live
-          - clang-linux-tsan # UBSan + TSan
-          - clang-linux-full # ASan + strict + tidy + pch + unity + examples
+          - clang-linux-asan
+          - clang-linux-tsan
+          - clang-linux-full
     steps:
-      # submodules: the cmake-conan provider lives in cmake/cmake-conan (used when PKG_MANAGER=conan).
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # Single source of truth: the SAME script the devcontainer and WSL use. It pins Clang
-      # (apt.llvm.org) and installs Conan, so CI can't drift from local toolchains.
       - name: Install toolchain (pinned) + Conan
         run: bash scripts/setup-ubuntu.sh
 
@@ -51,7 +45,6 @@ jobs:
       - name: Conan default profile
         run: conan profile detect --force
 
-      # Cache the Conan package cache so deps (fmt/scnlib/tracy) aren't rebuilt every run.
       - name: Cache Conan packages
         uses: actions/cache@v4
         with:
@@ -61,30 +54,19 @@ jobs:
             conan-${{ runner.os }}-${{ matrix.preset }}-
             conan-${{ runner.os }}-
 
-      # PKG_MANAGER=conan: project_options.local.cmake (which selects conan) is gitignored, and the
-      # presets default to vcpkg — so CI must select the provider it actually provisions above.
-      # BUILD_TESTING=ON so the ctest step has tests (sanitizer presets already set it).
       - name: Configure
         run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
 
-      # NOTE: we run ctest, not the app — src/main.cpp has an intentional `while(true)` loop
-      # that would hang CI. For sanitizer presets ctest also runs the trip-wires that prove each
-      # sanitizer actually catches its bug class (a silently-off sanitizer would fail them).
       - name: Test
         run: ctest --preset test-${{ matrix.preset }}
 
-      # Coverage: clang-linux-debug sets ENABLE_COVERAGE=ON, so the `coverage` target exists.
-      # It re-runs the tests under LLVM instrumentation and writes build/<preset>/coverage-html/.
-      # Guarded by preset name so other (non-coverage) presets in the matrix don't break.
       - name: Coverage report
         if: matrix.preset == 'clang-linux-debug'
         run: cmake --build --preset ${{ matrix.preset }} --target coverage
 
-      # Render the coverage table straight onto the Actions run page (no need to open the artifact).
-      # The `coverage` target wrote build/<preset>/coverage.lcov; cov-to-md.py turns it into Markdown.
       - name: Coverage job summary
         if: matrix.preset == 'clang-linux-debug'
         run: |
@@ -94,9 +76,6 @@ jobs:
             python3 scripts/cov-to-md.py "build/${{ matrix.preset }}/coverage.lcov"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Stage shields.io endpoint JSONs as artifacts (no pushing here — see the publish-badges job).
-      # Compiler/version come from build/<preset>/toolchain.txt (written by cmake/compiler.cmake),
-      # so the badge can never drift from what actually built. The clang leg also owns coverage + OS.
       - name: Stage badges (clang)
         if: matrix.preset == 'clang-linux-debug'
         run: |
@@ -126,13 +105,163 @@ jobs:
           path: build/${{ matrix.preset }}/coverage-html
           if-no-files-found: error
 
-  # Single writer: collect every leg's staged badge JSONs and commit them to the orphan `badges`
-  # branch in ONE push (no inter-job race). Runs only when the whole matrix passed (needs: linux)
-  # and only on push to main/master (PRs/forks can't push). The push does NOT retrigger CI
-  # ([skip ci] + the branch isn't a trigger). New badges (Windows compilers, fuzz stats, ...) just
-  # need another leg to stage a *.json artifact — this job picks them up automatically.
+  windows:
+    name: ${{ matrix.preset }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset:
+          - msvc-debug
+          - msvc-release
+          - msvc-asan
+          - clang-cl-debug
+          - clang-cl-release
+          - clang-cl-asan
+          - mingw-debug
+          - mingw-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Setup MSVC environment
+      - name: Add MSVC to PATH
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      # Install vcpkg
+      - name: Setup vcpkg
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+          echo "VCPKG_ROOT=$env:GITHUB_WORKSPACE\vcpkg" >> $env:GITHUB_ENV
+          echo "$env:GITHUB_WORKSPACE\vcpkg" >> $env:GITHUB_PATH
+
+      # Cache vcpkg packages - FIXED: Correct paths for Windows
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/vcpkg
+            !${{ github.workspace }}/vcpkg/.git
+          key: vcpkg-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-${{ matrix.preset }}-
+            vcpkg-${{ runner.os }}-
+
+      # For MSVC presets (using vcpkg by default)
+      - name: Configure (MSVC)
+        if: contains(matrix.preset, 'msvc') || contains(matrix.preset, 'clang-cl')
+        run: cmake --preset ${{ matrix.preset }} -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
+
+      # For MinGW presets (using vcpkg)
+      - name: Configure (MinGW)
+        if: contains(matrix.preset, 'mingw')
+        run: cmake --preset ${{ matrix.preset }} -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
+        env:
+          CMAKE_GENERATOR: Ninja
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: ctest --preset test-${{ matrix.preset }}
+
+      # Stage badges for Windows compilers - FIXED: Use New-Item with -Force
+      - name: Stage badges (MSVC)
+        if: contains(matrix.preset, 'msvc-debug') && !contains(matrix.preset, 'asan')
+        run: |
+          New-Item -ItemType Directory -Force -Path badges-out
+          python scripts/make-badge.py --label "MSVC" --message "2022" --color 5E2E8C --logo visualstudio > badges-out/msvc.json
+        shell: pwsh
+
+      - name: Stage badges (Clang-CL)
+        if: contains(matrix.preset, 'clang-cl-debug') && !contains(matrix.preset, 'asan')
+        run: |
+          New-Item -ItemType Directory -Force -Path badges-out
+          python scripts/make-badge.py --label "Clang-CL" --message "Windows" --color 262D3A --logo clang > badges-out/clang-cl.json
+        shell: pwsh
+
+      - name: Stage badges (MinGW)
+        if: contains(matrix.preset, 'mingw-debug')
+        run: |
+          New-Item -ItemType Directory -Force -Path badges-out
+          python scripts/make-badge.py --label "MinGW" --message "GCC" --color 326CE5 --logo gnu > badges-out/mingw.json
+        shell: pwsh
+
+      - name: Upload Windows badges
+        if: contains(matrix.preset, 'debug') && !contains(matrix.preset, 'asan')
+        uses: actions/upload-artifact@v4
+        with:
+          name: badges-${{ matrix.preset }}
+          path: badges-out
+          if-no-files-found: error
+
+      - name: Upload test results (optional)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/Testing/Temporary
+          if-no-files-found: ignore
+
+  macos:
+    name: ${{ matrix.preset }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset:
+          - appleclang-debug
+          - appleclang-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install cmake ninja conan
+          conan profile detect --force
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('conanfile.txt') }}
+          restore-keys: |
+            conan-${{ runner.os }}-${{ matrix.preset }}-
+            conan-${{ runner.os }}-
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: ctest --preset test-${{ matrix.preset }}
+
+      - name: Stage badges (AppleClang)
+        if: matrix.preset == 'appleclang-debug'
+        run: |
+          mkdir -p badges-out
+          python3 scripts/make-badge.py --label "AppleClang" --message "macOS" --color 999999 --logo apple > badges-out/appleclang.json
+      - name: Upload Apple badges
+        if: matrix.preset == 'appleclang-debug'
+        uses: actions/upload-artifact@v4
+        with:
+          name: badges-${{ matrix.preset }}
+          path: badges-out
+          if-no-files-found: error
+
+  # Single writer: collect every leg's staged badge JSONs and commit them to the orphan `badges` branch
   publish-badges:
-    needs: linux
+    needs: [linux, windows, macos]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     permissions:
@@ -152,7 +281,6 @@ jobs:
           if git clone --depth=1 --branch badges "$REPO_URL" "$work" 2>/dev/null; then
             cd "$work"
           else
-            # First run: branch doesn't exist yet — start a clean orphan history.
             cd "$work"
             git init -q
             git remote add origin "$REPO_URL"
