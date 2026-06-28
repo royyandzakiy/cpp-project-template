@@ -2,15 +2,12 @@
 
 ## Backlog
 
-- fix msvc-asan, clang-cl-asan
-
 - revamp readme
-  - create wiki
+  - create github wiki
 
 - add cpack
 - expand tests to have unit, integ, e2e (pytest)
 - add doxygen with good ui
-- groom readme, maybe into wiki or doxygen idk, then use github pages
 
 - examples
   - qt qml example
@@ -22,12 +19,14 @@
   - bluez scan
 
 - continue create zephyr nrf
-
 - recreate nxsdgldr
 
-## Skip
+## Bugs
 
-- win ci fix asan (clang-cl & msvc)
+- clang-cl-asan fails to compile in CI
+- selecting `conan` as default pkg manager fails to compile on some compilers (eg: `PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'conan' }}`)
+
+## Skip
 
 - set vcenv (needed or not?)
   - if msvc asan, set debugger target
