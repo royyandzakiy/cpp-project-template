@@ -48,7 +48,8 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.from_toolchain:
-        label, message, color, logo = from_toolchain(args.from_toolchain)
+        detected_label, message, color, logo = from_toolchain(args.from_toolchain)
+        label = args.label if args.label else detected_label
     elif args.label and args.message:
         label, message, color, logo = args.label, args.message, args.color, args.logo
     else:

@@ -1,6 +1,7 @@
 # DEVELOPMENT
 
-- makw win ci
+- win ci fix asan (clang-cl & msvc)
+  - investigate if still able to use Visual Studio 17 2022 as generator
 
 ---
 
