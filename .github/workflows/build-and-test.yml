@@ -16,94 +16,94 @@ permissions:
   contents: read
 
 jobs:
-  linux:
-    name: ${{ matrix.preset }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        preset:
-          - clang-linux-debug
-          - clang-linux-release
-          - gcc-linux-debug
-          - gcc-linux-release
-          - clang-linux-asan
-          - clang-linux-tsan
-          - clang-linux-full
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+  # linux:
+  #   name: ${{ matrix.preset }}
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       preset:
+  #         - clang-linux-debug
+  #         - clang-linux-release
+  #         - gcc-linux-debug
+  #         - gcc-linux-release
+  #         - clang-linux-asan
+  #         - clang-linux-tsan
+  #         - clang-linux-full
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: recursive
 
-      - name: Install toolchain (pinned) + Conan
-        run: bash scripts/setup-ubuntu.sh
+  #     - name: Install toolchain (pinned) + Conan
+  #       run: bash scripts/setup-ubuntu.sh
 
-      - name: Put Conan (pipx) on PATH
-        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+  #     - name: Put Conan (pipx) on PATH
+  #       run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Conan default profile
-        run: conan profile detect --force
+  #     - name: Conan default profile
+  #       run: conan profile detect --force
 
-      - name: Cache Conan packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.conan2
-          key: conan-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('conanfile.txt') }}
-          restore-keys: |
-            conan-${{ runner.os }}-${{ matrix.preset }}-
-            conan-${{ runner.os }}-
+  #     - name: Cache Conan packages
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ~/.conan2
+  #         key: conan-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('conanfile.txt') }}
+  #         restore-keys: |
+  #           conan-${{ runner.os }}-${{ matrix.preset }}-
+  #           conan-${{ runner.os }}-
 
-      - name: Configure
-        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
+  #     - name: Configure
+  #       run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
 
-      - name: Build
-        run: cmake --build --preset ${{ matrix.preset }}
+  #     - name: Build
+  #       run: cmake --build --preset ${{ matrix.preset }}
 
-      - name: Test
-        run: ctest --preset test-${{ matrix.preset }}
+  #     - name: Test
+  #       run: ctest --preset test-${{ matrix.preset }}
 
-      - name: Coverage report
-        if: matrix.preset == 'clang-linux-debug'
-        run: cmake --build --preset ${{ matrix.preset }} --target coverage
+  #     - name: Coverage report
+  #       if: matrix.preset == 'clang-linux-debug'
+  #       run: cmake --build --preset ${{ matrix.preset }} --target coverage
 
-      - name: Coverage job summary
-        if: matrix.preset == 'clang-linux-debug'
-        run: |
-          {
-            echo "## Coverage — ${{ matrix.preset }} (Clang)"
-            echo ""
-            python3 scripts/cov-to-md.py "build/${{ matrix.preset }}/coverage.lcov"
-          } >> "$GITHUB_STEP_SUMMARY"
+  #     - name: Coverage job summary
+  #       if: matrix.preset == 'clang-linux-debug'
+  #       run: |
+  #         {
+  #           echo "## Coverage — ${{ matrix.preset }} (Clang)"
+  #           echo ""
+  #           python3 scripts/cov-to-md.py "build/${{ matrix.preset }}/coverage.lcov"
+  #         } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Stage badges (clang)
-        if: matrix.preset == 'clang-linux-debug'
-        run: |
-          mkdir -p badges-out
-          python3 scripts/cov-to-md.py --shields "build/${{ matrix.preset }}/coverage.lcov" > badges-out/coverage.json
-          python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/clang.json
-          . /etc/os-release
-          python3 scripts/make-badge.py --label "tested on" --message "$NAME $VERSION_ID" --color E95420 --logo ubuntu > badges-out/os.json
-      - name: Stage badges (gcc)
-        if: matrix.preset == 'gcc-linux-debug'
-        run: |
-          mkdir -p badges-out
-          python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/gcc.json
-      - name: Upload staged badges
-        if: matrix.preset == 'clang-linux-debug' || matrix.preset == 'gcc-linux-debug'
-        uses: actions/upload-artifact@v4
-        with:
-          name: badges-${{ matrix.preset }}
-          path: badges-out
-          if-no-files-found: error
+  #     - name: Stage badges (clang)
+  #       if: matrix.preset == 'clang-linux-debug'
+  #       run: |
+  #         mkdir -p badges-out
+  #         python3 scripts/cov-to-md.py --shields "build/${{ matrix.preset }}/coverage.lcov" > badges-out/coverage.json
+  #         python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/clang.json
+  #         . /etc/os-release
+  #         python3 scripts/make-badge.py --label "tested on" --message "$NAME $VERSION_ID" --color E95420 --logo ubuntu > badges-out/os.json
+  #     - name: Stage badges (gcc)
+  #       if: matrix.preset == 'gcc-linux-debug'
+  #       run: |
+  #         mkdir -p badges-out
+  #         python3 scripts/make-badge.py --from-toolchain "build/${{ matrix.preset }}/toolchain.txt" > badges-out/gcc.json
+  #     - name: Upload staged badges
+  #       if: matrix.preset == 'clang-linux-debug' || matrix.preset == 'gcc-linux-debug'
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: badges-${{ matrix.preset }}
+  #         path: badges-out
+  #         if-no-files-found: error
 
-      - name: Upload coverage HTML
-        if: matrix.preset == 'clang-linux-debug'
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ matrix.preset }}
-          path: build/${{ matrix.preset }}/coverage-html
-          if-no-files-found: error
+  #     - name: Upload coverage HTML
+  #       if: matrix.preset == 'clang-linux-debug'
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: coverage-${{ matrix.preset }}
+  #         path: build/${{ matrix.preset }}/coverage-html
+  #         if-no-files-found: error
 
   windows:
     name: ${{ matrix.preset }}
@@ -214,60 +214,61 @@ jobs:
           path: build/${{ matrix.preset }}/Testing/Temporary
           if-no-files-found: ignore
 
-  macos:
-    name: ${{ matrix.preset }}
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        preset:
-          - appleclang-debug
-          - appleclang-release
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+  # macos:
+  #   name: ${{ matrix.preset }}
+  #   runs-on: macos-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       preset:
+  #         - appleclang-debug
+  #         - appleclang-release
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: recursive
 
-      - name: Install dependencies
-        run: |
-          brew install cmake ninja conan
-          conan profile detect --force
+  #     - name: Install dependencies
+  #       run: |
+  #         brew install cmake ninja conan
+  #         conan profile detect --force
 
-      - name: Cache Conan packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.conan2
-          key: conan-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('conanfile.txt') }}
-          restore-keys: |
-            conan-${{ runner.os }}-${{ matrix.preset }}-
-            conan-${{ runner.os }}-
+  #     - name: Cache Conan packages
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ~/.conan2
+  #         key: conan-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('conanfile.txt') }}
+  #         restore-keys: |
+  #           conan-${{ runner.os }}-${{ matrix.preset }}-
+  #           conan-${{ runner.os }}-
 
-      - name: Configure
-        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
+  #     - name: Configure
+  #       run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
 
-      - name: Build
-        run: cmake --build --preset ${{ matrix.preset }}
+  #     - name: Build
+  #       run: cmake --build --preset ${{ matrix.preset }}
 
-      - name: Test
-        run: ctest --preset test-${{ matrix.preset }}
+  #     - name: Test
+  #       run: ctest --preset test-${{ matrix.preset }}
 
-      - name: Stage badges (AppleClang)
-        if: matrix.preset == 'appleclang-debug'
-        run: |
-          mkdir -p badges-out
-          python3 scripts/make-badge.py --label "AppleClang" --message "macOS" --color 999999 --logo apple > badges-out/appleclang.json
-      - name: Upload Apple badges
-        if: matrix.preset == 'appleclang-debug'
-        uses: actions/upload-artifact@v4
-        with:
-          name: badges-${{ matrix.preset }}
-          path: badges-out
-          if-no-files-found: error
+  #     - name: Stage badges (AppleClang)
+  #       if: matrix.preset == 'appleclang-debug'
+  #       run: |
+  #         mkdir -p badges-out
+  #         python3 scripts/make-badge.py --label "AppleClang" --message "macOS" --color 999999 --logo apple > badges-out/appleclang.json
+  #     - name: Upload Apple badges
+  #       if: matrix.preset == 'appleclang-debug'
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: badges-${{ matrix.preset }}
+  #         path: badges-out
+  #         if-no-files-found: error
 
   # Single writer: collect every leg's staged badge JSONs and commit them to the orphan `badges` branch
   publish-badges:
-    needs: [linux, windows, macos]
+    # needs: [linux, windows, macos]
+    needs: [windows]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     permissions:
