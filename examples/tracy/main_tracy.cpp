@@ -1,7 +1,9 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
-#include <fmt/core.h>
+#include <common/TracySystem.hpp>
+#include <fmt/base.h>
+#include <functional>
 #include <thread>
 #include <tracy/Tracy.hpp>
 

@@ -1,20 +1,20 @@
 # DEVELOPMENT
 
-- fix badge issues
-- create local_options.debug/release/lib-debug/lib-release.cmake
+- add cpack
 
 - library
-  - create install script, based on nexus
-    - groom generated_lib files (mylib_export.h???)
   - add INSTALL to create as library, add in option
     - check windows lib template for inspo
+    - install script, based on nexus
+  - call cpack to create package
 
-- move dependencies to single cmake
 - set c compilers for each preset
-- set vcenv
+- set vcenv (needed or not?)
   - if msvc asan, set debugger target
 
 ## Backlog
+
+- expand tests to have unit, integ, e2e
 
 - test on clion for all features
 - test in vs for all features

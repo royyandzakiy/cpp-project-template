@@ -100,7 +100,7 @@ Notes:
 ├── CMakeLists.txt                # Top-level build
 ├── CMakePresets.json             # Presets, platform-filtered (no setup needed)
 ├── CMakeUserPresets.json.example # Optional: custom preset overrides
-├── local_options.cmake.example   # Optional: machine-local overrides (gitignored)
+├── project_options.local.cmake.example   # Optional: machine-local overrides (gitignored)
 ├── project_options.cmake         # Feature toggles (shared, committed)
 ├── vcpkg.json                    # vcpkg manifest (empty by default — add your own)
 ├── conanfile.txt                 # Conan manifest (fmt, scnlib, tracy)
@@ -198,9 +198,9 @@ or overrides.
 | `ENABLE_PERFETTO`           | OFF     | Perfetto runtime tracing (FetchContent)                      |
 
 The sanitizer/coverage/strict toggles are usually set for you by the matching presets; flip the
-rest in `local_options.cmake` (copy `local_options.cmake.example`).
+rest in `project_options.local.cmake` (copy `project_options.local.cmake.example`).
 
-Pass at configure time or set permanently in `local_options.cmake`:
+Pass at configure time or set permanently in `project_options.local.cmake`:
 
 ```bash
 cmake --preset clang-linux-debug -DENABLE_ASAN=ON -DENABLE_CLANG_TIDY=ON
@@ -304,7 +304,7 @@ The package manager is **orthogonal to the presets** — every preset works with
 with the `PKG_MANAGER` knob (`vcpkg` default · `conan` · `none`), wherever is convenient:
 
 ```cmake
-# local_options.cmake (gitignored)
+# project_options.local.cmake (gitignored)
 set(PKG_MANAGER conan)
 ```
 
@@ -324,14 +324,14 @@ Conan requires the submodule once: `git submodule update --init --recursive`.
 
 vcpkg is auto-detected in this order:
 
-1. `VCPKG_ROOT_PATH` set in `local_options.cmake` or via `-D`
+1. `VCPKG_ROOT_PATH` set in `project_options.local.cmake` or via `-D`
 2. `VCPKG_ROOT` / `VCPKG_ROOT_PATH` environment variables
 3. `vcpkg` executable found in PATH
 4. Common default paths: `C:/vcpkg`, `/opt/vcpkg`, `~/vcpkg`, etc.
 5. `./vcpkg` project subdirectory
 
 For most setups nothing needs configuring. For a non-standard location, set `VCPKG_ROOT_PATH` in
-`local_options.cmake` (copy `local_options.cmake.example`). Conan is available as an alternative
+`project_options.local.cmake` (copy `project_options.local.cmake.example`). Conan is available as an alternative
 via `cmake/config_conan.cmake`.
 
 ---
@@ -341,7 +341,7 @@ via `cmake/config_conan.cmake`.
 - **`package_manager.cmake`** — `setup_package_manager()` dispatches to vcpkg / Conan / none per
   `PKG_MANAGER`.
 - **`config_vcpkg.cmake`** — locates vcpkg, validates the toolchain, reports package status. Don't
-  edit; configure via `local_options.cmake`.
+  edit; configure via `project_options.local.cmake`.
 - **`config_conan.cmake`** — Conan dependency flow via the cmake-conan provider.
 - **`compiler.cmake`** — warning flags, strict mode, the no-build-type guard, debug postfix.
 - **`sanitizer_analyzer.cmake`** — sanitizers, clang-tidy discovery, ccache, fast linker, per

@@ -1,4 +1,8 @@
-# cmake/sanitizer_analyzer.cmake
+# cmake/sanitizers.cmake
+# Sanitizer configuration: ASan, TSan, MSan, UBSan, and Windows-specific deployment.
+#
+# Sets compiler/linker flags globally when ENABLE_SANITIZERS is ON.
+# Provides deploy_asan_runtime(<target>) for Windows ASan DLL deployment.
 
 # ====== RUNTIME SANITIZERS ======
 if(ENABLE_SANITIZERS)
@@ -134,58 +138,5 @@ function(deploy_asan_runtime target)
     message(WARNING "deploy_asan_runtime: ${_dll} not found near ${CMAKE_CXX_COMPILER}; ${target} may fail to start.")
   endif()
 endfunction()
-# NOTE: call deploy_asan_runtime(<target>) AFTER the target is created (this module is included
-# before the executables exist). The app calls it in CMakeLists.txt; tests in test/CMakeLists.txt.
-
-# ====== STATIC ANALYZERS ======
-# ----- Clang-tidy -----
-if(ENABLE_CLANG_TIDY)
-  find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-  if(CLANG_TIDY_EXE)
-    # NB: applied PER-TARGET in configure_target(), not globally — so tidy lints first-party
-    # production code only, never the unit tests or FetchContent'd deps (gtest/gmock/sml).
-    # A global CMAKE_CXX_CLANG_TIDY tidies third-party sources too, which fails under
-    # WarningsAsErrors. CLANG_TIDY_EXE is cached, so configure_target() can read it.
-    message(STATUS "Clang-Tidy found: ${CLANG_TIDY_EXE}")
-  else()
-    message(WARNING "Clang-Tidy not found. Static analysis is disabled.")
-  endif()
-endif()
-
-# ====== COMPILATION OPTIMIZERS
-# ----- Fast linker (mold / lld) -----
-# Linking is often the dominant cost; swapping the linker is a one-flag win. Applies only to
-# GNU-like drivers (Clang/GCC/AppleClang/MinGW); MSVC & clang-cl use their own fast linkers.
-if(ENABLE_FAST_LINKER AND NOT MSVC)
-  find_program(MOLD_LINKER mold)
-  find_program(LLD_LINKER NAMES ld.lld lld)
-  if(MOLD_LINKER)
-    add_link_options(-fuse-ld=mold)
-    message(STATUS "Fast linker: mold (${MOLD_LINKER})")
-  elseif(LLD_LINKER)
-    add_link_options(-fuse-ld=lld)
-    message(STATUS "Fast linker: lld (${LLD_LINKER})")
-  else()
-    message(STATUS "Fast linker: mold/lld not found; using the default linker")
-  endif()
-endif()
-
-# ----- ccache -----
-if(ENABLE_CCACHE)
-  find_program(CCACHE_PROGRAM ccache)
-  if(CCACHE_PROGRAM)
-    message(STATUS "ccache found: ${CCACHE_PROGRAM}")
-    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-
-    # ccache can't cache MSVC/clang-cl separate-PDB debug info (/Zi, the Debug default).
-    # Embed it (/Z7) on Windows so the clang-cl/msvc toolchains actually get cache hits.
-    # Still fully debuggable (cppvsdbg/LLDB). Requires CMake >= 3.25 (CMP0141 NEW).
-    if(WIN32)
-      set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
-      message(STATUS "ccache: using embedded debug info (/Z7) on Windows for cacheability")
-    endif()
-  else()
-    message(STATUS "ccache not found. Rapid recompilation disabled.")
-  endif()
-endif()
+# NOTE: call deploy_asan_runtime(<target>) AFTER the target is created. This module is included
+# before executables exist; the app calls it via configure_target() in cmake/configure_target.cmake.

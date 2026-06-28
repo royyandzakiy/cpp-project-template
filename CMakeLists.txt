@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.28)
 #=========================
 # Project Options & Package Manager
 #=========================
-include(local_options.cmake OPTIONAL) # create & modify to change locally (only for you)
+include(project_options.local.cmake OPTIONAL) # create & modify to change locally (only for you)
 include(project_options.cmake) # modify to change for all developers
 
 # If this project is consumed via add_subdirectory(), the parent owns the provider/toolchain, hence
@@ -29,17 +29,20 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #=========================
-# Modules
+# Formatter, Linter, Profiler, Accelerator
 #=========================
-include(cmake/compiler.cmake) # warnings, strict, build-type guard, debug postfix
-include(cmake/sanitizer_analyzer.cmake) # sanitizers, clang-tidy, ccache, fast-linker, deploy_asan_runtime()
-include(cmake/coverage.cmake) # coverage instrumentation + setup_coverage_target() (when ENABLE_COVERAGE)
-include(cmake/profiler.cmake) # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
-include(cmake/target_options.cmake) # defines configure_target()
-if(PROJECT_IS_TOP_LEVEL)
+if(PROJECT_IS_TOP_LEVEL) # format & setup clangd
   include(cmake/format.cmake) # format / format-check / tidy-all targets
   include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
 endif()
+
+include(cmake/compiler.cmake)            # warnings, strict, build-type guard, debug postfix
+include(cmake/build_acceleration.cmake)  # fast linker (mold/lld) + ccache
+
+include(cmake/sanitizers.cmake)          # ASan/TSan/MSan/UBSan flags + deploy_asan_runtime()
+include(cmake/analyzers.cmake)           # clang-tidy discovery
+include(cmake/profiler.cmake)            # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
+include(cmake/configure_target.cmake)    # defines configure_target() — PCH, unity, tidy, profiler link, ASan deploy
 
 #=========================
 # Version Header
@@ -51,17 +54,7 @@ endif()
 #=========================
 # Dependencies
 #=========================
-# Lets a lib-only (or add_subdirectory) build configure with no third-party deps.
-if(BUILD_APP OR BUILD_EXAMPLES)
-  find_package(fmt CONFIG REQUIRED)
-  find_package(scn CONFIG REQUIRED)
-  include(FetchContent)
-  FetchContent_Declare(
-    sml
-    GIT_REPOSITORY https://github.com/boost-ext/sml.git
-    GIT_TAG v1.1.13)
-  FetchContent_MakeAvailable(sml)
-endif()
+include(project_dependencies.cmake)
 
 #=========================
 # Targets
@@ -81,6 +74,7 @@ endif()
 # Tests & Coverage
 #=========================
 if(BUILD_TESTING)
+  include(cmake/coverage.cmake) # coverage instrumentation + setup_coverage_target() (when ENABLE_COVERAGE)
   enable_testing() # ctest / gtest_discover_tests register the unit tests
   add_subdirectory(test)
   if(ENABLE_COVERAGE AND TARGET unit_tests)

@@ -61,7 +61,7 @@ jobs:
             conan-${{ runner.os }}-${{ matrix.preset }}-
             conan-${{ runner.os }}-
 
-      # PKG_MANAGER=conan: local_options.cmake (which selects conan) is gitignored, and the
+      # PKG_MANAGER=conan: project_options.local.cmake (which selects conan) is gitignored, and the
       # presets default to vcpkg — so CI must select the provider it actually provisions above.
       # BUILD_TESTING=ON so the ctest step has tests (sanitizer presets already set it).
       - name: Configure

@@ -2,7 +2,7 @@
 # One macro to select the dependency provider, driven by the PKG_MANAGER cache variable
 # (defined in project_options.cmake). Call setup_package_manager() BEFORE project().
 #
-# Swap providers by setting PKG_MANAGER = vcpkg | conan | none via -D, local_options.cmake,
+# Swap providers by setting PKG_MANAGER = vcpkg | conan | none via -D, project_options.local.cmake,
 # the IDE's CMake cache editor, or a preset. Switching managers needs a fresh configure
 # (a separate build dir), since the toolchain/provider is fixed at first configure.
 
