@@ -89,6 +89,11 @@ if [ "$WITH_VCPKG" -eq 1 ]; then
     git clone https://github.com/microsoft/vcpkg.git "$HOME/vcpkg"
     "$HOME/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
   fi
+  # For GitHub Actions: expose VCPKG_ROOT to subsequent steps
+  if [ -n "${GITHUB_ENV:-}" ]; then
+    echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
+    echo "$HOME/vcpkg" >> "$GITHUB_PATH"
+  fi
   if ! grep -q 'VCPKG_ROOT=' "$HOME/.bashrc" 2>/dev/null; then
     {
       echo 'export VCPKG_ROOT="$HOME/vcpkg"'
