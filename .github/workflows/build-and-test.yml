@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, master, develop, feat/github-actions-windows-ci]
   pull_request:
   workflow_dispatch:
 
@@ -131,6 +131,12 @@ jobs:
       #   uses: ilammy/msvc-dev-cmd@v1
       #   with:
       #     arch: x64
+
+      # Setup MSVC environment
+      - name: Setup MSVC
+        uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          arch: x64
 
       # Install vcpkg
       - name: Setup vcpkg
