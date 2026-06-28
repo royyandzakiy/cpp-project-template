@@ -1,17 +1,21 @@
 # C++ Project Template (clangd)
 
+<!-- CI + coverage -->
 [![CI](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+[![coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/coverage.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 ![C++23](https://img.shields.io/badge/C%2B%2B-23-00599C?logo=cplusplus&logoColor=white)
+
+**Linux** [![Ubuntu](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-linux.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml) —
 [![Clang](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/clang.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![GCC](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/gcc.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+
+**Windows** [![Windows](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-windows.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml) —
 [![MSVC](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/msvc.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![Clang-CL](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/clang-cl.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![MinGW](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/mingw.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+
+**macOS** [![macOS](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-macos.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml) —
 [![AppleClang](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/appleclang.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
-[![Ubuntu](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-linux.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
-[![Windows](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-windows.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
-[![macOS](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-macos.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
-[![coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/coverage.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml))
 
 <!-- Badges:
      • Coverage, Clang, GCC and OS are all DYNAMIC. Each CI leg stages a shields-endpoint JSON
@@ -35,6 +39,20 @@ Requires CMake 3.28+.
 
 > New to the project in your editor? See **[EDITOR_SETUP.md](EDITOR_SETUP.md)** for clangd setup
 > and debugging in VS Code, CLion, Neovim, Emacs, Zed, Helix, and more.
+
+---
+
+## Supported Platforms
+
+| Platform | OS | Compilers |
+|----------|----|-----------|
+| **Linux** | Ubuntu 24.04 | Clang 21, GCC 14 |
+| **Windows** | Windows Server 2025 | MSVC 19.42, Clang-CL 21, MinGW GCC 14 |
+| **macOS** | macOS 15 (Sequoia) | Apple Clang 17 |
+
+> All versions shown are what the CI actually builds and tests against — badges above reflect
+> the latest successful run. See the [CI workflow](.github/workflows/build-and-test.yml) for
+> exact matrix.
 
 ---
 
