@@ -174,10 +174,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install dependencies
+      - name: Install build tools
         run: |
-          brew install cmake ninja conan
-          conan profile detect --force
+          brew install cmake ninja
           which ninja
           ninja --version
 

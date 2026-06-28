@@ -5,7 +5,7 @@ inputs:
 runs:
   using: composite
   steps:
-    # ── vcpkg ──────────────────────────────────────────────
+    # ── vcpkg (all OSes) ───────────────────────────────────
     - name: Clone vcpkg (non-Linux)
       if: inputs.os != 'linux'
       shell: bash
@@ -18,7 +18,6 @@ runs:
         echo "$HOME/vcpkg" >> "$GITHUB_PATH"
 
     - name: Cache vcpkg
-      if: inputs.os != 'linux'
       uses: actions/cache@v4
       with:
         path: |
@@ -27,29 +26,20 @@ runs:
         key: vcpkg-${{ inputs.os }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: vcpkg-${{ inputs.os }}-
 
-    # ── Conan ──────────────────────────────────────────────
-    - name: Conan profile detect (Linux)
-      if: inputs.os == 'linux'
+    # ── Conan (all OSes) ────────────────────────────────────
+    - name: Install Conan (non-Linux)
+      if: inputs.os != 'linux'
       shell: bash
-      run: conan profile detect --force
+      run: |
+        if ! command -v conan >/dev/null 2>&1; then
+          pipx install conan
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        fi
+        conan profile detect --force
 
-    - name: Conan profile detect (macOS)
-      if: inputs.os == 'macos'
-      shell: bash
-      run: conan profile detect --force
-
-    - name: Cache Conan (Linux)
-      if: inputs.os == 'linux'
+    - name: Cache Conan
       uses: actions/cache@v4
       with:
         path: ~/.conan2
-        key: conan-${{ hashFiles('conanfile.txt') }}
-        restore-keys: conan-
-
-    - name: Cache Conan (macOS)
-      if: inputs.os == 'macos'
-      uses: actions/cache@v4
-      with:
-        path: ~/.conan2
-        key: conan-${{ hashFiles('conanfile.txt') }}
-        restore-keys: conan-
+        key: conan-${{ inputs.os }}-${{ hashFiles('conanfile.txt') }}
+        restore-keys: conan-${{ inputs.os }}-
