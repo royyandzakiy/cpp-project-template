@@ -9,3 +9,4 @@ class MyProjectConan(ConanFile):
         self.requires("scnlib/4.0.1")
         self.requires("tracy/0.13.1")
         self.requires("perfetto/52.0")
+        self.requires("gtest/1.17.0")
