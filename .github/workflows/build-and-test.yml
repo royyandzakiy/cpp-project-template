@@ -36,8 +36,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install toolchain (pinned) + Conan
-        run: bash scripts/setup-ubuntu.sh
+      - name: Install toolchain (pinned) + Conan + VCPKG
+        run: bash scripts/setup-ubuntu.sh --with-vcpkg
 
       - name: Put Conan (pipx) on PATH
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
@@ -56,6 +56,8 @@ jobs:
 
       - name: Configure
         run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
+        env:
+          VCPKG_ROOT: ${{ runner.home }}/vcpkg
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
@@ -239,6 +241,24 @@ jobs:
           brew install cmake ninja conan
           conan profile detect --force
 
+      - name: Setup vcpkg
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git "$HOME/vcpkg"
+          "$HOME/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
+          echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
+          echo "$HOME/vcpkg" >> "$GITHUB_PATH"
+
+      - name: Cache vcpkg packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.home }}/vcpkg
+            !${{ runner.home }}/vcpkg/.git
+          key: vcpkg-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-${{ matrix.preset }}-
+            vcpkg-${{ runner.os }}-
+
       - name: Cache Conan packages
         uses: actions/cache@v4
         with:
@@ -250,6 +270,8 @@ jobs:
 
       - name: Configure
         run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
+        env:
+          VCPKG_ROOT: ${{ runner.home }}/vcpkg
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
