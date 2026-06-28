@@ -2,6 +2,9 @@
 
 ## Backlog
 
+- revamp readme
+  - create wiki
+
 - add cpack
 - expand tests to have unit, integ, e2e (pytest)
 - add doxygen with good ui
