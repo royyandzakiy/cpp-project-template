@@ -1,26 +1,31 @@
-# C++ Project Template (clangd)
+# C++ Project Template
 
+<!-- CI + coverage -->
 [![CI](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+[![coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/coverage.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 ![C++23](https://img.shields.io/badge/C%2B%2B-23-00599C?logo=cplusplus&logoColor=white)
+
+[![Ubuntu](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-linux.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![Clang](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/clang.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![GCC](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/gcc.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+
+[![Windows](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-windows.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![MSVC](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/msvc.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![Clang-CL](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/clang-cl.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 [![MinGW](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/mingw.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
-[![AppleClang](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/appleclang.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
-[![Ubuntu](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-linux.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
-[![Windows](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-windows.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
+
 [![macOS](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/os-macos.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
-[![coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/coverage.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml))
+[![AppleClang](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/royyandzakiy/cpp-project-template/badges/appleclang.json)](https://github.com/royyandzakiy/cpp-project-template/actions/workflows/build-and-test.yml)
 
 <!-- Badges:
-     • Coverage, Clang, GCC and OS are all DYNAMIC. Each CI leg stages a shields-endpoint JSON
-       (coverage.json from llvm-cov; clang/gcc.json from build/<preset>/toolchain.txt written by
-       cmake/compiler.cmake; os.json from the runner's /etc/os-release). The publish-badges job
-       commits them to the orphan `badges` branch on push to main; the badges read them via the
-       shields endpoint, so versions track what actually built+passed and never drift.
-     • To add a badge (e.g. Windows MSVC/clang-cl, or fuzzing stats): have a CI leg stage another
-       <name>.json artifact and add a matching endpoint badge here — no other plumbing needed.
+     • All compiler, OS, and coverage badges are DYNAMIC. Each CI leg stages a shields-endpoint
+       JSON from build/<preset>/toolchain.txt (compiler id + version), /etc/os-release or
+       Win32_OperatingSystem or sw_vers (OS version), and llvm-cov/gcovr (coverage). The
+       publish-badges job commits them to the orphan `badges` branch on push to main/master;
+       badges read them via shields.io endpoint, so versions track what actually built+passed
+       and never drift.
+     • To add a badge: have a CI leg stage another <name>.json artifact and add a matching
+       endpoint badge to this README — no other plumbing needed.
      • C++23 is intentionally STATIC: it's a project invariant (CMAKE_CXX_STANDARD), not a
        CI-detected fact. -->
 
@@ -44,7 +49,7 @@ Requires CMake 3.28+.
 - A **C++23** compiler (one of the toolchains above)
 - **vcpkg** — auto-detected from PATH and common install locations (see [vcpkg setup](#vcpkg-setup))
 - **LLVM 21** (`clangd`, `clang-format`, `clang-tidy`) for editor intelligence and the
-  format/lint targets
+  format/lint targets (CI pins 21; other recent versions should work)
 
 ---
 
@@ -321,8 +326,6 @@ automatically; other compilers are auto-detected.
 
 > Switching managers needs a **fresh configure** — the toolchain/provider locks in at first
 > configure. Just configure into a new build directory (e.g. `cmake --preset clang-cl-debug -B build/conan`).
-
-Conan requires the submodule once: `git submodule update --init --recursive`.
 
 ---
 

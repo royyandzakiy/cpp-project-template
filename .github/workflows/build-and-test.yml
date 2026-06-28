@@ -36,8 +36,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install toolchain (pinned) + Conan
-        run: bash scripts/setup-ubuntu.sh
+      - name: Install toolchain (pinned) + Conan + VCPKG
+        run: bash scripts/setup-ubuntu.sh --with-vcpkg
+
+      - name: Verify vcpkg location
+        run: |
+          echo "VCPKG_ROOT=$HOME/vcpkg"
+          ls "$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake" || echo "MISSING!"
+
+      - name: Check Ninja
+        run: |
+          which ninja || echo "ninja NOT FOUND"
+          cmake --version
 
       - name: Put Conan (pipx) on PATH
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
@@ -54,8 +64,16 @@ jobs:
             conan-${{ runner.os }}-${{ matrix.preset }}-
             conan-${{ runner.os }}-
 
-      - name: Configure
-        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
+      - name: Configure (with retry)
+        run: |
+          for i in 1 2 3; do
+            cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON && exit 0
+            echo "Attempt $i failed, retrying..."
+            sleep 10
+          done
+          exit 1
+        env:
+          VCPKG_ROOT: /home/runner/vcpkg
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
@@ -238,6 +256,26 @@ jobs:
         run: |
           brew install cmake ninja conan
           conan profile detect --force
+          which ninja
+          ninja --version
+
+      - name: Setup vcpkg
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git "$HOME/vcpkg"
+          "$HOME/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
+          echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
+          echo "$HOME/vcpkg" >> "$GITHUB_PATH"
+
+      - name: Cache vcpkg packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.home }}/vcpkg
+            !${{ runner.home }}/vcpkg/.git
+          key: vcpkg-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-${{ matrix.preset }}-
+            vcpkg-${{ runner.os }}-
 
       - name: Cache Conan packages
         uses: actions/cache@v4
@@ -249,7 +287,10 @@ jobs:
             conan-${{ runner.os }}-
 
       - name: Configure
-        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=conan -D BUILD_TESTING=ON
+        run: cmake --preset ${{ matrix.preset }} -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
+        env:
+          # VCPKG_ROOT: ${{ runner.home }}/vcpkg
+          VCPKG_ROOT: /home/runner/vcpkg
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}

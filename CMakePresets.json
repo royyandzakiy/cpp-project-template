@@ -113,7 +113,8 @@
                                 "rhs": "Darwin"
                         },
                         "cacheVariables": {
-                                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/mac"
+                                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/mac",
+                                "VCPKG_TARGET_TRIPLET": "arm64-osx"
                         }
                 },
                 {
