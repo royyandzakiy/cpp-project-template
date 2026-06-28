@@ -8,5 +8,4 @@ class MyProjectConan(ConanFile):
         self.requires("fmt/12.1.0")
         self.requires("scnlib/4.0.1")
         self.requires("tracy/0.13.1")
-        self.requires("sml/1.1.13")
         self.requires("perfetto/52.0")
