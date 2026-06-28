@@ -1,10 +1,14 @@
 name: CMake Build & Test
+description: 'Configures, builds, and tests a CMake project using presets'
 inputs:
   preset:
+    description: 'The CMake preset to use for configuration and building'
     required: true
   cmake-args:
+    description: 'Additional arguments passed directly to the CMake configure command'
     default: ''
   retry:
+    description: 'Enable retrying the configuration step up to 3 times if it fails'
     default: 'false'
 runs:
   using: composite

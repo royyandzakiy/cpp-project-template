@@ -1,12 +1,14 @@
 name: Setup vcpkg
+description: 'Clones, bootstraps, and caches vcpkg for dependency management'
 inputs:
   os:
+    description: 'The operating system of the runner (e.g., windows, macos, linux)'
     required: true
 runs:
   using: composite
   steps:
     - name: Clone vcpkg (non-Linux)
-      if: inputs.os != 'linux'
+      if: ${{ inputs.os != 'linux' }}
       shell: bash
       run: |
         git clone https://github.com/Microsoft/vcpkg.git "$HOME/vcpkg"
@@ -18,7 +20,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: |
-          ${{ runner.home }}/vcpkg
-          !${{ runner.home }}/vcpkg/.git
+          ~/vcpkg
+          !~/vcpkg/.git
         key: vcpkg-${{ inputs.os }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: vcpkg-${{ inputs.os }}-
