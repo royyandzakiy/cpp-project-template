@@ -2,6 +2,8 @@
 
 ## Backlog
 
+- add conan to ci
+
 - revamp readme
   - create wiki
 

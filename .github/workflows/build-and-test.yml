@@ -1,10 +1,20 @@
+# .github/workflows/build-and-test.yaml
 name: CI
 
 on:
   push:
-    branches: [main, master, develop, feat/github-actions-windows-ci]
+    branches: [main, master, develop, feat/github-actions-cleanup]
   pull_request:
   workflow_dispatch:
+    inputs:
+      pkg-manager:
+        description: 'Package manager'
+        required: false
+        default: 'conan'
+        type: choice
+        options:
+          - vcpkg
+          - conan
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,18 +31,24 @@ jobs:
       fail-fast: false
       matrix:
         preset: [clang-linux-debug, clang-linux-release, gcc-linux-debug, gcc-linux-release, clang-linux-asan, clang-linux-tsan, clang-linux-full]
+    env:
+      PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install toolchain (pinned) + vcpkg
+      - name: Install toolchain (pinned) + both package managers
         run: bash scripts/setup-ubuntu.sh --with-vcpkg
+
+      - uses: ./.github/actions/setup-pkg-manager
+        with:
+          os: linux
 
       - uses: ./.github/actions/cmake-build-test
         with:
           preset: ${{ matrix.preset }}
-          cmake-args: -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
+          cmake-args: -D PKG_MANAGER=${{ env.PKG_MANAGER }} -D BUILD_TESTING=ON
           retry: true
 
       - name: Coverage report
@@ -86,6 +102,8 @@ jobs:
       fail-fast: false
       matrix:
         preset: [msvc-debug, msvc-release, clang-cl-debug, clang-cl-release, mingw-debug, mingw-release]
+    env:
+      PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -95,14 +113,14 @@ jobs:
         with:
           arch: x64
 
-      - uses: ./.github/actions/setup-vcpkg
+      - uses: ./.github/actions/setup-pkg-manager
         with:
           os: windows
 
       - uses: ./.github/actions/cmake-build-test
         with:
           preset: ${{ matrix.preset }}
-          cmake-args: -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
+          cmake-args: -D BUILD_TESTING=ON -D PKG_MANAGER=${{ env.PKG_MANAGER }}
 
       - name: Stage badges (MSVC)
         if: contains(matrix.preset, 'msvc-debug')
@@ -150,25 +168,27 @@ jobs:
       fail-fast: false
       matrix:
         preset: [appleclang-debug, appleclang-release]
+    env:
+      PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install dependencies
+      - name: Install build tools
         run: |
           brew install cmake ninja
           which ninja
           ninja --version
 
-      - uses: ./.github/actions/setup-vcpkg
+      - uses: ./.github/actions/setup-pkg-manager
         with:
           os: macos
 
       - uses: ./.github/actions/cmake-build-test
         with:
           preset: ${{ matrix.preset }}
-          cmake-args: -D PKG_MANAGER=vcpkg -D BUILD_TESTING=ON
+          cmake-args: -D PKG_MANAGER=${{ env.PKG_MANAGER }} -D BUILD_TESTING=ON
 
       - name: Stage badges (AppleClang)
         if: matrix.preset == 'appleclang-debug'
