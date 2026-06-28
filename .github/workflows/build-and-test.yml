@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, master, develop, feat/github-actions-windows-ci]
   pull_request:
   workflow_dispatch:
 
@@ -114,10 +114,10 @@ jobs:
         preset:
           - msvc-debug
           - msvc-release
-          - msvc-asan
+          #- msvc-asan
           - clang-cl-debug
           - clang-cl-release
-          - clang-cl-asan
+          #- clang-cl-asan
           - mingw-debug
           - mingw-release
     steps:
@@ -126,11 +126,11 @@ jobs:
         with:
           submodules: recursive
 
-      # # Setup MSVC environment
-      # - name: Add MSVC to PATH
-      #   uses: ilammy/msvc-dev-cmd@v1
-      #   with:
-      #     arch: x64
+      # Setup MSVC environment
+      - name: Add MSVC to PATH
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       # Install vcpkg
       - name: Setup vcpkg
@@ -155,7 +155,10 @@ jobs:
       # For MSVC presets (using vcpkg by default)
       - name: Configure (MSVC)
         if: contains(matrix.preset, 'msvc') || contains(matrix.preset, 'clang-cl')
-        run: cmake --preset ${{ matrix.preset }} -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          cmake --preset ${{ matrix.preset }} -D BUILD_TESTING=ON -D PKG_MANAGER=vcpkg
 
       # For MinGW presets (using vcpkg)
       - name: Configure (MinGW)

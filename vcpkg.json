@@ -2,7 +2,6 @@
   "dependencies": [
     "fmt",
     "scnlib",
-    "tracy",
-    "bext-sml"
+    "tracy"
   ]
 }

@@ -31,7 +31,7 @@
                         "name": "msvc-base",
                         "hidden": true,
                         "inherits": "win-vcpkg-base",
-                        "generator": "Visual Studio 17 2022",
+                        "generator": "Ninja",
                         "architecture": {
                                 "value": "x64",
                                 "strategy": "external"

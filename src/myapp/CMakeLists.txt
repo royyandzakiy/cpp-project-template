@@ -47,7 +47,6 @@ target_compile_features(MyApp
 target_link_libraries(MyApp
     PRIVATE
         fmt::fmt
-        sml::sml
 )
 
 # ---- Cross-Cutting Configuration --------------------------------------------
