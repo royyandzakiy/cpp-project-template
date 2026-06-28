@@ -3,22 +3,35 @@
 # GTest Setup (shared by unit_tests and the sanitizer trip-wires)
 # =============================================================================
 # find_package(GTest CONFIG REQUIRED) # need to add `gtest` in vcpkg.json
-if(ENABLE_ASAN AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+# if(ENABLE_ASAN AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # clang-cl ASan: let Vcpkg build Googletest so it's properly instrumented
     find_package(GTest CONFIG REQUIRED)
-else()
-  include(FetchContent)
-  FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.17.0
-    SYSTEM)
-  set(gtest_force_shared_crt
-      ON
-      CACHE BOOL "" FORCE)
-  set(INSTALL_GTEST OFF CACHE BOOL "" FORCE) # don't let gtest's install rules pollute generated_lib/
-  FetchContent_MakeAvailable(googletest)
-endif()
+# else()
+#   include(FetchContent)
+#   FetchContent_Declare(
+#     googletest
+#     GIT_REPOSITORY https://github.com/google/googletest.git
+#     GIT_TAG v1.17.0
+#     SYSTEM)
+#   set(gtest_force_shared_crt
+#       ON
+#       CACHE BOOL "" FORCE)
+#   set(INSTALL_GTEST OFF CACHE BOOL "" FORCE) # don't let gtest's install rules pollute generated_lib/
+#   FetchContent_MakeAvailable(googletest)
+
+#   if(ENABLE_ASAN AND MSVC)
+#       # Force ASan instrumentation on Googletest to avoid global redzone mismatches
+#       set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES
+#           COMPILE_OPTIONS "/fsanitize=address"
+#       )
+#       # For MSVC ASan, static libs don't pass /fsanitize=address to the linker automatically
+#       if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#           set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES
+#               LINK_OPTIONS "/fsanitize=address"
+#           )
+#       endif()
+#   endif()
+# endif()
 
 # surpress warnings from gtest libraries
 foreach(t gtest gtest_main gmock gmock_main)
