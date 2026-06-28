@@ -299,18 +299,19 @@
                         }
                 },
                 {
-                        "name": "clang-cl-asan",
-                        "displayName": "Clang-CL Debug + ASan",
-                        "inherits": [
-                                "clang-cl-base",
-                                "build-debug",
-                                "sanitizer-base"
-                        ],
-                        "cacheVariables": {
-                                "ENABLE_ASAN": "ON",
-                                "CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-asan.ini"
-                        }
-                },
+    "name": "clang-cl-asan",
+    "displayName": "Clang-CL Debug + ASan",
+    "inherits": [
+        "clang-cl-base",
+        "build-debug",
+        "sanitizer-base"
+    ],
+    "cacheVariables": {
+        "ENABLE_ASAN": "ON",
+        "CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-asan.ini",
+        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL"
+    }
+},
                 {
                         "name": "clang-linux-full",
                         "displayName": "Clang Debug + Everything (ASan/LSan/UBSan, strict, tidy, PCH, unity, examples)",
