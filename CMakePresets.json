@@ -303,7 +303,7 @@
     "displayName": "Clang-CL Debug + ASan",
     "inherits": [
         "clang-cl-base",
-        "build-debug",
+        "build-release",
         "sanitizer-base"
     ],
     "cacheVariables": {
