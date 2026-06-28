@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        preset: [msvc-debug, msvc-release, msvc-asan, clang-cl-debug, clang-cl-release mingw-debug, mingw-release] # todo: clang-cl-asan still fails to build
+        preset: [msvc-debug, msvc-release, msvc-asan, clang-cl-debug, clang-cl-release, mingw-debug, mingw-release] # todo: clang-cl-asan still fails to build
     env:
       PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
