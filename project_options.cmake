@@ -10,7 +10,7 @@ option(ENABLE_STRICT_COMPILER "Warnings become errors (-Werror / /WX)" OFF)
 
 # ------ Project Features ------
 option(BUILD_APP "Build the application binary (src/myapp)" ON)
-option(BUILD_LIB "Build the library (src/mylib)" ON)
+option(BUILD_LIB "Build the library (src/mylib)" OFF)
 if(BUILD_LIB)
   option(BUILD_LIB_SHARED "Build MyLib as SHARED/DLL (ON) or STATIC (OFF)" ON)
   option(GENERATE_VERSION_HEADER "Generate include/<project>/version.h from version.txt" ON)

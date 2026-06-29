@@ -52,7 +52,7 @@ jobs:
           retry: true
 
       - name: Coverage report
-        if: matrix.preset == 'clang-linux-debug'
+        if: matrix.preset == 'clang-linux-debug' && env.BUILD_LIB == 'ON' # BUILD_LIB required to enable coverage target
         run: cmake --build --preset ${{ matrix.preset }} --target coverage
 
       - name: Coverage job summary
