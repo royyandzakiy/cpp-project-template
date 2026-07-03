@@ -91,6 +91,7 @@ if(ENABLE_SANITIZERS)
       message(STATUS "Sanitizers: UBSan baseline only (set ENABLE_ASAN / ENABLE_TSAN / ENABLE_MSAN for more)")
     endif()
 
+    # todo: consider changing to use target_compile_options, change this into a function to be able to get called
     add_compile_options(${SANITIZER_FLAGS})
     add_link_options(${SANITIZER_FLAGS})
 

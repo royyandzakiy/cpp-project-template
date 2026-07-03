@@ -2,6 +2,9 @@
 
 ## Backlog
 
+- add fuzzer for mylib
+- move sanitizer to work on myapp, activated by ENABLE_SANITIZER
+
 - revamp readme
   - create github wiki
 
