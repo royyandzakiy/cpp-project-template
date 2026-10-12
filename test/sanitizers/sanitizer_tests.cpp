@@ -42,8 +42,7 @@ TEST(SanitizerDeathTest, AddressSanitizer) {
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((noinline))
 #endif
-static void
-leak_now() {
+static void leak_now() {
 	volatile int *p = new int[64]; // leaked; the only pointer is gone once this returns
 	p[0] = 1;
 }
@@ -77,23 +76,5 @@ TEST(SanitizerDeathTest, ThreadSanitizer) {
 			t2.join();
 		},
 		"ThreadSanitizer");
-}
-#endif
-
-#if defined(SANITIZER_MSAN)
-TEST(SanitizerDeathTest, MemorySanitizer) {
-	EXPECT_DEATH(
-		{
-			// Read uninitialized HEAP memory: MSan flags it, but -Wuninitialized (locals-only,
-			// and fatal under -Werror) does not — so this compiles under strict warnings.
-			int *p = static_cast<int *>(std::malloc(sizeof(int)));
-			volatile int v = *p; // use of uninitialized value -> MSan
-			if (v != 0) {
-				std::abort();
-			}
-			std::free(p);
-			std::exit(0);
-		},
-		"MemorySanitizer");
 }
 #endif

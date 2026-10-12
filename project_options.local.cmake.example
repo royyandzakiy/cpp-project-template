@@ -36,7 +36,6 @@ set(ENABLE_CLANG_TIDY ON)       # run clang-tidy on first-party production code 
 # set(ENABLE_SANITIZERS ON)
 # set(ENABLE_ASAN ON)
 # set(ENABLE_TSAN ON)
-# set(ENABLE_MSAN ON)
 
 # =============================================================================
 # Build speed

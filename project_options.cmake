@@ -13,25 +13,21 @@ option(ENABLE_STRICT_COMPILER "Warnings become errors (-Werror / /WX)" OFF)
 option(BUILD_APP "Build the application binary (src/app)" ON)
 option(BUILD_LIB_SHARED "Build MyLib as SHARED/DLL (ON) or STATIC (OFF)" OFF)
 option(INSTALL_LIB "Install MyLib as a find_package() package and stage it into generated_lib/" OFF)
-option(GENERATE_VERSION_HEADER "Generate include/MyLib/version.h from version.txt" ON)
+option(GENERATE_VERSION_HEADER "Generate MyLib/version.h (build tree) from version.txt" ON)
 option(BUILD_TESTING "Build the unit tests under test/" OFF)
 option(BUILD_EXAMPLES "Build the examples/ demos (MyLib consumer, Tracy/Perfetto examples, …)" OFF)
 
 # ------ Package Manager ------
 set(PKG_MANAGER "vcpkg" CACHE STRING "Dependency provider: vcpkg | conan | none")
 set_property(CACHE PKG_MANAGER PROPERTY STRINGS vcpkg conan none)
-if(PKG_MANAGER STREQUAL "vcpkg")
-  option(VCPKG_MANIFEST_MODE "Use vcpkg manifest mode (ON) or classic/global mode (OFF)" ON)
-endif()
 
 # ------ Sanitizers ------
-# UBSan is the baseline (always enabled with sanitizers); pick AT MOST ONE of ASan / TSan / MSan
+# UBSan is the baseline (always enabled with sanitizers); pick AT MOST ONE of ASan / TSan
 # (they are mutually exclusive — you cannot combine them).
 option(ENABLE_SANITIZERS "Enable runtime sanitizers (UBSan baseline)" OFF)
 if(ENABLE_SANITIZERS)
   option(ENABLE_ASAN "AddressSanitizer + LeakSanitizer — detects buffer overflows, use-after-free, leaks" OFF)
   option(ENABLE_TSAN "ThreadSanitizer — detects data races and deadlocks" OFF)
-  option(ENABLE_MSAN "MemorySanitizer — detects uninitialized reads (Clang only, requires instrumented libc++)" OFF)
 endif()
 
 # ------ Linters & Static Analyzers ------

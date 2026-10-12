@@ -19,9 +19,9 @@ repos:
         exclude: ^\.vscode/
       - id: check-merge-conflict
 
-  # C / C++ formatting — pin to your toolchain (LLVM 20.x).
+  # C / C++ formatting — keep in lockstep with CLANG_VERSION in scripts/setup-ubuntu.sh (CI uses it).
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.8
+    rev: v21.1.8
     hooks:
       - id: clang-format
         types_or: [c++, c]

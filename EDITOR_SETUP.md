@@ -237,7 +237,6 @@ death tests via ctest):
 |--------|-----------|----------|
 | `clang-linux-asan` | UBSan + ASan + LSan | Linux |
 | `clang-linux-tsan` | UBSan + TSan | Linux |
-| `clang-linux-msan` | UBSan + MSan | Linux (clang only) |
 | `msvc-asan` | ASan | Windows (MSVC) |
 | `clang-cl-asan` | ASan | Windows (clang-cl) |
 
@@ -245,7 +244,7 @@ death tests via ctest):
 cmake --preset clang-linux-asan && cmake --build --preset clang-linux-asan && ctest --preset test-clang-linux-asan
 ```
 
-ASan/TSan/MSan are **mutually exclusive** (one per build); UBSan is the Linux baseline. TSan/MSan/LSan
+ASan/TSan are **mutually exclusive** (one per build); UBSan is the Linux baseline. TSan/LSan
 do **not** exist on Windows — only ASan.
 
 ### Sanitizers on Windows (the sharp edges)

@@ -277,18 +277,6 @@
                         }
                 },
                 {
-                        "name": "clang-linux-msan",
-                        "displayName": "Clang Debug + MSan",
-                        "inherits": [
-                                "clang-linux-base",
-                                "build-debug",
-                                "sanitizer-base"
-                        ],
-                        "cacheVariables": {
-                                "ENABLE_MSAN": "ON"
-                        }
-                },
-                {
                         "name": "msvc-asan",
                         "displayName": "MSVC Debug + ASan",
                         "inherits": [
@@ -421,11 +409,6 @@
                         "configurePreset": "clang-linux-tsan"
                 },
                 {
-                        "name": "clang-linux-msan",
-                        "inherits": "build-type-debug",
-                        "configurePreset": "clang-linux-msan"
-                },
-                {
                         "name": "msvc-asan",
                         "inherits": "build-type-debug",
                         "configurePreset": "msvc-asan"
@@ -520,11 +503,6 @@
                         "name": "test-clang-linux-tsan",
                         "inherits": "base-test",
                         "configurePreset": "clang-linux-tsan"
-                },
-                {
-                        "name": "test-clang-linux-msan",
-                        "inherits": "base-test",
-                        "configurePreset": "clang-linux-msan"
                 },
                 {
                         "name": "test-msvc-asan",

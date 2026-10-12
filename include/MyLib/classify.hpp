@@ -13,7 +13,12 @@ MYLIB_EXPORT auto sign(int value) -> int;
 // its own branch: a test that never falsifies the first operand leaves a branch uncovered.
 MYLIB_EXPORT auto in_range(int value, int low, int high) -> bool;
 
-enum class Grade : char { A, B, C, F };
+enum class Grade : char {
+	A,
+	B,
+	C,
+	F
+};
 
 // Maps a 0..100 score to a letter via an if-chain — one branch per threshold.
 MYLIB_EXPORT auto grade(int score) -> Grade;
