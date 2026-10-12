@@ -2,8 +2,20 @@
   "builtin-baseline": "8f63c9ed5897d7367a92a442a79f91721e0fd38f",
   "dependencies": [
     "fmt",
-    "scnlib",
-    "tracy",
-    "gtest"
-  ]
+    "scnlib"
+  ],
+  "features": {
+    "tracy": {
+      "description": "Tracy runtime profiler (enabled automatically when ENABLE_TRACY=ON)",
+      "dependencies": [
+        "tracy"
+      ]
+    },
+    "perfetto": {
+      "description": "Perfetto tracing (enabled automatically when ENABLE_PERFETTO=ON)",
+      "dependencies": [
+        "perfetto"
+      ]
+    }
+  }
 }

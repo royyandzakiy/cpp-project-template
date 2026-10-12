@@ -17,6 +17,13 @@ if(NOT ENABLE_COVERAGE)
   return()
 endif()
 
+# MSVC-style toolchains (cl, clang-cl) link via link.exe/lld-link, which rejects the coverage link
+# flags below. Coverage is a GCC/Clang (Linux/macOS) feature in this template.
+if(MSVC)
+  message(WARNING "Coverage: not supported with MSVC/clang-cl; ignoring ENABLE_COVERAGE (use a Linux/macOS preset).")
+  return()
+endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Clang or AppleClang
   add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
   add_link_options(-fprofile-instr-generate -fcoverage-mapping)

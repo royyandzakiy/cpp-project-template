@@ -30,8 +30,12 @@ if(MSVC AND ENABLE_SANITIZERS AND ENABLE_ASAN)
 endif()
 
 # ====== RUNTIME SANITIZERS ======
-# Applies the sanitizer flags to one target. Call AFTER the target is created.
+# Applies the sanitizer flags to one target (no-op unless ENABLE_SANITIZERS). Call AFTER the
+# target is created.
 function(target_enable_sanitizers TARGET)
+  if(NOT ENABLE_SANITIZERS)
+    return()
+  endif()
   if(MSVC)
     # Windows (MSVC & clang-cl): ASan is the only real sanitizer — no TSan/MSan/LSan.
     if(ENABLE_ASAN)

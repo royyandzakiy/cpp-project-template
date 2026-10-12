@@ -1,11 +1,13 @@
 # cmake/profiler.cmake
+# Compile-time profiling (ClangBuildAnalyzer) and runtime profilers (Tracy, Perfetto).
+#
+# ENABLE_TRACY / ENABLE_PERFETTO pull the library (the vcpkg manifest feature, see
+# cmake/config_vcpkg.cmake, or conanfile.py) and create project_tracy_profile /
+# project_perfetto_profile, which configure_target() links into first-party targets.
 
 # ===== Compiletime Profiling: ClangBuildAnalyzer =====
 if(ENABLE_CLANG_BUILD_ANALYZER)
-  if(NOT
-     CMAKE_CXX_COMPILER_ID
-     MATCHES
-     "Clang")
+  if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     message(WARNING "ENABLE_CLANG_BUILD_ANALYZER requires Clang (current: ${CMAKE_CXX_COMPILER_ID}). Skipping.")
   else()
     add_compile_options(-ftime-trace)
@@ -30,60 +32,31 @@ if(ENABLE_CLANG_BUILD_ANALYZER)
 endif()
 
 # ===== Runtime Profiling: Perfetto =====
-# =============================================================================
-# Perfetto Profiler Configuration
-# =============================================================================
-# This module provides a reusable interface target for Perfetto profiling.
-# Usage:
-#   include(cmake/perfetto.cmake)
-#   target_link_libraries(my_target PRIVATE project_perfetto_profile)
-# =============================================================================
-
-# Option to enable/disable Perfetto
-option(ENABLE_PERFETTO "Enable Perfetto profiling" OFF)
-
 if(ENABLE_PERFETTO)
-    # ---- Try vcpkg first (preferred) ----
-    find_package(perfetto CONFIG QUIET)
-
-    if(perfetto_FOUND)
-        message(STATUS "Perfetto found!")
-
-        # Create interface target
-        if(NOT TARGET project_perfetto_profile)
-            add_library(project_perfetto_profile INTERFACE)
-            target_link_libraries(project_perfetto_profile INTERFACE perfetto::perfetto)
-            target_compile_definitions(project_perfetto_profile INTERFACE
-                PERFETTO_ENABLE_TRACING
-            )
-        endif()
-    endif()
-
-    message(STATUS "Perfetto profiling ENABLED via project_perfetto_profile")
-else()
-    # ---- Perfetto disabled ----
+  find_package(perfetto CONFIG QUIET)
+  if(perfetto_FOUND)
     if(NOT TARGET project_perfetto_profile)
-        add_library(project_perfetto_profile INTERFACE)
-        # Empty interface target - does nothing
-        target_compile_definitions(project_perfetto_profile INTERFACE)
+      add_library(project_perfetto_profile INTERFACE)
+      target_link_libraries(project_perfetto_profile INTERFACE perfetto::perfetto)
+      target_compile_definitions(project_perfetto_profile INTERFACE PERFETTO_ENABLE_TRACING)
     endif()
-    message(STATUS "Perfetto profiling DISABLED")
+    message(STATUS "Perfetto tracing ENABLED via project_perfetto_profile")
+  else()
+    message(WARNING "ENABLE_PERFETTO is ON but perfetto wasn't found (vcpkg 'perfetto' feature / conanfile.py) — tracing disabled.")
+  endif()
 endif()
 
-# ===== Debug Profiling: Tracy =====
+# ===== Runtime Profiling: Tracy =====
 if(ENABLE_TRACY)
   find_package(tracy CONFIG QUIET)
-
-    if(tracy_FOUND)
-        message(STATUS "Tracy found!")
-
-        # Create interface target
-        if(NOT TARGET project_tracy_profile)
-            add_library(project_tracy_profile INTERFACE)
-            target_link_libraries(project_tracy_profile INTERFACE Tracy::TracyClient)
-            target_compile_definitions(project_tracy_profile INTERFACE TRACY_ENABLE)
-        endif()
-
-        message(STATUS "Tracy runtime profiling ENABLED via project_tracy_profile")
+  if(tracy_FOUND)
+    if(NOT TARGET project_tracy_profile)
+      add_library(project_tracy_profile INTERFACE)
+      target_link_libraries(project_tracy_profile INTERFACE Tracy::TracyClient)
+      target_compile_definitions(project_tracy_profile INTERFACE TRACY_ENABLE)
     endif()
+    message(STATUS "Tracy runtime profiling ENABLED via project_tracy_profile")
+  else()
+    message(WARNING "ENABLE_TRACY is ON but tracy wasn't found (vcpkg 'tracy' feature / conanfile.py) — profiling disabled.")
+  endif()
 endif()

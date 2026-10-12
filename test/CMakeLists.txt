@@ -34,9 +34,7 @@ set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
 # =============================================================================
 add_executable(unit_tests test_math.cpp test_classify.cpp test_greeter.cpp)
 target_link_libraries(unit_tests PRIVATE MyLib::MyLib GTest::gmock_main)
-if (ENABLE_SANITIZERS)
-  target_enable_sanitizers(unit_tests)
-endif()
+target_enable_sanitizers(unit_tests) # no-op unless ENABLE_SANITIZERS
 gtest_discover_tests(unit_tests)
 
 # =============================================================================

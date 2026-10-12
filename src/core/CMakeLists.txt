@@ -104,9 +104,7 @@ target_link_libraries(MyLib
 # PCH, unity build, profiler links, clang-tidy
 configure_target(MyLib)
 
-if (ENABLE_SANITIZERS)
-  target_enable_sanitizers(MyLib)
-endif()
+target_enable_sanitizers(MyLib) # no-op unless ENABLE_SANITIZERS
 
 # ---- Installation (optional) ------------------------------------------------
 # find_package()-able package + staging into generated_lib/. App-only projects can delete

@@ -113,8 +113,8 @@ Notes:
 ├── CMakeUserPresets.json.example # Optional: custom preset overrides
 ├── project_options.local.cmake.example   # Optional: machine-local overrides (gitignored)
 ├── project_options.cmake         # Feature toggles (shared, committed)
-├── vcpkg.json                    # vcpkg manifest (empty by default — add your own)
-├── conanfile.py                  # Conan manifest (fmt, scnlib, tracy, perfetto, gtest)
+├── vcpkg.json                    # vcpkg manifest (fmt, scnlib; tracy/perfetto as optional features)
+├── conanfile.py                  # Conan manifest (fmt, scnlib, tracy, perfetto)
 ├── version.txt                   # Project version (1.0.0)
 ├── EDITOR_SETUP.md               # Per-editor clangd setup
 ├── cmake/                        # CMake utility modules (internal)
@@ -212,8 +212,8 @@ or overrides.
 | `ENABLE_PCH`                | OFF     | Precompiled headers (faster full builds, slower incremental) |
 | `ENABLE_UNITY_BUILD`        | OFF     | Unity/jumbo TUs (faster clean/CI builds; incremental-hostile) |
 | `ENABLE_CLANG_BUILD_ANALYZER` | OFF   | `-ftime-trace` + ClangBuildAnalyzer target (Clang only)      |
-| `ENABLE_TRACY`              | OFF     | Tracy debug profiler (FetchContent)                          |
-| `ENABLE_PERFETTO`           | OFF     | Perfetto runtime tracing (FetchContent)                      |
+| `ENABLE_TRACY`              | OFF     | Tracy profiler (vcpkg `tracy` feature / Conan)               |
+| `ENABLE_PERFETTO`           | OFF     | Perfetto tracing (vcpkg `perfetto` feature / Conan)          |
 
 The sanitizer/coverage/strict toggles are usually set for you by the matching presets; flip the
 rest in `project_options.local.cmake` (copy `project_options.local.cmake.example`).

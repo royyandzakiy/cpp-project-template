@@ -47,8 +47,6 @@ target_link_libraries(MyApp
 # See cmake/configure_target.cmake for implementation details.
 configure_target(MyApp)
 
-if (ENABLE_SANITIZERS)
-  target_enable_sanitizers(MyApp)
-endif()
+target_enable_sanitizers(MyApp) # no-op unless ENABLE_SANITIZERS
 
 message(STATUS "MyApp configured (executable over MyLib)")

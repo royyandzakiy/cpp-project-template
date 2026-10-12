@@ -25,21 +25,19 @@ endif()
 #   endif()
 # endif()
 
-if(ENABLE_TRACY)
+if(TARGET project_tracy_profile) # ENABLE_TRACY and tracy found
   add_executable(example_tracy tracy/main_tracy.cpp)
   target_link_libraries(example_tracy PRIVATE fmt::fmt project_tracy_profile)
 endif()
 
-if(ENABLE_PERFETTO)
+if(TARGET project_perfetto_profile) # ENABLE_PERFETTO and perfetto found
   add_executable(example_perfetto perfetto/main_perfetto.cpp)
   target_link_libraries(example_perfetto PRIVATE fmt::fmt project_perfetto_profile)
 endif()
 
 # An executable linking the instrumented (STATIC) MyLib must link the sanitizer runtime too.
-if(ENABLE_SANITIZERS)
-  foreach(_example example_mylib example_tracy example_perfetto)
-    if(TARGET ${_example})
-      target_enable_sanitizers(${_example})
-    endif()
-  endforeach()
-endif()
+foreach(_example example_mylib example_tracy example_perfetto)
+  if(TARGET ${_example})
+    target_enable_sanitizers(${_example}) # no-op unless ENABLE_SANITIZERS
+  endif()
+endforeach()
