@@ -20,6 +20,15 @@ if(NOT VCPKG_TARGET_TRIPLET)
   endif()
 endif()
 
+# Optional manifest features (vcpkg.json "features"), switched on by the matching project option.
+# Must be set before project(), where the vcpkg toolchain runs the manifest install.
+if(ENABLE_TRACY)
+  list(APPEND VCPKG_MANIFEST_FEATURES "tracy")
+endif()
+if(ENABLE_PERFETTO)
+  list(APPEND VCPKG_MANIFEST_FEATURES "perfetto")
+endif()
+
 # Find vcpkg root
 # Priority: CMake var (preset/-D) > env var > vcpkg in PATH > common default paths > project subdir > error
 if(VCPKG_ROOT_PATH)
@@ -33,6 +42,13 @@ else()
   if(DEFINED ENV{VCPKG_ROOT} AND EXISTS "$ENV{VCPKG_ROOT}/${_vcpkg_toolchain_rel}")
     set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT}")
     message(STATUS "ENV\{VCPKG_ROOT\}: $ENV{VCPKG_ROOT}")
+    # A VS Developer Shell overwrites VCPKG_ROOT with Visual Studio's bundled vcpkg, silently
+    # switching away from your own install. Pin VCPKG_ROOT_PATH (CMakeUserPresets.json) to avoid it.
+    string(REPLACE "\\" "/" _vcpkg_env_root "$ENV{VCPKG_ROOT}")
+    if(_vcpkg_env_root MATCHES "Microsoft Visual Studio/.*/VC/vcpkg")
+      message(WARNING "[vcpkg] Using Visual Studio's bundled vcpkg (set by the VS Developer Shell). "
+                      "If you have your own vcpkg, set VCPKG_ROOT_PATH in CMakeUserPresets.json.")
+    endif()
   elseif(DEFINED ENV{VCPKG_ROOT_PATH} AND EXISTS "$ENV{VCPKG_ROOT_PATH}/${_vcpkg_toolchain_rel}")
     set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT_PATH}")
     message(STATUS "ENV\{VCPKG_ROOT_PATH\}: $ENV{VCPKG_ROOT_PATH}")

@@ -310,7 +310,8 @@
                         ],
                         "cacheVariables": {
                                 "ENABLE_ASAN": "ON",
-                                "CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-asan.ini"
+                                "CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-asan.ini",
+                                "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
                         }
                 },
                 {

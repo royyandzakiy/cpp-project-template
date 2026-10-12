@@ -77,7 +77,7 @@ endif()
 if(BUILD_TESTING)
   enable_testing() # ctest / gtest_discover_tests register the unit tests
   add_subdirectory(test)
-  if(ENABLE_COVERAGE AND TARGET unit_tests)
+  if(COMMAND setup_coverage_target AND TARGET unit_tests) # undefined when coverage is off/unsupported
     setup_coverage_target(unit_tests) # adds the `coverage` target (runs tests + reports)
   endif()
 endif()

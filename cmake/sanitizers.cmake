@@ -1,23 +1,46 @@
 # cmake/sanitizers.cmake
 # Sanitizer configuration: ASan, TSan, MSan, UBSan, and Windows-specific deployment.
 #
-# Sets compiler/linker flags globally when ENABLE_SANITIZERS is ON.
+# Sanitizers are opt-in PER TARGET: call target_enable_sanitizers(<target>) on first-party targets
+# (gated by ENABLE_SANITIZERS). Third-party code (GTest, vcpkg/Conan deps) stays uninstrumented,
+# which is fine for ASan/UBSan/TSan but gives MSan false positives.
+#
+# A few Windows ASan settings must match across the WHOLE build, so they are applied once below at
+# include time, before any target exists. Include this module BEFORE the targets.
 # Provides deploy_asan_runtime(<target>) for Windows ASan DLL deployment.
 
+# ====== WHOLE-BUILD WINDOWS ASAN SETTINGS ======
+if(MSVC AND ENABLE_SANITIZERS AND ENABLE_ASAN)
+  # /RTC1 (CMake's default Debug flag) is incompatible with ASan on cl and clang-cl. It lives in
+  # the per-config flags, not in any target's COMPILE_OPTIONS, so strip it here.
+  foreach(_lang C CXX)
+    string(REGEX REPLACE "/RTC[1csu]+" "" CMAKE_${_lang}_FLAGS_DEBUG "${CMAKE_${_lang}_FLAGS_DEBUG}")
+  endforeach()
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # clang-cl ASan can't use the debug CRT (/MDd), and every object in one link must use the same
+    # CRT and _ITERATOR_DEBUG_LEVEL — so the release DLL CRT (/MD) for all targets, GTest included.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+    # Prebuilt Debug deps use /MDd, so resolve imported (vcpkg) targets to their Release build. The
+    # clang-cl-asan preset uses the x64-windows-static-md triplet, so no Release DLLs need deploying.
+    # Conan deps get the release CRT from the clang-cl-windows-asan.ini profile instead.
+    set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG Release RelWithDebInfo Debug)
+    message(STATUS "Sanitizers: clang-cl ASan — /MD (release CRT) for the whole build")
+  endif()
+endif()
+
 # ====== RUNTIME SANITIZERS ======
-# Helper function to apply sanitizers to a specific target
+# Applies the sanitizer flags to one target (no-op unless ENABLE_SANITIZERS). Call AFTER the
+# target is created.
 function(target_enable_sanitizers TARGET)
+  if(NOT ENABLE_SANITIZERS)
+    return()
+  endif()
   if(MSVC)
     # Windows (MSVC & clang-cl): ASan is the only real sanitizer — no TSan/MSan/LSan.
     if(ENABLE_ASAN)
       message(STATUS "Sanitizers: ASan (Windows) for target ${TARGET}")
-      # /RTC1 (CMake's default Debug flag) is incompatible with ASan on cl and clang-cl — strip it.
-      get_target_property(_cxx_flags ${TARGET} COMPILE_OPTIONS)
-      if(_cxx_flags)
-        list(REMOVE_ITEM _cxx_flags "/RTC1" "/RTCc" "/RTCs" "/RTCu")
-        set_target_properties(${TARGET} PROPERTIES COMPILE_OPTIONS "${_cxx_flags}")
-      endif()
-
+      # /RTC1 removal and the clang-cl CRT choice are whole-build settings (see the top of this file).
       target_compile_options(${TARGET} PRIVATE /fsanitize=address)
       target_link_options(${TARGET} PRIVATE /INCREMENTAL:NO)
 
@@ -30,10 +53,6 @@ function(target_enable_sanitizers TARGET)
       # NOTE: do NOT pass /fsanitize=address as a *link* option — CMake links MSVC-style via
       # lld-link/link.exe directly (not the clang-cl driver), which rejects it.
       if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # clang-cl ASan can't use the debug CRT (/MDd) — use the release DLL CRT (/MD).
-        set_target_properties(${TARGET} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-        message(STATUS "  clang-cl: /MD (release CRT) required by ASan")
-
         # The auto-linked ASan import libs live in clang's runtime dir, which the direct linker
         # invocation doesn't search — add it. (cl.exe's ASan libs are already on the LIB path.)
         execute_process(
@@ -125,7 +144,7 @@ if(NOT DEFINED __SANITIZERS_CMAKE_INCLUDED__)
   set(__SANITIZERS_CMAKE_INCLUDED__ TRUE)
 
   # Locate the ASan DLL once at include time.
-  if(MSVC AND ENABLE_ASAN)
+  if(MSVC AND ENABLE_SANITIZERS AND ENABLE_ASAN)
     set(_asan_dll "clang_rt.asan_dynamic-x86_64.dll")
 
     # Build the search path.
@@ -173,7 +192,7 @@ if(NOT DEFINED __SANITIZERS_CMAKE_INCLUDED__)
 endif()
 
 function(deploy_asan_runtime target)
-  if(NOT (MSVC AND ENABLE_ASAN))
+  if(NOT (MSVC AND ENABLE_SANITIZERS AND ENABLE_ASAN))
     return()
   endif()
 
@@ -182,4 +201,4 @@ function(deploy_asan_runtime target)
   endif()
 endfunction()
 # NOTE: call deploy_asan_runtime(<target>) AFTER the target is created. This module is included
-# before executables exist; the app calls it via configure_target() in cmake/configure_target.cmake.
+# before executables exist; target_enable_sanitizers() calls it for each sanitized target.

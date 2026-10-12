@@ -34,6 +34,7 @@ generated_lib/
 
 # ----- Package managers / local config -----
 vcpkg_installed/
+.vcpkg-cache/
 CMakeUserPresets.json
 project_options.local.cmake
 
