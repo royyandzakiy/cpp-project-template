@@ -299,24 +299,25 @@ the HTML report as a build artifact.
 
 ## Dependencies
 
-Dependencies resolve through whichever `PKG_MANAGER` you pick (see below). The **Conan** manifest
-(`conanfile.txt`) is the practical default:
+Dependencies resolve through whichever `PKG_MANAGER` you pick (see below). `vcpkg.json` and
+`conanfile.py` list the same packages:
 
-| Package  | Source             | Use                                          |
-| -------- | ------------------ | -------------------------------------------- |
-| `fmt`    | `conanfile.txt`    | String formatting (the one actively used)    |
-| `scnlib` | `conanfile.txt`    | Type-safe input parsing (available, unused)  |
-| `tracy`  | `conanfile.txt`    | Profiling client                             |
+| Package    | vcpkg                        | Conan            | Use                                          |
+| ---------- | ---------------------------- | ---------------- | -------------------------------------------- |
+| `fmt`      | dependency                   | `conanfile.py`   | String formatting (used by MyLib and MyApp)  |
+| `scnlib`   | dependency                   | `conanfile.py`   | Type-safe input parsing (available, unused)  |
+| `tracy`    | `tracy` feature              | `conanfile.py`   | Profiler client (`ENABLE_TRACY`)             |
+| `perfetto` | `perfetto` feature           | `conanfile.py`   | Tracing (`ENABLE_PERFETTO`)                  |
 
-`vcpkg.json` ships **empty** — add your packages there if you build with vcpkg.
+The vcpkg features are switched on automatically by the matching option, so the profilers are only
+built when you enable them.
 
 **Fetched via `FetchContent`** (independent of the package manager):
 
 | Package      | Use                                                        |
 | ------------ | ---------------------------------------------------------- |
-| `sml`        | `boost-ext/sml` state machine (header-only)                |
 | `googletest` | Unit testing (in `test/`)                                  |
-| `tracy` / `perfetto` | Profiler runtimes (when `ENABLE_TRACY` / `ENABLE_PERFETTO`) |
+| `cmake-conan`| The Conan dependency provider (only when `PKG_MANAGER=conan`) |
 
 ---
 
@@ -331,7 +332,7 @@ set(PKG_MANAGER conan)
 ```
 
 …or `-DPKG_MANAGER=conan`, or the IDE's CMake cache dropdown. vcpkg reads `vcpkg.json`; Conan reads
-`conanfile.txt` (resolved via the cmake-conan provider, so `find_package()` is unchanged). For
+`conanfile.py` (resolved via the cmake-conan provider, so `find_package()` is unchanged). For
 clang-cl the matching `cmake/conan-profiles/clang-cl-windows-<buildtype>.ini` is selected
 automatically; other compilers are auto-detected.
 
@@ -364,8 +365,10 @@ via `cmake/config_conan.cmake`.
   edit; configure via `project_options.local.cmake`.
 - **`config_conan.cmake`** — Conan dependency flow via the cmake-conan provider.
 - **`compiler.cmake`** — warning flags, strict mode, the no-build-type guard, debug postfix.
-- **`sanitizer_analyzer.cmake`** — sanitizers, clang-tidy discovery, ccache, fast linker, per
-  `project_options.cmake`.
+- **`sanitizers.cmake`** — `target_enable_sanitizers()` (per-target ASan/TSan/MSan/UBSan), the
+  whole-build Windows ASan settings, and the ASan runtime DLL deploy.
+- **`analyzers.cmake`** — clang-tidy discovery.
+- **`build_acceleration.cmake`** — ccache and the fast linker (mold/lld).
 - **`coverage.cmake`** — coverage instrumentation + `setup_coverage_target()` (the `coverage` target).
 - **`profiler.cmake`** — Tracy, Perfetto, and ClangBuildAnalyzer integration.
 - **`format.cmake`** — `format` / `format-check` / `tidy-all` targets.
@@ -410,7 +413,7 @@ delete the directory and let each clone build its own index.
 2. Update `version.txt`.
 3. Replace sources under `src/core/` (logic) and `src/app/` (`main()`), and headers under
    `include/`.
-4. Add dependencies to `vcpkg.json` and/or `conanfile.txt` (whichever `PKG_MANAGER` you use).
+4. Add dependencies to `vcpkg.json` and/or `conanfile.py` (whichever `PKG_MANAGER` you use).
 5. Adjust presets in `CMakePresets.json` as needed.
 6. Replace this README using `README.md.template` as a starting point.
 
