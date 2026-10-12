@@ -1,9 +1,9 @@
 from conan import ConanFile
-from conan.tools.cmake import cmake_layout
+from conan.tools.cmake import CMakeToolchain, cmake_layout
 
 class MyProjectConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps", "CMakeToolchain"
+    generators = "CMakeDeps"
 
     def requirements(self):
         self.requires("fmt/12.1.0")
@@ -14,3 +14,10 @@ class MyProjectConan(ConanFile):
 
     def layout(self):
         cmake_layout(self)
+
+    def generate(self):
+        tc = CMakeToolchain(self)
+        # cmake-conan drives the build from our own presets, so don't add Conan's per-build-dir
+        # presets to CMakeUserPresets.json (two Debug build dirs collide on "conan-debug").
+        tc.user_presets_path = False
+        tc.generate()

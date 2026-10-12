@@ -1,6 +1,10 @@
 name: Setup Package Manager
+description: 'Installs vcpkg + Conan (non-Linux; scripts/setup-ubuntu.sh covers Linux) and restores their binary caches'
 inputs:
   os:
+    required: true
+  preset:
+    description: 'Configure preset — part of the cache key, since presets differ in compiler/triplet'
     required: true
 runs:
   using: composite
@@ -17,14 +21,19 @@ runs:
         echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
         echo "$HOME/vcpkg" >> "$GITHUB_PATH"
 
-    - name: Cache vcpkg
+    # Cache vcpkg's built packages, not the vcpkg checkout: a fresh clone is quick, rebuilding deps isn't.
+    - name: Point vcpkg at a cacheable binary cache
+      shell: bash
+      run: |
+        mkdir -p "$GITHUB_WORKSPACE/.vcpkg-cache"
+        echo "VCPKG_DEFAULT_BINARY_CACHE=$GITHUB_WORKSPACE/.vcpkg-cache" >> "$GITHUB_ENV"
+
+    - name: Cache vcpkg binaries
       uses: actions/cache@v4
       with:
-        path: |
-          ${{ runner.home }}/vcpkg
-          !${{ runner.home }}/vcpkg/.git
-        key: vcpkg-${{ inputs.os }}-${{ hashFiles('vcpkg.json') }}
-        restore-keys: vcpkg-${{ inputs.os }}-
+        path: ${{ github.workspace }}/.vcpkg-cache
+        key: vcpkg-${{ inputs.preset }}-${{ hashFiles('vcpkg.json') }}
+        restore-keys: vcpkg-${{ inputs.preset }}-
 
     # ── Conan (all OSes) ────────────────────────────────────
     - name: Install Conan (non-Linux)
@@ -41,5 +50,5 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/.conan2
-        key: conan-${{ inputs.os }}-${{ hashFiles('conanfile.txt') }}
-        restore-keys: conan-${{ inputs.os }}-
+        key: conan-${{ inputs.preset }}-${{ hashFiles('conanfile.py') }}
+        restore-keys: conan-${{ inputs.preset }}-

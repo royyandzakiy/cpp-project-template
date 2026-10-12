@@ -10,7 +10,7 @@ on:
       pkg-manager:
         description: 'Package manager'
         required: false
-        default: 'conan'
+        default: 'vcpkg'
         type: choice
         options:
           - vcpkg
@@ -35,8 +35,6 @@ jobs:
       PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Install toolchain (pinned) + both package managers
         run: bash scripts/setup-ubuntu.sh --with-vcpkg
@@ -44,6 +42,7 @@ jobs:
       - uses: ./.github/actions/setup-pkg-manager
         with:
           os: linux
+          preset: ${{ matrix.preset }}
 
       - uses: ./.github/actions/cmake-build-test
         with:
@@ -106,8 +105,6 @@ jobs:
       PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -116,6 +113,7 @@ jobs:
       - uses: ./.github/actions/setup-pkg-manager
         with:
           os: windows
+          preset: ${{ matrix.preset }}
 
       - uses: ./.github/actions/cmake-build-test
         with:
@@ -172,8 +170,6 @@ jobs:
       PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Install build tools
         run: |
@@ -184,6 +180,7 @@ jobs:
       - uses: ./.github/actions/setup-pkg-manager
         with:
           os: macos
+          preset: ${{ matrix.preset }}
 
       - uses: ./.github/actions/cmake-build-test
         with:

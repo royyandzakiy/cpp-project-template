@@ -2,7 +2,7 @@
 # Conan 2 integration via the cmake-conan dependency provider. Included by
 # setup_package_manager() when PKG_MANAGER=conan. Works with ANY preset.
 #
-# Graceful fallback: if Conan's prerequisites (the cmake-conan submodule + a `conan`
+# Graceful fallback: if Conan's prerequisites (cmake-conan, fetched below, + a `conan`
 # executable) are missing, this falls back to vcpkg for THIS configure instead of hard
 # failing. PKG_MANAGER stays 'conan' in the cache, so fixing the environment and
 # re-configuring picks Conan back up automatically.
@@ -11,7 +11,7 @@ include(FetchContent)
 FetchContent_Declare(
   cmake-conan
   GIT_REPOSITORY https://github.com/conan-io/cmake-conan.git
-  GIT_TAG        develop2
+  GIT_TAG        b1593849dd842c37ff198b9d3e7a6d4e03803121 # develop2 as of 2026-10-13; bump deliberately
 )
 FetchContent_MakeAvailable(cmake-conan)
 
@@ -21,8 +21,8 @@ find_program(CONAN_EXECUTABLE NAMES conan)
 
 set(_conan_ready TRUE)
 if(NOT EXISTS "${CONAN_PROVIDER}")
-  message(WARNING "[conan] cmake-conan submodule not found at ${CONAN_PROVIDER}\n"
-                  "        Run: git submodule update --init --recursive")
+  message(WARNING "[conan] cmake-conan provider not found at ${CONAN_PROVIDER}\n"
+                  "        (fetching cmake-conan failed — check network access and GIT_TAG)")
   set(_conan_ready FALSE)
 endif()
 if(NOT CONAN_EXECUTABLE)
