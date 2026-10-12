@@ -28,38 +28,16 @@ include(GoogleTest)
 set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
 
 # =============================================================================
-# Unit tests — exercise MyLib's code (math + classify). Built only with BUILD_LIB, since that is
-# what they test. The lib sources are compiled directly into the test binary (not linked against
-# the DLL) so coverage is measured on them; MYLIB_STATIC_DEFINE makes MYLIB_EXPORT a no-op for
-# this in-binary build (no dllimport).
+# Unit tests — one binary that links MyLib, the code under test. Coverage measures MyLib through
+# this binary, which needs a STATIC MyLib (the default): llvm-cov only reads the test executable.
+# gmock_main provides main() + InitGoogleMock.
 # =============================================================================
-if(BUILD_LIB)
-  add_executable(
-    unit_tests
-    test_simple.cpp
-    test_math.cpp
-    test_classify.cpp
-    ${PROJECT_SOURCE_DIR}/src/mylib/math.cpp
-    ${PROJECT_SOURCE_DIR}/src/mylib/classify.cpp)
-  # Pull MyLib's public + generated (build-tree mylib_export.h) include dirs without linking the DLL.
-  target_include_directories(
-    unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/include
-                       $<TARGET_PROPERTY:MyLib,INTERFACE_INCLUDE_DIRECTORIES>)
-  target_compile_definitions(unit_tests PRIVATE MYLIB_STATIC_DEFINE)
-  target_link_libraries(unit_tests PRIVATE GTest::gtest GTest::gmock)
-  gtest_discover_tests(unit_tests)
+add_executable(unit_tests test_math.cpp test_classify.cpp test_greeter.cpp)
+target_link_libraries(unit_tests PRIVATE MyLib::MyLib GTest::gmock_main)
+if (ENABLE_SANITIZERS)
+  target_enable_sanitizers(unit_tests)
 endif()
-
-# =============================================================================
-# App module tests — exercise src/myapp/greeter with a MOCKED clock (gmock). Built only with
-# BUILD_APP, since that is what they test. gmock_main provides main() + InitGoogleMock.
-# =============================================================================
-if(BUILD_APP)
-  add_executable(app_tests test_app.cpp ${PROJECT_SOURCE_DIR}/src/myapp/greeter.cpp)
-  target_include_directories(app_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
-  target_link_libraries(app_tests PRIVATE GTest::gmock_main fmt::fmt)
-  gtest_discover_tests(app_tests)
-endif()
+gtest_discover_tests(unit_tests)
 
 # =============================================================================
 # Sanitizer trip-wires — verify each sanitizer actually CATCHES its bug class.

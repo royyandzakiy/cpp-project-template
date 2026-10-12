@@ -25,13 +25,18 @@ set(PKG_MANAGER conan)
 # =============================================================================
 set(BUILD_TESTING ON)           # compile and register all tests under test/ (requires GTest)
 set(BUILD_EXAMPLES ON)          # build the examples/ demos (example_mylib, example_tracy, example_perfetto, …)
-set(GENERATE_VERSION_HEADER ON) # regenerate include/<project>/version.h from version.txt on every build
+# set(BUILD_LIB_SHARED ON)      # build MyLib as a DLL / .so instead of static
+# set(INSTALL_LIB ON)           # install MyLib as a find_package() package + stage into generated_lib/
 
 # =============================================================================
 # Code quality
 # =============================================================================
 set(ENABLE_STRICT_COMPILER ON)  # -Werror (GCC/Clang) or /WX (MSVC) — warnings become hard errors, CI-friendly
 set(ENABLE_CLANG_TIDY ON)       # run clang-tidy on first-party production code (no-op if clang-tidy isn't installed)
+# set(ENABLE_SANITIZERS ON)
+# set(ENABLE_ASAN ON)
+# set(ENABLE_TSAN ON)
+# set(ENABLE_MSAN ON)
 
 # =============================================================================
 # Build speed

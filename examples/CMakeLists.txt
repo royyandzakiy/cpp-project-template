@@ -1,7 +1,7 @@
-# MyLib consumer — links the shared library and calls its public API. In-tree it links the
-# MyLib target directly; the same code works for an external consumer that does
-# find_package(MyLib) against generated_lib/ (MyLib::MyLib is exported for that case).
-if(BUILD_LIB AND TARGET MyLib)
+# MyLib consumer — links the library and calls its public API. In-tree it links the MyLib target
+# directly; the same code works for an external consumer that does find_package(MyLib) against
+# generated_lib/ (INSTALL_LIB=ON exports MyLib::MyLib for that case).
+if(TARGET MyLib)
   add_executable(example_mylib mylib_consumer/main.cpp)
   target_link_libraries(example_mylib PRIVATE MyLib::MyLib fmt::fmt)
   # Only a SHARED MyLib produces a runtime DLL to deploy; a STATIC MyLib is linked in directly.

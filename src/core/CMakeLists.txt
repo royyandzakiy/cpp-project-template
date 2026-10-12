@@ -1,9 +1,9 @@
 # =============================================================================
-# MyLib — A Modern CMake Library
+# MyLib — the project's core library (src/core)
 # =============================================================================
-# Produces a properly-exported, installable CMake package with automatic
-# artifact staging. Supports SHARED/STATIC, cross-platform symbol visibility,
-# and seamless find_package() consumption.
+# All logic lives here so it can be unit-tested; the app (src/app) and examples are thin
+# consumers. Always built. STATIC by default; BUILD_LIB_SHARED=ON makes it a DLL / .so.
+# Installing it as a find_package() package is optional (INSTALL_LIB, cmake/install.cmake).
 # =============================================================================
 
 # ---- Library Type -----------------------------------------------------------
@@ -24,6 +24,7 @@ message(STATUS "MyLib: building ${_mylib_type} library")
 set(_mylib_public_headers
     "${PROJECT_SOURCE_DIR}/include/MyLib/math.hpp"
     "${PROJECT_SOURCE_DIR}/include/MyLib/classify.hpp"
+    "${PROJECT_SOURCE_DIR}/include/MyLib/greeter.hpp"
 )
 
 if(GENERATE_VERSION_HEADER)
@@ -39,6 +40,7 @@ target_sources(MyLib
     PRIVATE
         math.cpp
         classify.cpp
+        greeter.cpp
 )
 
 # ---- Generate Export Header ------------------------------------------------
@@ -90,77 +92,27 @@ target_compile_features(MyLib
         cxx_std_23
 )
 
+# ---- Dependencies -----------------------------------------------------------
+# PRIVATE deps of a STATIC lib still reach consumers' link line — declare them in
+# cmake/MyLibConfig.cmake.in too (find_dependency) so installed consumers resolve them.
+target_link_libraries(MyLib
+    PRIVATE
+        fmt::fmt
+)
+
 # ---- Cross-Cutting Configuration --------------------------------------------
-# PCH, unity build, profiler links, clang-tidy, ASan deployment
+# PCH, unity build, profiler links, clang-tidy
 configure_target(MyLib)
 
-# ---- Dependencies -----------------------------------------------------------
-# Add any library dependencies here
-# target_link_libraries(MyLib
-#     PUBLIC
-#         dep::dep
-#     PRIVATE
-#         internal::dep
-# )
+if (ENABLE_SANITIZERS)
+  target_enable_sanitizers(MyLib)
+endif()
 
-# ---- Installation -----------------------------------------------------------
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
-
-install(
-    TARGETS MyLib
-    EXPORT MyLibTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT MyLib
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT MyLib
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT MyLib
-    FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT MyLib
-    FILE_SET generated_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT MyLib
-)
-
-install(
-    EXPORT MyLibTargets
-    FILE MyLibTargets.cmake
-    NAMESPACE MyLib::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyLib
-    COMPONENT MyLib
-)
-
-# ---- Package Config ---------------------------------------------------------
-configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/MyLibConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfig.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyLib
-)
-
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-
-install(
-    FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfigVersion.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyLib
-    COMPONENT MyLib
-)
-
-# ---- Artifact Staging -------------------------------------------------------
-# Per-platform AND per-config: Debug/Release binaries aren't interchangeable
-# Different toolchains/OSes must not overwrite each other
-if(PROJECT_IS_TOP_LEVEL)
-    set(_mylib_platform "${CMAKE_SYSTEM_NAME}-${CMAKE_CXX_COMPILER_ID}")
-    add_custom_command(
-        TARGET MyLib
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} --install "${CMAKE_BINARY_DIR}"
-                --config $<CONFIG>
-                --component MyLib
-                --prefix "${PROJECT_SOURCE_DIR}/generated_lib/${_mylib_platform}/$<CONFIG>"
-        COMMENT "Staging MyLib into generated_lib/${_mylib_platform}/$<CONFIG>"
-        VERBATIM
-    )
+# ---- Installation (optional) ------------------------------------------------
+# find_package()-able package + staging into generated_lib/. App-only projects can delete
+# cmake/install.cmake and these lines.
+if(INSTALL_LIB)
+    include(${PROJECT_SOURCE_DIR}/cmake/install.cmake)
 endif()
 
 message(STATUS "MyLib configured (${_mylib_type} library)")

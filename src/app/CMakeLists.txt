@@ -1,8 +1,8 @@
 # =============================================================================
-# MyApp — Standalone Hello-World Binary
+# MyApp — thin executable over MyLib (src/app)
 # =============================================================================
-# Intentionally independent of MyLib so BUILD_APP and BUILD_LIB can be toggled
-# separately in multi-config workflows (e.g. CI matrix, feature toggles).
+# Only main() and wiring live here; the logic is in MyLib (src/core) so tests can link it.
+# Library-only projects can delete this directory (or move main.cpp to examples/).
 # =============================================================================
 
 # ---- Executable -------------------------------------------------------------
@@ -12,14 +12,6 @@ add_executable(MyApp)
 target_sources(MyApp
     PRIVATE
         main.cpp
-        greeter.cpp
-        greeter.hpp # Optional: Add headers for IDE visibility
-)
-
-# ---- Include Paths ----------------------------------------------------------
-target_include_directories(MyApp
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 # ---- Properties -------------------------------------------------------------
@@ -46,13 +38,17 @@ target_compile_features(MyApp
 # ---- Dependencies -----------------------------------------------------------
 target_link_libraries(MyApp
     PRIVATE
+        MyLib::MyLib
         fmt::fmt
 )
 
 # ---- Cross-Cutting Configuration --------------------------------------------
-# Applies PCH, unity build, profiler links (Tracy/Perfetto), clang-tidy,
-# Windows ASan DLL deployment — all via configure_target().
+# Applies PCH, unity build, profiler links (Tracy/Perfetto), clang-tidy via configure_target().
 # See cmake/configure_target.cmake for implementation details.
 configure_target(MyApp)
 
-message(STATUS "MyApp configured (standalone executable)")
+if (ENABLE_SANITIZERS)
+  target_enable_sanitizers(MyApp)
+endif()
+
+message(STATUS "MyApp configured (executable over MyLib)")
