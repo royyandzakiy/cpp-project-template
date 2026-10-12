@@ -55,4 +55,8 @@ target_link_libraries(MyApp
 # See cmake/configure_target.cmake for implementation details.
 configure_target(MyApp)
 
+if (ENABLE_SANITIZERS)
+  target_enable_sanitizers(MyApp)
+endif()
+
 message(STATUS "MyApp configured (standalone executable)")

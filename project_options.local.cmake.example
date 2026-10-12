@@ -32,6 +32,10 @@ set(GENERATE_VERSION_HEADER ON) # regenerate include/<project>/version.h from ve
 # =============================================================================
 set(ENABLE_STRICT_COMPILER ON)  # -Werror (GCC/Clang) or /WX (MSVC) — warnings become hard errors, CI-friendly
 set(ENABLE_CLANG_TIDY ON)       # run clang-tidy on first-party production code (no-op if clang-tidy isn't installed)
+# set(ENABLE_SANITIZERS ON)
+# set(ENABLE_ASAN ON)
+# set(ENABLE_TSAN ON)
+# set(ENABLE_MSAN ON)
 
 # =============================================================================
 # Build speed

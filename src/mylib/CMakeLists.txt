@@ -94,6 +94,10 @@ target_compile_features(MyLib
 # PCH, unity build, profiler links, clang-tidy, ASan deployment
 configure_target(MyLib)
 
+if (ENABLE_SANITIZERS)
+  target_enable_sanitizers(MyLib)
+endif()
+
 # ---- Dependencies -----------------------------------------------------------
 # Add any library dependencies here
 # target_link_libraries(MyLib

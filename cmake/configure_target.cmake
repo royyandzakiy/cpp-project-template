@@ -1,13 +1,12 @@
 # cmake/configure_target.cmake
 # Per-target build configuration for the main executable: precompiled headers, unity build,
-# optional profiler links, clang-tidy, and (Windows) ASan runtime deployment.
+# optional profiler links, clang-tidy.
 #
 # Call configure_target(<target>) AFTER the target and its link libraries are defined.
 #
 # Depends on:
 #   cmake/analyzers.cmake         — provides CLANG_TIDY_EXE
 #   cmake/profiler.cmake          — provides project_tracy_profile / project_perfetto_profile targets
-#   cmake/sanitizers.cmake        — provides deploy_asan_runtime()
 
 function(configure_target target)
   # Clang-tidy — applied here so it lints only first-party production targets you opt in by
@@ -44,10 +43,5 @@ function(configure_target target)
   endif()
   if(TARGET project_perfetto_profile)
     target_link_libraries(${target} PRIVATE project_perfetto_profile)
-  endif()
-
-  # Windows ASan: deploy the runtime DLL next to the executable (no-op on Linux/macOS).
-  if(ENABLE_ASAN)
-    deploy_asan_runtime(${target})
   endif()
 endfunction()
