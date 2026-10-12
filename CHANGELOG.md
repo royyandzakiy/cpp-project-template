@@ -3,6 +3,16 @@
 Notable changes to this template, grouped chronologically by commit history (condensed — not every
 commit). Newest first.
 
+## 2026-10-12 — Core library + thin app layout
+- Restructured into `src/core` (`MyLib`, always built, holds all logic) and `src/app` (`MyApp`, a
+  thin `main()` over `MyLib`). `greeter` moved into `MyLib`; `BUILD_LIB` and the four lib-only
+  presets are gone.
+- `MyLib` is now STATIC by default (`BUILD_LIB_SHARED=ON` for a DLL). Install/export/staging moved
+  to `cmake/install.cmake`, opt-in via `INSTALL_LIB`.
+- One `unit_tests` binary links `MyLib` (replaces `unit_tests` + `app_tests`), so coverage no
+  longer depends on a build option. `coverage.cmake` now runs before the targets so `MyLib` is
+  instrumented.
+
 ## 2026-06-26 → 06-27 — App/library split & subproject support
 - Split into two targets: `MyApp` (standalone app) and `MyLib` (shared-by-default / static via
   `BUILD_LIB_SHARED`), each toggleable with `BUILD_APP` / `BUILD_LIB`.

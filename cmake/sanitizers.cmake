@@ -5,28 +5,35 @@
 # Provides deploy_asan_runtime(<target>) for Windows ASan DLL deployment.
 
 # ====== RUNTIME SANITIZERS ======
-if(ENABLE_SANITIZERS)
-  message(STATUS "Configuring Sanitizer Baseline")
+# Helper function to apply sanitizers to a specific target
+function(target_enable_sanitizers TARGET)
   if(MSVC)
     # Windows (MSVC & clang-cl): ASan is the only real sanitizer — no TSan/MSan/LSan.
     if(ENABLE_ASAN)
-      message(STATUS "Sanitizers: ASan (Windows)")
+      message(STATUS "Sanitizers: ASan (Windows) for target ${TARGET}")
       # /RTC1 (CMake's default Debug flag) is incompatible with ASan on cl and clang-cl — strip it.
-      string(REGEX REPLACE "/RTC[1csu]+" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-      string(REGEX REPLACE "/RTC[1csu]+" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-      add_compile_options(/fsanitize=address) # instrumenting; embeds the ASan lib directives
-      add_link_options(/INCREMENTAL:NO)        # ASan is incompatible with incremental linking
+      get_target_property(_cxx_flags ${TARGET} COMPILE_OPTIONS)
+      if(_cxx_flags)
+        list(REMOVE_ITEM _cxx_flags "/RTC1" "/RTCc" "/RTCs" "/RTCu")
+        set_target_properties(${TARGET} PROPERTIES COMPILE_OPTIONS "${_cxx_flags}")
+      endif()
+
+      target_compile_options(${TARGET} PRIVATE /fsanitize=address)
+      target_link_options(${TARGET} PRIVATE /INCREMENTAL:NO)
+
       # Prebuilt deps (fmt, etc. from vcpkg/conan) aren't ASan-instrumented, so the MSVC STL's
       # container annotations mismatch at link (LNK2038 annotate_string/annotate_vector). Disable
       # them so instrumented and non-instrumented code agree. (Loses container-overflow checks;
       # heap/use-after-free detection is unaffected.)
-      add_compile_definitions(_DISABLE_STRING_ANNOTATION _DISABLE_VECTOR_ANNOTATION)
+      target_compile_definitions(${TARGET} PRIVATE _DISABLE_STRING_ANNOTATION _DISABLE_VECTOR_ANNOTATION)
+
       # NOTE: do NOT pass /fsanitize=address as a *link* option — CMake links MSVC-style via
       # lld-link/link.exe directly (not the clang-cl driver), which rejects it.
       if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # clang-cl ASan can't use the debug CRT (/MDd) — use the release DLL CRT (/MD).
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+        set_target_properties(${TARGET} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
         message(STATUS "  clang-cl: /MD (release CRT) required by ASan")
+
         # The auto-linked ASan import libs live in clang's runtime dir, which the direct linker
         # invocation doesn't search — add it. (cl.exe's ASan libs are already on the LIB path.)
         execute_process(
@@ -37,18 +44,22 @@ if(ENABLE_SANITIZERS)
           set(_asan_win "${_asan_rt_parent}/windows")
           # Explicitly link the dynamic ASan import lib + runtime thunk (the clang-cl driver
           # would do this; the direct linker invocation won't).
-          add_link_options(
+          target_link_options(${TARGET} PRIVATE
             "/LIBPATH:${_asan_win}"
             clang_rt.asan_dynamic-x86_64.lib
             -wholearchive:clang_rt.asan_dynamic_runtime_thunk-x86_64.lib)
         endif()
       endif()
+
+      # Deploy the ASan runtime DLL for this target
+      deploy_asan_runtime(${TARGET})
     elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
       # No ASan requested -> fall back to MSVC runtime checks. /RTC1 is cheap, but is
       # INCOMPATIBLE with /fsanitize=address, so it must never be combined with ASan.
-      message(STATUS "Sanitizers: MSVC /RTC1 runtime checks (set ENABLE_ASAN for AddressSanitizer)")
-      add_compile_options(/RTC1)
+      message(STATUS "Sanitizers: MSVC /RTC1 runtime checks for target ${TARGET} (set ENABLE_ASAN for AddressSanitizer)")
+      target_compile_options(${TARGET} PRIVATE /RTC1)
     endif()
+
     if(ENABLE_TSAN OR ENABLE_MSAN)
       message(WARNING "TSan/MSan are unavailable on Windows (MSVC/clang-cl) — ignoring.")
     endif()
@@ -76,29 +87,29 @@ if(ENABLE_SANITIZERS)
     endif()
 
     if(ENABLE_ASAN)
-      message(STATUS "Sanitizers: UBSan + ASan + LSan")
+      message(STATUS "Sanitizers: UBSan + ASan + LSan for target ${TARGET}")
       list(APPEND SANITIZER_FLAGS -fsanitize=address -fsanitize=leak)
     elseif(ENABLE_TSAN)
-      message(STATUS "Sanitizers: UBSan + TSan")
+      message(STATUS "Sanitizers: UBSan + TSan for target ${TARGET}")
       list(APPEND SANITIZER_FLAGS -fsanitize=thread)
     elseif(ENABLE_MSAN)
       if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         message(FATAL_ERROR "ENABLE_MSAN requires Clang — MemorySanitizer is Clang-only (compiler: ${CMAKE_CXX_COMPILER_ID}).")
       endif()
-      message(STATUS "Sanitizers: UBSan + MSan (needs an instrumented libc++ to avoid false positives)")
+      message(STATUS "Sanitizers: UBSan + MSan for target ${TARGET} (needs an instrumented libc++ to avoid false positives)")
       list(APPEND SANITIZER_FLAGS -fsanitize=memory -fsanitize-memory-track-origins)
     else()
-      message(STATUS "Sanitizers: UBSan baseline only (set ENABLE_ASAN / ENABLE_TSAN / ENABLE_MSAN for more)")
+      message(STATUS "Sanitizers: UBSan baseline only for target ${TARGET} (set ENABLE_ASAN / ENABLE_TSAN / ENABLE_MSAN for more)")
     endif()
 
-    add_compile_options(${SANITIZER_FLAGS})
-    add_link_options(${SANITIZER_FLAGS})
+    target_compile_options(${TARGET} PRIVATE ${SANITIZER_FLAGS})
+    target_link_options(${TARGET} PRIVATE ${SANITIZER_FLAGS})
 
     if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
       message(WARNING "Sanitizers work best in a Debug build for readable symbols.")
     endif()
   endif()
-endif()
+endfunction()
 
 # ----- Deploy the ASan runtime DLL (Windows only) -----
 # On Windows, ASan links a dynamic runtime DLL (clang_rt.asan_dynamic-x86_64.dll) that must sit
@@ -108,7 +119,7 @@ endif()
 #
 # Usage:
 #   deploy_asan_runtime(<target>)   — adds a dependency from <target> to the deploy step
-#   Call this AFTER the target is created (e.g. from configure_target()).
+#   Call this AFTER the target is created (e.g. from target_enable_sanitizers()).
 
 if(NOT DEFINED __SANITIZERS_CMAKE_INCLUDED__)
   set(__SANITIZERS_CMAKE_INCLUDED__ TRUE)

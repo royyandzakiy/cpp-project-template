@@ -1,31 +1,112 @@
-# Project Title
+# <Project name>
 
-Brief description
+[![Build](https://github.com/<user>/<repo>/actions/workflows/<workflow>.yml/badge.svg)](https://github.com/<user>/<repo>/actions)
+[![License](https://img.shields.io/github/license/<user>/<repo>.svg?label=License&maxAge=86400)](./LICENSE)
 
-## Demo
+<One or two sentences: what it is, language and standard, what it is for.>
 
-(working screenshot)
+> **Status: <exploratory / prototype>.** <What is being tried and what is still
+> open.> The layout and API will likely change. <What already works.>
+
+![Demo](resources/demo.png)
 
 ## Architecture
 
-(class diagram / DFD, mermaid based)
+<One paragraph: the layers or components, and what flows between them.>
 
-## Features
+```mermaid
+graph TB
+    subgraph "<Layer>"
+        A[<Component>]
+        B[<Component>]
+    end
+    subgraph "<Layer>"
+        C[<Component>]
+    end
+    A --> C
+    B --> C
+```
 
-(high level features, or technical API contracts)
+| Component | Responsibility |
+|-----------|----------------|
+| `<name>` | <what it owns> |
+| `<name>` | <what it owns> |
+
+More diagrams: [`resources/diagrams/`](resources/diagrams/)
+
+## What it does
+
+- **<Capability>** - <concrete detail>
+- **<Capability>** - <concrete detail>
+- **<Capability>** - <concrete detail>
 
 ## Requirements
 
-## Getting Started
+- <Compiler or runtime, minimum version>
+- <Build system, minimum version>
+- <Dependency, version, and how it arrives: submodule, vcpkg, Conan, system package>
+- Tested on: <platforms actually tested>
 
-### Clone
+## Build
 
-### Build
+```bash
+git clone <clone-url>
+cd <repo>
+<bootstrap or configure command>
+<build command>
+```
 
-### Run
+| Option | Default | Effect |
+|--------|---------|--------|
+| `<FLAG>` | `<default>` | <what it changes> |
 
-## Demo Flow
+## Usage
 
-(flow chart / sequence diagram, mermaid based)
+```bash
+<command>
+```
 
-## Notes
+```
+<actual output, trimmed>
+```
+
+## Project structure
+
+```
+<repo>/
+├── <dir>/          # <what lives here>
+├── <dir>/          # <what lives here>
+├── <file>          # <what it is>
+└── <dir>/          # <what lives here>
+```
+
+## How it works
+
+<The part a reader cannot infer from the source in five minutes.>
+
+## Testing
+
+```bash
+<test command>
+```
+
+## Results
+
+<Table or block of numbers.>
+
+**Method:** <hardware, compiler and flags, iterations, warm-up, outlier handling.>
+Raw data: [`<path>`](<path>). Harness: [`<path>`](<path>).
+
+## Limitations
+
+- <Known limit or failure mode.>
+- <Scope deliberately left out.>
+
+## Roadmap
+
+- <Next thing.>
+- <Open question that may change the design.>
+
+## License
+
+<License name> - see [LICENSE](LICENSE).

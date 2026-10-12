@@ -114,7 +114,7 @@ Notes:
 ├── project_options.local.cmake.example   # Optional: machine-local overrides (gitignored)
 ├── project_options.cmake         # Feature toggles (shared, committed)
 ├── vcpkg.json                    # vcpkg manifest (empty by default — add your own)
-├── conanfile.txt                 # Conan manifest (fmt, scnlib, tracy)
+├── conanfile.py                  # Conan manifest (fmt, scnlib, tracy, perfetto, gtest)
 ├── version.txt                   # Project version (1.0.0)
 ├── EDITOR_SETUP.md               # Per-editor clangd setup
 ├── cmake/                        # CMake utility modules (internal)
@@ -122,18 +122,22 @@ Notes:
 │   ├── config_vcpkg.cmake        #   vcpkg detection + toolchain wiring
 │   ├── config_conan.cmake        #   Conan (cmake-conan) provider wiring
 │   ├── compiler.cmake            #   warnings, strict mode, build-type guard
-│   ├── sanitizer_analyzer.cmake  #   sanitizers, clang-tidy, ccache, fast linker
+│   ├── sanitizers.cmake          #   target_enable_sanitizers(): ASan/TSan/MSan/UBSan
+│   ├── analyzers.cmake           #   clang-tidy discovery
+│   ├── build_acceleration.cmake  #   ccache, fast linker
 │   ├── coverage.cmake            #   coverage instrumentation + `coverage` target
 │   ├── profiler.cmake            #   Tracy, Perfetto, ClangBuildAnalyzer
 │   ├── format.cmake              #   format / format-check / tidy-all targets
 │   ├── clangd.cmake              #   mirror compile_commands.json to project root
-│   ├── target_options.cmake      #   configure_target(): PCH, unity, tidy, profiler links
+│   ├── configure_target.cmake    #   configure_target(): PCH, unity, tidy, profiler links
+│   ├── install.cmake             #   MyLib find_package() package + staging (INSTALL_LIB)
 │   └── version.cmake             #   generates the version header (when GENERATE_VERSION_HEADER)
-├── include/cpp_project_template/
-│   └── version.h                 # Auto-generated from version.txt (gitignored)
-├── src/                          # Application sources (math, classify — a coverage demo)
-├── test/                         # GoogleTest unit tests (+ sanitizer trip-wires)
-├── examples/                     # Tracy / Perfetto demo targets
+├── include/MyLib/                # MyLib public headers (+ generated version.h, gitignored)
+├── src/
+│   ├── core/                     # MyLib — all logic, always built (math, classify, greeter)
+│   └── app/                      # MyApp — thin main() over MyLib (BUILD_APP)
+├── test/                         # GoogleTest unit tests on MyLib (+ sanitizer trip-wires)
+├── examples/                     # MyLib consumer, Tracy / Perfetto demo targets
 ├── scripts/                      # setup-ubuntu.sh · setup-windows.ps1 · cov-to-md.py
 └── .devcontainer/                # Portable container (runs setup-ubuntu.sh — same toolchain)
 ```
@@ -190,9 +194,12 @@ or overrides.
 | --------------------------- | ------- | ------------------------------------------------------------ |
 | `PKG_MANAGER`               | `vcpkg` | Dependency provider: `vcpkg` \| `conan` \| `none`            |
 | `VCPKG_MANIFEST_MODE`       | ON      | Use `vcpkg.json` (manifest) vs. a global install             |
+| `BUILD_APP`                 | ON      | Build `MyApp` (`src/app`); `MyLib` (`src/core`) is always built |
+| `BUILD_LIB_SHARED`          | OFF     | Build `MyLib` as a DLL / `.so` instead of static             |
+| `INSTALL_LIB`               | OFF     | Install `MyLib` as a `find_package()` package + stage into `generated_lib/` |
 | `BUILD_TESTING`             | OFF     | Build the GoogleTest unit tests                              |
 | `BUILD_EXAMPLES`            | OFF     | Build the `examples/` demo targets                           |
-| `GENERATE_VERSION_HEADER`   | OFF     | Generate `include/<project>/version.h` from `version.txt`    |
+| `GENERATE_VERSION_HEADER`   | ON      | Generate `include/MyLib/version.h` from `version.txt`        |
 | `ENABLE_STRICT_COMPILER`    | OFF     | Warnings as errors (`/WX`; `-Werror -pedantic`)              |
 | `ENABLE_SANITIZERS`         | OFF     | UBSan baseline (`-fsanitize=undefined,bounds`)               |
 | `ENABLE_ASAN`               | OFF     | AddressSanitizer + LeakSanitizer (needs `ENABLE_SANITIZERS`) |
@@ -359,10 +366,11 @@ via `cmake/config_conan.cmake`.
 - **`profiler.cmake`** — Tracy, Perfetto, and ClangBuildAnalyzer integration.
 - **`format.cmake`** — `format` / `format-check` / `tidy-all` targets.
 - **`clangd.cmake`** — mirrors `compile_commands.json` to the project root for clangd.
-- **`target_options.cmake`** — `configure_target()`: PCH, unity build, clang-tidy, profiler links,
-  Windows ASan DLL deploy.
+- **`configure_target.cmake`** — `configure_target()`: PCH, unity build, clang-tidy, profiler links.
+- **`install.cmake`** — `MyLib` install/export rules, package config, and staging into
+  `generated_lib/` (when `INSTALL_LIB` is on).
 - **`version.cmake`** — when `GENERATE_VERSION_HEADER` is on, reads `version.txt` and generates
-  `include/cpp_project_template/version.h` from `version.h.in`.
+  `include/MyLib/version.h` from `version.h.in`.
 
 ---
 
@@ -394,10 +402,28 @@ delete the directory and let each clone build its own index.
 
 ## Adapting the Template
 
-1. Rename the project in `CMakeLists.txt` and `vcpkg.json` (the generated header path follows the
-   project name).
+1. Rename the project in `CMakeLists.txt` and `vcpkg.json`, and `MyLib` / `MyApp` to your names.
 2. Update `version.txt`.
-3. Replace sources under `src/` and headers under `include/`.
+3. Replace sources under `src/core/` (logic) and `src/app/` (`main()`), and headers under
+   `include/`.
 4. Add dependencies to `vcpkg.json` and/or `conanfile.txt` (whichever `PKG_MANAGER` you use).
 5. Adjust presets in `CMakePresets.json` as needed.
 6. Replace this README using `README.md.template` as a starting point.
+
+### Library or app
+
+Both use the same shape: the logic lives in `MyLib` (`src/core`), which the tests link, and an
+executable is a thin `main()` on top. Pick one and trim:
+
+**Library project** — `MyLib` is what you ship.
+
+1. Delete `src/app/` and its `add_subdirectory` / `BUILD_APP` lines (or keep the example in
+   `examples/mylib_consumer/` as the demo).
+2. Set `INSTALL_LIB=ON` (and `BUILD_LIB_SHARED=ON` for a DLL / `.so`).
+
+**App project** — `MyLib` is just your internal, testable core.
+
+1. Delete `cmake/install.cmake`, `cmake/MyLibConfig.cmake.in`, the `INSTALL_LIB` block in
+   `src/core/CMakeLists.txt`, and `examples/mylib_consumer/`.
+2. Optionally move `include/MyLib/*.hpp` next to the sources in `src/core/`, since nothing outside
+   the project consumes them (point `BASE_DIRS` / `target_include_directories` there).
