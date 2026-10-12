@@ -193,7 +193,6 @@ or overrides.
 | Option                      | Default | Description                                                  |
 | --------------------------- | ------- | ------------------------------------------------------------ |
 | `PKG_MANAGER`               | `vcpkg` | Dependency provider: `vcpkg` \| `conan` \| `none`            |
-| `VCPKG_MANIFEST_MODE`       | ON      | Use `vcpkg.json` (manifest) vs. a global install             |
 | `BUILD_APP`                 | ON      | Build `MyApp` (`src/app`); `MyLib` (`src/core`) is always built |
 | `BUILD_LIB_SHARED`          | OFF     | Build `MyLib` as a DLL / `.so` instead of static             |
 | `INSTALL_LIB`               | OFF     | Install `MyLib` as a `find_package()` package + stage into `generated_lib/` |

@@ -34,11 +34,6 @@ if(NOT _conan_ready)
   message(WARNING "[conan] Prerequisites missing — falling back to vcpkg for this configure "
                   "(PKG_MANAGER stays 'conan' in the cache; fix the env and re-configure to use Conan).")
   set(PKG_MANAGER "vcpkg") # local override for this configure only
-  # project_options.cmake only defines VCPKG_MANIFEST_MODE when PKG_MANAGER==vcpkg, which it
-  # wasn't here — default it so config_vcpkg uses manifest mode (vcpkg.json), not classic.
-  if(NOT DEFINED VCPKG_MANIFEST_MODE)
-    set(VCPKG_MANIFEST_MODE ON)
-  endif()
   include(cmake/config_vcpkg.cmake)
   return()
 endif()
