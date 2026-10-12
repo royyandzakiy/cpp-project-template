@@ -84,3 +84,5 @@ desktop.ini
 # ----- Editor swap/backup -----
 *~
 *.swp
+
+.codebase-memory/
