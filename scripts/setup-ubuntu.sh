@@ -7,7 +7,7 @@
 # clang-18), so WSL / container / CI all get the same compiler VERSION — not merely the same
 # package names. That version match is what actually stops drift.
 #
-#   bash scripts/setup-ubuntu.sh              # toolchain + clang + conan (PKG_MANAGER default)
+#   bash scripts/setup-ubuntu.sh              # toolchain + clang + conan (PKG_MANAGER=conan)
 #   bash scripts/setup-ubuntu.sh --with-vcpkg # also clone + bootstrap vcpkg into ~/vcpkg
 #
 # Override the pinned Clang with CLANG_VERSION=NN (must exist on apt.llvm.org for this distro).
@@ -69,7 +69,7 @@ if ! $SUDO apt-get install -y g++-16 gcc-16 2>/dev/null; then
   echo "    g++-16 not in this distro's repos — skipping (default gcc/clang remain)."
 fi
 
-echo "==> conan 2 (the project's default package manager)"
+echo "==> conan 2 (for PKG_MANAGER=conan; vcpkg is the default — see --with-vcpkg)"
 if ! command -v conan >/dev/null 2>&1; then
   if [ "$(id -u)" -eq 0 ]; then
     # Container build (root): install system-wide so the runtime user sees it.
