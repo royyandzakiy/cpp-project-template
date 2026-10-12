@@ -307,7 +307,7 @@ isn't used by the build and is gitignored, so each clone builds its own (`index_
 3. Replace sources under `src/core/` (logic) and `src/app/` (`main()`), and headers under
    `include/`.
 4. Add dependencies to `vcpkg.json` and/or `conanfile.py` (whichever `PKG_MANAGER` you use).
-   Set `CPACK_PACKAGE_VENDOR` in `cmake/packaging.cmake`.
+   Set `CPACK_PACKAGE_VENDOR` in `cmake/packaging.cmake` to your name / org.
 5. Adjust presets in `CMakePresets.json` as needed.
 6. Replace this README using `README.md.template` as a starting point.
 
