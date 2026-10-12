@@ -263,9 +263,10 @@ Windows ASan needs more care than Linux. Two things to know:
   Studio 2022 bundles) crashes at startup with `interception_win: unhandled instruction`. Install
   LLVM 20+ and point the preset at it, e.g. `-DCMAKE_CXX_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe"`
   (and the same for `CMAKE_C_COMPILER`).
-- **STL container annotations are disabled under Windows ASan** (`_DISABLE_STRING_ANNOTATION` /
-  `_DISABLE_VECTOR_ANNOTATION`). Prebuilt deps aren't ASan-instrumented, so leaving annotations on
-  causes `LNK2038 annotate_string/annotate_vector` mismatches. Trade-off: no STL container-overflow
+- **STL container annotations are disabled under Windows ASan** (`_DISABLE_STL_ANNOTATION`, plus the per-container
+  macros for older STLs). Deps
+  aren't ASan-instrumented, so leaving annotations on causes `LNK2038 annotate_string` /
+  `annotate_vector` / `annotate_optional` mismatches (`optional` is new in MSVC 14.5x). Trade-off: no STL container-overflow
   detection; heap-buffer-overflow and use-after-free detection are unaffected.
 - The **ASan runtime DLL** (`clang_rt.asan_dynamic-x86_64.dll`) is deployed next to the executables
   automatically (`deploy_asan_runtime` in `cmake/sanitizers.cmake`).
