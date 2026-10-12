@@ -277,6 +277,19 @@
                         }
                 },
                 {
+                        "name": "clang-linux-fuzz",
+                        "displayName": "Clang Debug + libFuzzer (ASan/UBSan)",
+                        "inherits": [
+                                "clang-linux-base",
+                                "build-debug",
+                                "sanitizer-base"
+                        ],
+                        "cacheVariables": {
+                                "ENABLE_ASAN": "ON",
+                                "ENABLE_FUZZING": "ON"
+                        }
+                },
+                {
                         "name": "msvc-asan",
                         "displayName": "MSVC Debug + ASan",
                         "inherits": [
@@ -409,6 +422,11 @@
                         "configurePreset": "clang-linux-tsan"
                 },
                 {
+                        "name": "clang-linux-fuzz",
+                        "inherits": "build-type-debug",
+                        "configurePreset": "clang-linux-fuzz"
+                },
+                {
                         "name": "msvc-asan",
                         "inherits": "build-type-debug",
                         "configurePreset": "msvc-asan"
@@ -503,6 +521,11 @@
                         "name": "test-clang-linux-tsan",
                         "inherits": "base-test",
                         "configurePreset": "clang-linux-tsan"
+                },
+                {
+                        "name": "test-clang-linux-fuzz",
+                        "inherits": "base-test",
+                        "configurePreset": "clang-linux-fuzz"
                 },
                 {
                         "name": "test-msvc-asan",

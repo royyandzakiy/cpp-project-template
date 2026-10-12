@@ -7,7 +7,6 @@
 
 ## Backlog
 
-- add fuzzer for mylib
 - add cpack
 - add license
 - expand tests to have unit, integ, e2e (pytest)

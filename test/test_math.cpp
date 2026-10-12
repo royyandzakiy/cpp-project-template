@@ -1,6 +1,9 @@
 #include "MyLib/math.hpp"
 #include <gtest/gtest.h>
 
+#include <cstdint>
+#include <limits>
+
 using namespace mymath; // functions are declared in namespace mymath
 
 TEST(MathTest, Add) {
@@ -18,6 +21,15 @@ TEST(MathTest, Multiply) {
 	EXPECT_EQ(multiply(4, 5), 20);
 	EXPECT_EQ(multiply(0, 10), 0);
 	EXPECT_EQ(multiply(-3, 4), -12);
+}
+
+// The int extremes the fuzzer (fuzz/fuzz_mylib.cpp) reached: 64-bit results mean no overflow.
+TEST(MathTest, NoOverflowAtIntLimits) {
+	constexpr int min = std::numeric_limits<int>::min();
+	constexpr int max = std::numeric_limits<int>::max();
+	EXPECT_EQ(add(min, min), std::int64_t{min} * 2);
+	EXPECT_EQ(subtract(min, max), std::int64_t{min} - max);
+	EXPECT_EQ(multiply(max, max), std::int64_t{max} * max);
 }
 
 TEST(MathTest, Divide) {

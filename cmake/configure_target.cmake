@@ -37,6 +37,15 @@ function(configure_target target)
     message(STATUS "Unity build enabled for ${target}")
   endif()
 
+  # libFuzzer coverage feedback from inside first-party libraries a fuzz target links
+  # (cmake/fuzzing.cmake). Executables don't need it.
+  if(ENABLE_FUZZING)
+    get_target_property(_type ${target} TYPE)
+    if(_type MATCHES "_LIBRARY$")
+      target_compile_options(${target} PRIVATE -fsanitize=fuzzer-no-link)
+    endif()
+  endif()
+
   # Optional profiler interface targets (created by cmake/profiler.cmake when enabled).
   # BUILD_INTERFACE keeps these build-only helpers out of an installed STATIC MyLib's export set.
   if(TARGET project_tracy_profile)

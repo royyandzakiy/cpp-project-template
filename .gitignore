@@ -28,6 +28,13 @@ compile_commands.json
 # ----- Generated sources -----
 # (mylib_export.h and version.h are generated into the build tree — see src/core/CMakeLists.txt)
 
+# ----- Fuzzing -----
+# libFuzzer corpus and crash/leak/timeout repro files from local runs.
+fuzz/corpus/
+crash-*
+leak-*
+timeout-*
+
 # ----- Library install staging -----
 # Auto-populated by MyLib's POST_BUILD `cmake --install` when INSTALL_LIB=ON (cmake/install.cmake).
 generated_lib/

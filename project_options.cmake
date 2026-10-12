@@ -30,6 +30,11 @@ if(ENABLE_SANITIZERS)
   option(ENABLE_TSAN "ThreadSanitizer — detects data races and deadlocks" OFF)
 endif()
 
+# ------ Fuzzing ------
+# libFuzzer targets under fuzz/ (Clang, GNU-style driver; needs ENABLE_SANITIZERS). Use the
+# clang-linux-fuzz preset.
+option(ENABLE_FUZZING "Build the libFuzzer targets under fuzz/ (see cmake/fuzzing.cmake)" OFF)
+
 # ------ Linters & Static Analyzers ------
 option(ENABLE_CLANG_TIDY "Run clang-tidy on first-party production code (no-op if clang-tidy isn't installed)" OFF)
 
