@@ -132,7 +132,7 @@ Notes:
 │   ├── configure_target.cmake    #   configure_target(): PCH, unity, tidy, profiler links
 │   ├── install.cmake             #   MyLib find_package() package + staging (INSTALL_LIB)
 │   └── version.cmake             #   generates the version header (when GENERATE_VERSION_HEADER)
-├── include/MyLib/                # MyLib public headers (+ generated version.h, gitignored)
+├── include/MyLib/                # MyLib public headers (version.h + mylib_export.h are generated into the build dir)
 ├── src/
 │   ├── core/                     # MyLib — all logic, always built (math, classify, greeter)
 │   └── app/                      # MyApp — thin main() over MyLib (BUILD_APP)
@@ -198,7 +198,7 @@ or overrides.
 | `INSTALL_LIB`               | OFF     | Install `MyLib` as a `find_package()` package + stage into `generated_lib/` |
 | `BUILD_TESTING`             | OFF     | Build the GoogleTest unit tests                              |
 | `BUILD_EXAMPLES`            | OFF     | Build the `examples/` demo targets                           |
-| `GENERATE_VERSION_HEADER`   | ON      | Generate `include/MyLib/version.h` from `version.txt`        |
+| `GENERATE_VERSION_HEADER`   | ON      | Generate `MyLib/version.h` (build dir) from `version.txt`    |
 | `ENABLE_STRICT_COMPILER`    | OFF     | Warnings as errors (`/WX`; `-Werror -pedantic`)              |
 | `ENABLE_SANITIZERS`         | OFF     | UBSan baseline (`-fsanitize=undefined,bounds`)               |
 | `ENABLE_ASAN`               | OFF     | AddressSanitizer + LeakSanitizer (needs `ENABLE_SANITIZERS`) |
@@ -373,8 +373,8 @@ via `cmake/config_conan.cmake`.
 - **`configure_target.cmake`** — `configure_target()`: PCH, unity build, clang-tidy, profiler links.
 - **`install.cmake`** — `MyLib` install/export rules, package config, and staging into
   `generated_lib/` (when `INSTALL_LIB` is on).
-- **`version.cmake`** — when `GENERATE_VERSION_HEADER` is on, reads `version.txt` and generates
-  `include/MyLib/version.h` from `version.h.in`.
+- **`version.cmake`** — reads `version.txt` into the project version and, when
+  `GENERATE_VERSION_HEADER` is on, generates `MyLib/version.h` into the build dir from `version.h.in`.
 
 ---
 

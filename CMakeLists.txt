@@ -49,13 +49,6 @@ if(BUILD_TESTING)
 endif()
 
 #=========================
-# Version Header
-#=========================
-if(GENERATE_VERSION_HEADER)
-  generate_version_header()
-endif()
-
-#=========================
 # Dependencies
 #=========================
 include(project_dependencies.cmake)

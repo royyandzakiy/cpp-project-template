@@ -13,7 +13,7 @@ option(ENABLE_STRICT_COMPILER "Warnings become errors (-Werror / /WX)" OFF)
 option(BUILD_APP "Build the application binary (src/app)" ON)
 option(BUILD_LIB_SHARED "Build MyLib as SHARED/DLL (ON) or STATIC (OFF)" OFF)
 option(INSTALL_LIB "Install MyLib as a find_package() package and stage it into generated_lib/" OFF)
-option(GENERATE_VERSION_HEADER "Generate include/MyLib/version.h from version.txt" ON)
+option(GENERATE_VERSION_HEADER "Generate MyLib/version.h (build tree) from version.txt" ON)
 option(BUILD_TESTING "Build the unit tests under test/" OFF)
 option(BUILD_EXAMPLES "Build the examples/ demos (MyLib consumer, Tracy/Perfetto examples, …)" OFF)
 

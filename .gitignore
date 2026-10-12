@@ -26,9 +26,7 @@ compile_commands.json
 .cache/
 
 # ----- Generated sources -----
-# Produced at configure time by cmake/version.cmake from version.h.in
-include/*/version.h
-# (mylib_export.h is generated into the build tree, not here — see src/core/CMakeLists.txt)
+# (mylib_export.h and version.h are generated into the build tree — see src/core/CMakeLists.txt)
 
 # ----- Library install staging -----
 # Auto-populated by MyLib's POST_BUILD `cmake --install` when INSTALL_LIB=ON (cmake/install.cmake).
