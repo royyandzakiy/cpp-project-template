@@ -36,7 +36,7 @@ if(PROJECT_IS_TOP_LEVEL) # format & setup clangd
   include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
 endif()
 
-include(cmake/compiler.cmake)            # warnings, strict, build-type guard, debug postfix
+include(cmake/compiler.cmake)            # warnings, strict, build-type guard
 include(cmake/build_acceleration.cmake)  # fast linker (mold/lld) + ccache
 
 include(cmake/sanitizers.cmake)          # ASan/TSan/UBSan flags + deploy_asan_runtime()

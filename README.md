@@ -361,7 +361,7 @@ via `cmake/config_conan.cmake`.
 - **`config_vcpkg.cmake`** — locates vcpkg, validates the toolchain, reports package status. Don't
   edit; configure via `project_options.local.cmake`.
 - **`config_conan.cmake`** — Conan dependency flow via the cmake-conan provider.
-- **`compiler.cmake`** — warning flags, strict mode, the no-build-type guard, debug postfix.
+- **`compiler.cmake`** — warning flags, strict mode, the no-build-type guard.
 - **`sanitizers.cmake`** — `target_enable_sanitizers()` (per-target ASan/TSan/UBSan), the
   whole-build Windows ASan settings, and the ASan runtime DLL deploy.
 - **`analyzers.cmake`** — clang-tidy discovery.
