@@ -34,3 +34,12 @@ if(ENABLE_PERFETTO)
   add_executable(example_perfetto perfetto/main_perfetto.cpp)
   target_link_libraries(example_perfetto PRIVATE fmt::fmt project_perfetto_profile)
 endif()
+
+# An executable linking the instrumented (STATIC) MyLib must link the sanitizer runtime too.
+if(ENABLE_SANITIZERS)
+  foreach(_example example_mylib example_tracy example_perfetto)
+    if(TARGET ${_example})
+      target_enable_sanitizers(${_example})
+    endif()
+  endforeach()
+endif()

@@ -254,8 +254,12 @@ pip install pre-commit && pre-commit install
 
 ## Sanitizers & Profilers
 
-Sanitizers are Clang/GCC oriented; on Windows use a `clang-*` or `mingw-*` preset
-(MSVC supports ASan only). Wired by `cmake/sanitizer_analyzer.cmake`:
+Sanitizers are Clang/GCC oriented; on Windows only ASan exists (`msvc-asan`, `clang-cl-asan`).
+Wired by `cmake/sanitizers.cmake`, and applied **per target**: each first-party target calls
+`target_enable_sanitizers(<target>)` (MyLib, MyApp, `unit_tests`, `sanitizer_tests`), so
+third-party code such as GTest and vcpkg/Conan deps stays uninstrumented. Call it on any target
+you add — an executable that links the (static) MyLib must be sanitized too, or the sanitizer
+runtime won't be linked. The toggles:
 
 - **`ENABLE_SANITIZERS`** — UBSan baseline (`-fsanitize=undefined,bounds`)
 - **`ENABLE_ASAN`** — AddressSanitizer + leak detection

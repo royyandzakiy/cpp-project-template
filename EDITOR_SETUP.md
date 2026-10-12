@@ -256,16 +256,20 @@ Windows ASan needs more care than Linux. Two things to know:
   default debug dependencies from vcpkg/Conan — so it just works.
 - **`clang-cl-asan` requires the *release* CRT (`/MD`)** — clang-cl ASan cannot link `/MDd`. That
   means its **dependencies must also be `/MD`**, or you hit `_ITERATOR_DEBUG_LEVEL mismatch (0 vs 2)`
-  at link. This template handles it for Conan via `cmake/conan-profiles/clang-cl-windows-asan.ini`
-  (`compiler.runtime_type=Release`), auto-selected by the `clang-cl-asan` preset.
-  - **Using vcpkg instead of Conan?** You'd need a release-CRT triplet for `clang-cl-asan` (vcpkg's
-    default debug triplet is `/MDd`). Conan is handled out of the box.
+  at link. `cmake/sanitizers.cmake` sets `/MD` for the whole build (GTest included), and the deps
+  follow: Conan via `cmake/conan-profiles/clang-cl-windows-asan.ini` (`compiler.runtime_type=Release`,
+  auto-selected whenever clang-cl + ASan), vcpkg via the `x64-windows-static-md` triplet (set by the
+  `clang-cl-asan` preset) with Debug mapped to the Release libs.
+- **`clang-cl-asan` needs LLVM 20+ on recent Windows 11.** LLVM 19's ASan runtime (the version Visual
+  Studio 2022 bundles) crashes at startup with `interception_win: unhandled instruction`. Install
+  LLVM 20+ and point the preset at it, e.g. `-DCMAKE_CXX_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe"`
+  (and the same for `CMAKE_C_COMPILER`).
 - **STL container annotations are disabled under Windows ASan** (`_DISABLE_STRING_ANNOTATION` /
   `_DISABLE_VECTOR_ANNOTATION`). Prebuilt deps aren't ASan-instrumented, so leaving annotations on
   causes `LNK2038 annotate_string/annotate_vector` mismatches. Trade-off: no STL container-overflow
   detection; heap-buffer-overflow and use-after-free detection are unaffected.
 - The **ASan runtime DLL** (`clang_rt.asan_dynamic-x86_64.dll`) is deployed next to the executables
-  automatically (`deploy_asan_runtime` in `cmake/sanitizer_analyzer.cmake`).
+  automatically (`deploy_asan_runtime` in `cmake/sanitizers.cmake`).
 
 Rule of thumb: on Windows, prefer **`msvc-asan`** unless you specifically build with clang-cl.
 

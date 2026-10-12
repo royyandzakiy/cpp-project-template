@@ -41,14 +41,15 @@ gtest_discover_tests(unit_tests)
 
 # =============================================================================
 # Sanitizer trip-wires — verify each sanitizer actually CATCHES its bug class.
-# Built only when ENABLE_SANITIZERS (so they inherit the sanitizer flags from
-# cmake/sanitizer_analyzer.cmake). Each is a ctest test that PASSES when the
+# Built only when ENABLE_SANITIZERS, instrumented via target_enable_sanitizers()
+# (cmake/sanitizers.cmake). Each is a ctest test that PASSES when the
 # sanitizer's diagnostic appears in the output — if a trip-wire runs clean, the
 # sanitizer silently isn't working and the test goes red.
 # =============================================================================
 if(ENABLE_SANITIZERS)
   add_executable(sanitizer_tests sanitizers/sanitizer_tests.cpp)
   target_link_libraries(sanitizer_tests PRIVATE GTest::gtest GTest::gtest_main)
+  target_enable_sanitizers(sanitizer_tests) # also deploys the Windows ASan runtime DLL
   # Compile in only the death tests whose sanitizer is actually active in this build.
   if(MSVC)
     # Windows (MSVC/clang-cl): only ASan exists — no UBSan baseline, no LSan.
@@ -72,8 +73,4 @@ if(ENABLE_SANITIZERS)
   # EXPECT_DEATH tests observe a death. (ASan/UBSan already halt.)
   gtest_discover_tests(sanitizer_tests PROPERTIES
     ENVIRONMENT "TSAN_OPTIONS=halt_on_error=1;MSAN_OPTIONS=halt_on_error=1")
-  # Windows ASan: the runtime DLL must sit next to the test exe (shared bin/ dir covers all exes).
-  if(ENABLE_ASAN)
-    deploy_asan_runtime(sanitizer_tests)
-  endif()
 endif()

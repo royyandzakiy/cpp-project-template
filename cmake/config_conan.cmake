@@ -51,11 +51,15 @@ endif()
 
 # Host profile selection:
 #   - clang-cl needs an explicit profile (maps clang-cl -> compiler=msvc + executables); auto-pick
-#     cmake/conan-profiles/clang-cl-windows-<buildtype>.ini based on the active preset.
+#     cmake/conan-profiles/clang-cl-windows-<buildtype>.ini based on the active preset, or
+#     clang-cl-windows-asan.ini when ASan is on.
 #   - every other compiler: leave unset so cmake-conan auto-detects from the CMake configuration.
 # An explicit -DCONAN_HOST_PROFILE=... always wins.
 if(NOT CONAN_HOST_PROFILE AND CMAKE_CXX_COMPILER MATCHES "clang-cl")
   string(TOLOWER "${CMAKE_BUILD_TYPE}" _conan_bt)
+  if(ENABLE_SANITIZERS AND ENABLE_ASAN)
+    set(_conan_bt "asan") # clang-cl ASan needs deps on the release CRT (see cmake/sanitizers.cmake)
+  endif()
   set(_conan_prof "${CMAKE_SOURCE_DIR}/cmake/conan-profiles/clang-cl-windows-${_conan_bt}.ini")
   if(EXISTS "${_conan_prof}")
     set(CONAN_HOST_PROFILE "${_conan_prof}" CACHE FILEPATH "Conan host profile (auto-selected for clang-cl)")
