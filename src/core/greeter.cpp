@@ -1,11 +1,11 @@
-#include "greeter.hpp"
+#include "MyLib/greeter.hpp"
 
 #include <chrono>
 #include <fmt/format.h>
 #include <string>
 #include <string_view>
 
-namespace app {
+namespace demo {
 
 auto SystemClock::today() const -> std::string {
 	// Format from the y/m/d integer fields (std::chrono calendar).
@@ -19,4 +19,4 @@ auto greet(std::string_view name, const IClock &clock) -> std::string {
 	return fmt::format("Hello, {}! Today is {}.", name, clock.today());
 }
 
-} // namespace app
+} // namespace demo

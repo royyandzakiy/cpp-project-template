@@ -2,9 +2,11 @@
 
 include(CMakeFindDependencyMacro)
 
-# MyLib has no PUBLIC external dependencies. If that changes, declare them here with
-# find_dependency() (NOT find_package), e.g.:
-#   find_dependency(fmt CONFIG)
+# A STATIC MyLib carries its PRIVATE deps into the consumer's link line, so they must be found
+# here too. Declare them with find_dependency() (NOT find_package). A SHARED MyLib hides them.
+if(NOT @BUILD_LIB_SHARED@)
+  find_dependency(fmt CONFIG)
+endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/MyLibTargets.cmake")
 

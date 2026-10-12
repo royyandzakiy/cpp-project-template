@@ -1,5 +1,5 @@
-// Demonstrates consuming MyLib as a shared library: include its public headers and call across
-// the DLL boundary. Built as `example_mylib` when BUILD_LIB && BUILD_EXAMPLES.
+// Demonstrates consuming MyLib: include its public headers and call its API (across the DLL
+// boundary when BUILD_LIB_SHARED=ON). Built as `example_mylib` when BUILD_EXAMPLES.
 #include "MyLib/classify.hpp"
 #include "MyLib/math.hpp"
 

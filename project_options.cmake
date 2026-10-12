@@ -9,12 +9,11 @@
 option(ENABLE_STRICT_COMPILER "Warnings become errors (-Werror / /WX)" OFF)
 
 # ------ Project Features ------
-option(BUILD_APP "Build the application binary (src/myapp)" ON)
-option(BUILD_LIB "Build the library (src/mylib)" OFF)
-if(BUILD_LIB)
-  option(BUILD_LIB_SHARED "Build MyLib as SHARED/DLL (ON) or STATIC (OFF)" ON)
-  option(GENERATE_VERSION_HEADER "Generate include/<project>/version.h from version.txt" ON)
-endif()
+# MyLib (src/core) is always built; it holds the logic the app, tests and examples link.
+option(BUILD_APP "Build the application binary (src/app)" ON)
+option(BUILD_LIB_SHARED "Build MyLib as SHARED/DLL (ON) or STATIC (OFF)" OFF)
+option(INSTALL_LIB "Install MyLib as a find_package() package and stage it into generated_lib/" OFF)
+option(GENERATE_VERSION_HEADER "Generate include/MyLib/version.h from version.txt" ON)
 option(BUILD_TESTING "Build the unit tests under test/" OFF)
 option(BUILD_EXAMPLES "Build the examples/ demos (MyLib consumer, Tracy/Perfetto examples, …)" OFF)
 

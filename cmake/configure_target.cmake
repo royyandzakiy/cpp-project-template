@@ -38,10 +38,11 @@ function(configure_target target)
   endif()
 
   # Optional profiler interface targets (created by cmake/profiler.cmake when enabled).
+  # BUILD_INTERFACE keeps these build-only helpers out of an installed STATIC MyLib's export set.
   if(TARGET project_tracy_profile)
-    target_link_libraries(${target} PRIVATE project_tracy_profile)
+    target_link_libraries(${target} PRIVATE $<BUILD_INTERFACE:project_tracy_profile>)
   endif()
   if(TARGET project_perfetto_profile)
-    target_link_libraries(${target} PRIVATE project_perfetto_profile)
+    target_link_libraries(${target} PRIVATE $<BUILD_INTERFACE:project_perfetto_profile>)
   endif()
 endfunction()
