@@ -103,6 +103,7 @@ Pick **one**; they don't interfere (each preset builds into its own `build/<pres
 │   └── app/                      # MyApp — thin main() over MyLib (BUILD_APP)
 ├── test/                         # GoogleTest unit tests on MyLib (+ sanitizer trip-wires)
 ├── examples/                     # MyLib consumer, Tracy / Perfetto demos (BUILD_EXAMPLES)
+├── fuzz/                         # libFuzzer targets over MyLib (ENABLE_FUZZING)
 ├── cmake/                        # Build modules
 │   ├── package_manager.cmake     #   dispatches to vcpkg / Conan / none (PKG_MANAGER)
 │   ├── config_vcpkg.cmake        #   vcpkg detection + toolchain wiring (manifest mode)
@@ -114,6 +115,7 @@ Pick **one**; they don't interfere (each preset builds into its own `build/<pres
 │   ├── profiler.cmake            #   Tracy, Perfetto, ClangBuildAnalyzer
 │   ├── configure_target.cmake    #   configure_target(): PCH, unity, tidy, profiler links
 │   ├── coverage.cmake            #   instrumentation + `coverage` target
+│   ├── fuzzing.cmake             #   add_fuzz_target(): libFuzzer + smoke test
 │   ├── format.cmake              #   format / format-check / tidy-all targets
 │   ├── clangd.cmake              #   mirror compile_commands.json to the project root
 │   ├── install.cmake             #   MyLib find_package() package + staging (INSTALL_LIB)
@@ -144,7 +146,8 @@ Presets are **automatically filtered by platform** — only those for your OS ap
 
 Each has matching `build` and `test` presets. The Linux/macOS **debug** presets also enable
 coverage. On top of those: **sanitizer** presets `clang-linux-asan` / `clang-linux-tsan` (Linux)
-and `msvc-asan` / `clang-cl-asan` (Windows), plus a kitchen-sink **`clang-linux-full`** (ASan +
+and `msvc-asan` / `clang-cl-asan` (Windows), a **`clang-linux-fuzz`** preset (see
+[Fuzzing](#fuzzing)), plus a kitchen-sink **`clang-linux-full`** (ASan +
 strict + clang-tidy + PCH + unity + examples). `CMakeUserPresets.json` is optional — copy
 `CMakeUserPresets.json.example` for your own.
 
@@ -165,6 +168,7 @@ strict + clang-tidy + PCH + unity + examples). `CMakeUserPresets.json` is option
 | `ENABLE_SANITIZERS`         | OFF     | UBSan baseline (GCC/Clang)                                   |
 | `ENABLE_ASAN`               | OFF     | AddressSanitizer + LeakSanitizer (needs `ENABLE_SANITIZERS`) |
 | `ENABLE_TSAN`               | OFF     | ThreadSanitizer (needs `ENABLE_SANITIZERS`; not with ASan)   |
+| `ENABLE_FUZZING`            | OFF     | libFuzzer targets in `fuzz/` (Clang; needs sanitizers)       |
 | `ENABLE_CLANG_TIDY`         | OFF     | clang-tidy on first-party code during the build              |
 | `ENABLE_COVERAGE`           | OFF     | Instrument + add the `coverage` target (GCC/Clang)           |
 | `ENABLE_CCACHE`             | OFF     | ccache compiler launcher (no-op if absent)                   |
@@ -214,6 +218,21 @@ cmake --build --preset clang-linux-debug --target coverage
 Clang uses LLVM source-based coverage (`llvm-profdata` + `llvm-cov`); GCC uses `gcovr`. MSVC and
 clang-cl aren't supported. CI renders the table into the run summary and, on `main`/`master`,
 publishes the coverage badge above.
+
+**Fuzzing.** <a id="fuzzing"></a>`fuzz/fuzz_mylib.cpp` is a [libFuzzer](https://llvm.org/docs/LibFuzzer.html)
+target that feeds arbitrary input through MyLib's API under ASan + UBSan. The `clang-linux-fuzz`
+preset builds it (`ENABLE_FUZZING`, Clang with a GNU-style driver), and ctest runs a short
+fixed-seed smoke run in CI. Fuzz for real with a growing corpus:
+
+```bash
+cmake --preset clang-linux-fuzz && cmake --build --preset clang-linux-fuzz
+./bin/clang/fuzz_mylib fuzz/corpus -max_total_time=60
+```
+
+`cmake/fuzzing.cmake` gives first-party libraries libFuzzer's coverage instrumentation through
+`configure_target()`; add more targets with `add_fuzz_target(<name> <source>)` in `fuzz/CMakeLists.txt`.
+It already earned its keep: it found signed-overflow UB in `mymath::add`/`multiply` on its first
+inputs, which is why those now return `std::int64_t`.
 
 **Profilers.** `cmake/profiler.cmake` wires **Tracy** (`ENABLE_TRACY`) and **Perfetto**
 (`ENABLE_PERFETTO`) as interface targets that `configure_target()` links into first-party targets;

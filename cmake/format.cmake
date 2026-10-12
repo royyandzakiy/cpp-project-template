@@ -22,7 +22,8 @@ file(
   "${CMAKE_SOURCE_DIR}/test/*.cpp"
   "${CMAKE_SOURCE_DIR}/test/*.hpp"
   "${CMAKE_SOURCE_DIR}/examples/*.cpp"
-  "${CMAKE_SOURCE_DIR}/examples/*.hpp")
+  "${CMAKE_SOURCE_DIR}/examples/*.hpp"
+  "${CMAKE_SOURCE_DIR}/fuzz/*.cpp")
 
 # clang-tidy analyzes production translation units only: test code breaks many rules on purpose,
 # and examples are only in the compile DB when their option is on.

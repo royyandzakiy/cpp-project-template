@@ -46,9 +46,11 @@ include(cmake/sanitizers.cmake)          # ASan/TSan/UBSan flags + deploy_asan_r
 include(cmake/analyzers.cmake)           # clang-tidy discovery
 include(cmake/profiler.cmake)            # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
 include(cmake/configure_target.cmake)    # defines configure_target() — PCH, unity, tidy, profiler link
+include(cmake/fuzzing.cmake)             # add_fuzz_target() + checks (when ENABLE_FUZZING)
 if(BUILD_TESTING)
   # Before the targets: its instrumentation flags only reach targets created after this include.
   include(cmake/coverage.cmake)          # coverage flags + setup_coverage_target() (when ENABLE_COVERAGE)
+  enable_testing()                       # before the targets, so fuzz/ can register its smoke tests
 endif()
 
 #=========================
@@ -66,12 +68,14 @@ endif()
 if(BUILD_EXAMPLES)
   add_subdirectory(examples) # AFTER src/core so the examples can link MyLib
 endif()
+if(ENABLE_FUZZING)
+  add_subdirectory(fuzz) # libFuzzer targets over MyLib
+endif()
 
 #=========================
 # Tests & Coverage
 #=========================
 if(BUILD_TESTING)
-  enable_testing() # ctest / gtest_discover_tests register the unit tests
   add_subdirectory(test)
   if(COMMAND setup_coverage_target AND TARGET unit_tests) # undefined when coverage is off/unsupported
     setup_coverage_target(unit_tests) # adds the `coverage` target (runs tests + reports)
