@@ -119,6 +119,7 @@ Pick **one**; they don't interfere (each preset builds into its own `build/<pres
 │   ├── format.cmake              #   format / format-check / tidy-all targets
 │   ├── clangd.cmake              #   mirror compile_commands.json to the project root
 │   ├── install.cmake             #   MyLib find_package() package + staging (INSTALL_LIB)
+│   ├── packaging.cmake           #   CPack archive of the app and/or MyLib package
 │   └── version.cmake             #   version.txt → project version + MyLib/version.h
 ├── scripts/                      # setup-ubuntu.sh · setup-windows.ps1 · coverage/badge helpers
 ├── .github/                      # CI: lint + build/test matrix on Linux/Windows/macOS
@@ -241,6 +242,25 @@ profiles compile time.
 
 ---
 
+## Packaging
+
+`cmake/packaging.cmake` sets up CPack over what `cmake --install` produces: a **ZIP** on Windows,
+a **TGZ** elsewhere, written to `build/<preset>/package/`.
+
+```bash
+cmake --build --preset clang-linux-release
+cpack --config build/clang-linux-release/CPackConfig.cmake
+```
+
+- **App** (`BUILD_APP`): `bin/MyApp` plus the shared libraries it loads from the build (e.g.
+  `fmt.dll` from vcpkg, `MyLib` when `BUILD_LIB_SHARED`), the MSVC runtime DLLs on Windows, and a
+  relative RPATH on Linux/macOS — so the extracted archive runs anywhere.
+- **Library** (`INSTALL_LIB`): MyLib's headers, binaries and `find_package(MyLib)` config files.
+
+CI packages every `*-release` preset and uploads the archive as a build artifact.
+
+---
+
 ## Dependencies & Package Managers
 
 The package manager is **orthogonal to the presets** — every preset works with either. Pick it
@@ -287,6 +307,7 @@ isn't used by the build and is gitignored, so each clone builds its own (`index_
 3. Replace sources under `src/core/` (logic) and `src/app/` (`main()`), and headers under
    `include/`.
 4. Add dependencies to `vcpkg.json` and/or `conanfile.py` (whichever `PKG_MANAGER` you use).
+   Set `CPACK_PACKAGE_VENDOR` in `cmake/packaging.cmake`.
 5. Adjust presets in `CMakePresets.json` as needed.
 6. Replace this README using `README.md.template` as a starting point.
 
