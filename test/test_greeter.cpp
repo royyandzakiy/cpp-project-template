@@ -10,7 +10,7 @@ namespace {
 // gmock fake for demo::IClock — lets the test drive greet() with a deterministic date and assert
 // the dependency is actually invoked.
 class MockClock : public demo::IClock {
-public:
+  public:
 	MOCK_METHOD(std::string, today, (), (const, override));
 };
 

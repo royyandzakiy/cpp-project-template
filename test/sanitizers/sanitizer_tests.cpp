@@ -42,8 +42,7 @@ TEST(SanitizerDeathTest, AddressSanitizer) {
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((noinline))
 #endif
-static void
-leak_now() {
+static void leak_now() {
 	volatile int *p = new int[64]; // leaked; the only pointer is gone once this returns
 	p[0] = 1;
 }

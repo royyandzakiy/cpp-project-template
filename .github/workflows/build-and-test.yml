@@ -24,6 +24,33 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: format + clang-tidy
+    runs-on: ubuntu-latest
+    env:
+      PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same pinned LLVM as the build jobs, so clang-format/clang-tidy match the pre-commit pin.
+      - name: Install toolchain (pinned) + both package managers
+        run: bash scripts/setup-ubuntu.sh --with-vcpkg
+
+      - uses: ./.github/actions/setup-pkg-manager
+        with:
+          os: linux
+          preset: clang-linux-debug
+
+      # Configure only: tidy needs the compile DB (and the deps' headers), not a build.
+      - name: Configure
+        run: cmake --preset clang-linux-debug -D PKG_MANAGER=${{ env.PKG_MANAGER }} -D BUILD_TESTING=ON
+
+      - name: clang-format
+        run: cmake --build --preset clang-linux-debug --target format-check
+
+      - name: clang-tidy
+        run: cmake --build --preset clang-linux-debug --target tidy-all
+
   linux:
     name: ${{ matrix.preset }}
     runs-on: ubuntu-latest
