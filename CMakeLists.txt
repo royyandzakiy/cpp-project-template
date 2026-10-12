@@ -39,7 +39,7 @@ endif()
 include(cmake/compiler.cmake)            # warnings, strict, build-type guard, debug postfix
 include(cmake/build_acceleration.cmake)  # fast linker (mold/lld) + ccache
 
-include(cmake/sanitizers.cmake)          # ASan/TSan/MSan/UBSan flags + deploy_asan_runtime()
+include(cmake/sanitizers.cmake)          # ASan/TSan/UBSan flags + deploy_asan_runtime()
 include(cmake/analyzers.cmake)           # clang-tidy discovery
 include(cmake/profiler.cmake)            # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
 include(cmake/configure_target.cmake)    # defines configure_target() — PCH, unity, tidy, profiler link

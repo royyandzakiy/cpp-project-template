@@ -25,13 +25,12 @@ if(PKG_MANAGER STREQUAL "vcpkg")
 endif()
 
 # ------ Sanitizers ------
-# UBSan is the baseline (always enabled with sanitizers); pick AT MOST ONE of ASan / TSan / MSan
+# UBSan is the baseline (always enabled with sanitizers); pick AT MOST ONE of ASan / TSan
 # (they are mutually exclusive — you cannot combine them).
 option(ENABLE_SANITIZERS "Enable runtime sanitizers (UBSan baseline)" OFF)
 if(ENABLE_SANITIZERS)
   option(ENABLE_ASAN "AddressSanitizer + LeakSanitizer — detects buffer overflows, use-after-free, leaks" OFF)
   option(ENABLE_TSAN "ThreadSanitizer — detects data races and deadlocks" OFF)
-  option(ENABLE_MSAN "MemorySanitizer — detects uninitialized reads (Clang only, requires instrumented libc++)" OFF)
 endif()
 
 # ------ Linters & Static Analyzers ------

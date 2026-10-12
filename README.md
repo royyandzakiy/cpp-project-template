@@ -122,7 +122,7 @@ Notes:
 │   ├── config_vcpkg.cmake        #   vcpkg detection + toolchain wiring
 │   ├── config_conan.cmake        #   Conan (cmake-conan) provider wiring
 │   ├── compiler.cmake            #   warnings, strict mode, build-type guard
-│   ├── sanitizers.cmake          #   target_enable_sanitizers(): ASan/TSan/MSan/UBSan
+│   ├── sanitizers.cmake          #   target_enable_sanitizers(): ASan/TSan/UBSan
 │   ├── analyzers.cmake           #   clang-tidy discovery
 │   ├── build_acceleration.cmake  #   ccache, fast linker
 │   ├── coverage.cmake            #   coverage instrumentation + `coverage` target
@@ -179,8 +179,8 @@ presets relevant to your OS appear.
 Each has matching `build` and `test` presets. The Linux/macOS **debug** presets also enable
 `ENABLE_COVERAGE` (see [Coverage](#coverage)).
 
-On top of those there are **sanitizer** presets — `clang-linux-asan` / `clang-linux-tsan` /
-`clang-linux-msan` (Linux), `msvc-asan` / `clang-cl-asan` (Windows) — and a kitchen-sink
+On top of those there are **sanitizer** presets — `clang-linux-asan` / `clang-linux-tsan`
+(Linux), `msvc-asan` / `clang-cl-asan` (Windows) — and a kitchen-sink
 **`clang-linux-full`** that turns on ASan + strict + clang-tidy + PCH + unity + examples at once.
 
 `CMakeUserPresets.json` is optional — copy `CMakeUserPresets.json.example` if you want custom names
@@ -203,8 +203,7 @@ or overrides.
 | `ENABLE_STRICT_COMPILER`    | OFF     | Warnings as errors (`/WX`; `-Werror -pedantic`)              |
 | `ENABLE_SANITIZERS`         | OFF     | UBSan baseline (`-fsanitize=undefined,bounds`)               |
 | `ENABLE_ASAN`               | OFF     | AddressSanitizer + LeakSanitizer (needs `ENABLE_SANITIZERS`) |
-| `ENABLE_TSAN`               | OFF     | ThreadSanitizer — data races (mutually exclusive with ASan/MSan) |
-| `ENABLE_MSAN`               | OFF     | MemorySanitizer — uninit reads, Clang only (mutually exclusive) |
+| `ENABLE_TSAN`               | OFF     | ThreadSanitizer — data races (mutually exclusive with ASan)  |
 | `ENABLE_CLANG_TIDY`         | OFF     | clang-tidy on first-party code during the build (also live in clangd) |
 | `ENABLE_COVERAGE`           | OFF     | Instrument + add the `coverage` target (see [Coverage](#coverage)) |
 | `ENABLE_CCACHE`             | OFF     | ccache compiler launcher (no-op if ccache absent)            |
@@ -263,9 +262,9 @@ runtime won't be linked. The toggles:
 
 - **`ENABLE_SANITIZERS`** — UBSan baseline (`-fsanitize=undefined,bounds`)
 - **`ENABLE_ASAN`** — AddressSanitizer + leak detection
-- **`ENABLE_TSAN`** / **`ENABLE_MSAN`** — Thread or Memory sanitizer (mutually exclusive with ASan)
+- **`ENABLE_TSAN`** — ThreadSanitizer (mutually exclusive with ASan)
 
-Use the sanitizer presets (`clang-linux-asan` / `-tsan` / `-msan`, `msvc-asan`, `clang-cl-asan`)
+Use the sanitizer presets (`clang-linux-asan` / `-tsan`, `msvc-asan`, `clang-cl-asan`)
 rather than setting these by hand. The sanitizers are verified by **`test/sanitizers/sanitizer_tests.cpp`** —
 gtest death tests that fail if a sanitizer *doesn't* catch its bug class, so a silently-disabled
 sanitizer turns CI red.
@@ -364,7 +363,7 @@ via `cmake/config_conan.cmake`.
   edit; configure via `project_options.local.cmake`.
 - **`config_conan.cmake`** — Conan dependency flow via the cmake-conan provider.
 - **`compiler.cmake`** — warning flags, strict mode, the no-build-type guard, debug postfix.
-- **`sanitizers.cmake`** — `target_enable_sanitizers()` (per-target ASan/TSan/MSan/UBSan), the
+- **`sanitizers.cmake`** — `target_enable_sanitizers()` (per-target ASan/TSan/UBSan), the
   whole-build Windows ASan settings, and the ASan runtime DLL deploy.
 - **`analyzers.cmake`** — clang-tidy discovery.
 - **`build_acceleration.cmake`** — ccache and the fast linker (mold/lld).

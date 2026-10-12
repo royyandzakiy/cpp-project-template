@@ -1,9 +1,10 @@
 # cmake/sanitizers.cmake
-# Sanitizer configuration: ASan, TSan, MSan, UBSan, and Windows-specific deployment.
+# Sanitizer configuration: ASan, TSan, UBSan, and Windows-specific deployment.
 #
 # Sanitizers are opt-in PER TARGET: call target_enable_sanitizers(<target>) on first-party targets
 # (gated by ENABLE_SANITIZERS). Third-party code (GTest, vcpkg/Conan deps) stays uninstrumented,
-# which is fine for ASan/UBSan/TSan but gives MSan false positives.
+# which is fine for ASan, UBSan and TSan. (MSan isn't offered: it needs every library, the
+# standard library included, built with it.)
 #
 # A few Windows ASan settings must match across the WHOLE build, so they are applied once below at
 # include time, before any target exists. Include this module BEFORE the targets.
@@ -37,7 +38,7 @@ function(target_enable_sanitizers TARGET)
     return()
   endif()
   if(MSVC)
-    # Windows (MSVC & clang-cl): ASan is the only real sanitizer — no TSan/MSan/LSan.
+    # Windows (MSVC & clang-cl): ASan is the only real sanitizer — no TSan/LSan.
     if(ENABLE_ASAN)
       message(STATUS "Sanitizers: ASan (Windows) for target ${TARGET}")
       # /RTC1 removal and the clang-cl CRT choice are whole-build settings (see the top of this file).
@@ -79,11 +80,11 @@ function(target_enable_sanitizers TARGET)
       target_compile_options(${TARGET} PRIVATE /RTC1)
     endif()
 
-    if(ENABLE_TSAN OR ENABLE_MSAN)
-      message(WARNING "TSan/MSan are unavailable on Windows (MSVC/clang-cl) — ignoring.")
+    if(ENABLE_TSAN)
+      message(WARNING "TSan is unavailable on Windows (MSVC/clang-cl) — ignoring.")
     endif()
   else()
-    # Baseline: UBSan (composes with one of ASan/TSan/MSan).
+    # Baseline: UBSan (composes with one of ASan/TSan).
     # -fno-sanitize-recover=all makes UBSan findings fatal (non-zero exit) instead of just
     # printing and continuing — important so they actually fail a build/test.
     set(SANITIZER_FLAGS
@@ -94,15 +95,9 @@ function(target_enable_sanitizers TARGET)
         -fno-optimize-sibling-calls
         -fstack-protector-strong)
 
-    # ASan / TSan / MSan are mutually exclusive — allow at most one.
-    set(_san_choice 0)
-    foreach(_s ENABLE_ASAN ENABLE_TSAN ENABLE_MSAN)
-      if(${_s})
-        math(EXPR _san_choice "${_san_choice} + 1")
-      endif()
-    endforeach()
-    if(_san_choice GREATER 1)
-      message(FATAL_ERROR "ENABLE_ASAN / ENABLE_TSAN / ENABLE_MSAN are mutually exclusive — enable only one.")
+    # ASan / TSan are mutually exclusive.
+    if(ENABLE_ASAN AND ENABLE_TSAN)
+      message(FATAL_ERROR "ENABLE_ASAN / ENABLE_TSAN are mutually exclusive — enable only one.")
     endif()
 
     if(ENABLE_ASAN)
@@ -111,14 +106,8 @@ function(target_enable_sanitizers TARGET)
     elseif(ENABLE_TSAN)
       message(STATUS "Sanitizers: UBSan + TSan for target ${TARGET}")
       list(APPEND SANITIZER_FLAGS -fsanitize=thread)
-    elseif(ENABLE_MSAN)
-      if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        message(FATAL_ERROR "ENABLE_MSAN requires Clang — MemorySanitizer is Clang-only (compiler: ${CMAKE_CXX_COMPILER_ID}).")
-      endif()
-      message(STATUS "Sanitizers: UBSan + MSan for target ${TARGET} (needs an instrumented libc++ to avoid false positives)")
-      list(APPEND SANITIZER_FLAGS -fsanitize=memory -fsanitize-memory-track-origins)
     else()
-      message(STATUS "Sanitizers: UBSan baseline only for target ${TARGET} (set ENABLE_ASAN / ENABLE_TSAN / ENABLE_MSAN for more)")
+      message(STATUS "Sanitizers: UBSan baseline only for target ${TARGET} (set ENABLE_ASAN / ENABLE_TSAN for more)")
     endif()
 
     target_compile_options(${TARGET} PRIVATE ${SANITIZER_FLAGS})

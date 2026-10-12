@@ -79,20 +79,3 @@ TEST(SanitizerDeathTest, ThreadSanitizer) {
 }
 #endif
 
-#if defined(SANITIZER_MSAN)
-TEST(SanitizerDeathTest, MemorySanitizer) {
-	EXPECT_DEATH(
-		{
-			// Read uninitialized HEAP memory: MSan flags it, but -Wuninitialized (locals-only,
-			// and fatal under -Werror) does not — so this compiles under strict warnings.
-			int *p = static_cast<int *>(std::malloc(sizeof(int)));
-			volatile int v = *p; // use of uninitialized value -> MSan
-			if (v != 0) {
-				std::abort();
-			}
-			std::free(p);
-			std::exit(0);
-		},
-		"MemorySanitizer");
-}
-#endif

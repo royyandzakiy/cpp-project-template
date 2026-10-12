@@ -45,7 +45,7 @@ if ! command -v "clang-${CLANG_VERSION}" >/dev/null 2>&1; then
     | $SUDO tee "/etc/apt/sources.list.d/llvm-${CLANG_VERSION}.list" >/dev/null
   $SUDO apt-get update -y
 fi
-# libclang-rt-*-dev = compiler-rt runtime libs (libclang_rt.profile/asan/ubsan/tsan/msan...).
+# libclang-rt-*-dev = compiler-rt runtime libs (libclang_rt.profile/asan/ubsan/tsan...).
 # The clang-* package does NOT include these, yet coverage (-fprofile-instr-generate) and the
 # sanitizer presets need them — without it the link fails: "cannot open libclang_rt.profile.a".
 # llvm-* provides the LLVM tools (llvm-cov, llvm-profdata) the `coverage` target uses to merge
