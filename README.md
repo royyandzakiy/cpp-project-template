@@ -113,8 +113,8 @@ Notes:
 ├── CMakeUserPresets.json.example # Optional: custom preset overrides
 ├── project_options.local.cmake.example   # Optional: machine-local overrides (gitignored)
 ├── project_options.cmake         # Feature toggles (shared, committed)
-├── vcpkg.json                    # vcpkg manifest (fmt, scnlib; tracy/perfetto as optional features)
-├── conanfile.py                  # Conan manifest (fmt, scnlib, tracy, perfetto)
+├── vcpkg.json                    # vcpkg manifest (fmt; tracy/perfetto as optional features)
+├── conanfile.py                  # Conan manifest (fmt, tracy, perfetto)
 ├── version.txt                   # Project version (1.0.0)
 ├── EDITOR_SETUP.md               # Per-editor clangd setup
 ├── cmake/                        # CMake utility modules (internal)
@@ -305,7 +305,6 @@ Dependencies resolve through whichever `PKG_MANAGER` you pick (see below). `vcpk
 | Package    | vcpkg                        | Conan            | Use                                          |
 | ---------- | ---------------------------- | ---------------- | -------------------------------------------- |
 | `fmt`      | dependency                   | `conanfile.py`   | String formatting (used by MyLib and MyApp)  |
-| `scnlib`   | dependency                   | `conanfile.py`   | Type-safe input parsing (available, unused)  |
 | `tracy`    | `tracy` feature              | `conanfile.py`   | Profiler client (`ENABLE_TRACY`)             |
 | `perfetto` | `perfetto` feature           | `conanfile.py`   | Tracing (`ENABLE_PERFETTO`)                  |
 
