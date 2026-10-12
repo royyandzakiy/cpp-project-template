@@ -71,6 +71,9 @@ endif()
 if(ENABLE_FUZZING)
   add_subdirectory(fuzz) # libFuzzer targets over MyLib
 endif()
+if(PROJECT_IS_TOP_LEVEL AND (BUILD_APP OR INSTALL_LIB))
+  include(cmake/packaging.cmake) # cpack archive of the installed app and/or MyLib package
+endif()
 
 #=========================
 # Tests & Coverage

@@ -49,4 +49,23 @@ configure_target(MyApp)
 
 target_enable_sanitizers(MyApp) # no-op unless ENABLE_SANITIZERS
 
+# ---- Installation (packaging) -----------------------------------------------
+# `cmake --install` / cpack (cmake/packaging.cmake): the exe plus the shared libraries it loads
+# from the build — fmt.dll from vcpkg, MyLib when BUILD_LIB_SHARED — but not the OS's own.
+include(GNUInstallDirs)
+if(APPLE)
+    set_target_properties(MyApp PROPERTIES INSTALL_RPATH "@loader_path/../${CMAKE_INSTALL_LIBDIR}")
+elseif(UNIX)
+    set_target_properties(MyApp PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+endif()
+
+install(TARGETS MyApp
+    RUNTIME_DEPENDENCIES
+        PRE_EXCLUDE_REGEXES "api-ms-.*" "ext-ms-.*"
+        POST_EXCLUDE_REGEXES ".*[Ss]ystem32/.*" "^/lib.*" "^/usr/lib.*" "^/System/.*"
+        DIRECTORIES $<TARGET_FILE_DIR:MyApp>
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT MyApp
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT MyApp
+)
+
 message(STATUS "MyApp configured (executable over MyLib)")
