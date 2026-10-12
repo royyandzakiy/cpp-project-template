@@ -4,7 +4,8 @@
 
 # ----- Build output -----
 build/
-cmake-build-*/        # CLion default build dirs
+# CLion default build dirs
+cmake-build-*/
 bin/
 out/
 Testing/
@@ -21,7 +22,8 @@ _deps/
 # ----- clangd / compile database -----
 # Mirrored to the project root by CMake; machine- and preset-specific.
 compile_commands.json
-.cache/               # clangd background index
+# clangd background index
+.cache/
 
 # ----- Generated sources -----
 # Produced at configure time by cmake/version.cmake from version.h.in

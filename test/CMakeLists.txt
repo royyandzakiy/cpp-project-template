@@ -15,7 +15,7 @@ set(gtest_force_shared_crt
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE) # don't let gtest's install rules pollute generated_lib/
 FetchContent_MakeAvailable(googletest)
 
-# surpress warnings from gtest libraries
+# suppress warnings from gtest libraries
 foreach(t gtest gtest_main gmock gmock_main)
   if(TARGET ${t})
     target_compile_options(${t} PRIVATE -w)
