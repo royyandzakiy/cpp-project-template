@@ -78,4 +78,3 @@ TEST(SanitizerDeathTest, ThreadSanitizer) {
 		"ThreadSanitizer");
 }
 #endif
-

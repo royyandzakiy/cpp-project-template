@@ -27,6 +27,9 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# No C++20 modules here. Scanning would put `@*.modmap` response files (which only exist after a
+# build) into compile_commands.json, breaking clang-tidy and clangd until the first build.
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 #=========================
 # Formatter, Linter, Profiler, Accelerator
