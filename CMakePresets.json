@@ -277,15 +277,16 @@
                         }
                 },
                 {
-                        "name": "clang-linux-msan",
-                        "displayName": "Clang Debug + MSan",
+                        "name": "clang-linux-fuzz",
+                        "displayName": "Clang Debug + libFuzzer (ASan/UBSan)",
                         "inherits": [
                                 "clang-linux-base",
                                 "build-debug",
                                 "sanitizer-base"
                         ],
                         "cacheVariables": {
-                                "ENABLE_MSAN": "ON"
+                                "ENABLE_ASAN": "ON",
+                                "ENABLE_FUZZING": "ON"
                         }
                 },
                 {
@@ -310,7 +311,8 @@
                         ],
                         "cacheVariables": {
                                 "ENABLE_ASAN": "ON",
-                                "CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-asan.ini"
+                                "CONAN_HOST_PROFILE": "${sourceDir}/cmake/conan-profiles/clang-cl-windows-asan.ini",
+                                "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
                         }
                 },
                 {
@@ -420,9 +422,9 @@
                         "configurePreset": "clang-linux-tsan"
                 },
                 {
-                        "name": "clang-linux-msan",
+                        "name": "clang-linux-fuzz",
                         "inherits": "build-type-debug",
-                        "configurePreset": "clang-linux-msan"
+                        "configurePreset": "clang-linux-fuzz"
                 },
                 {
                         "name": "msvc-asan",
@@ -521,9 +523,9 @@
                         "configurePreset": "clang-linux-tsan"
                 },
                 {
-                        "name": "test-clang-linux-msan",
+                        "name": "test-clang-linux-fuzz",
                         "inherits": "base-test",
-                        "configurePreset": "clang-linux-msan"
+                        "configurePreset": "clang-linux-fuzz"
                 },
                 {
                         "name": "test-msvc-asan",

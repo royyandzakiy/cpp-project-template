@@ -51,7 +51,7 @@ if ($LASTEXITCODE -ne 0) {
   $global:LASTEXITCODE = 0
 }
 
-Write-Host "==> conan 2 (the project's default package manager)"
+Write-Host "==> conan 2 (for PKG_MANAGER=conan; vcpkg is the default — see -WithVcpkg)"
 if (Get-Command python -ErrorAction SilentlyContinue) {
   python -m pip install --upgrade conan
   conan profile detect --force *> $null

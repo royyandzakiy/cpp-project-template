@@ -15,7 +15,7 @@ TEST(ClassifyTest, SignFullyCovered) {
 TEST(ClassifyTest, InRangePartialBranch) {
 	EXPECT_TRUE(in_range(5, 1, 10));   // value >= low TRUE, value <= high TRUE
 	EXPECT_FALSE(in_range(11, 1, 10)); // value >= low TRUE, value <= high FALSE
-	// Deliberately omitted: in_range(0, 1, 10) — would make `value >= low` FALSE.
+									   // Deliberately omitted: in_range(0, 1, 10) — would make `value >= low` FALSE.
 }
 
 // grade(): we cover A/B/C but NOT the final `return Grade::F`, so the coverage report shows

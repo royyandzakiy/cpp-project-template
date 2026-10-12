@@ -27,6 +27,9 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# No C++20 modules here. Scanning would put `@*.modmap` response files (which only exist after a
+# build) into compile_commands.json, breaking clang-tidy and clangd until the first build.
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 #=========================
 # Formatter, Linter, Profiler, Accelerator
@@ -36,23 +39,18 @@ if(PROJECT_IS_TOP_LEVEL) # format & setup clangd
   include(cmake/clangd.cmake) # mirror compile_commands.json for clangd
 endif()
 
-include(cmake/compiler.cmake)            # warnings, strict, build-type guard, debug postfix
+include(cmake/compiler.cmake)            # warnings, strict, build-type guard
 include(cmake/build_acceleration.cmake)  # fast linker (mold/lld) + ccache
 
-include(cmake/sanitizers.cmake)          # ASan/TSan/MSan/UBSan flags + deploy_asan_runtime()
+include(cmake/sanitizers.cmake)          # ASan/TSan/UBSan flags + deploy_asan_runtime()
 include(cmake/analyzers.cmake)           # clang-tidy discovery
 include(cmake/profiler.cmake)            # Tracy / Perfetto / ClangBuildAnalyzer (when enabled)
 include(cmake/configure_target.cmake)    # defines configure_target() — PCH, unity, tidy, profiler link
+include(cmake/fuzzing.cmake)             # add_fuzz_target() + checks (when ENABLE_FUZZING)
 if(BUILD_TESTING)
   # Before the targets: its instrumentation flags only reach targets created after this include.
   include(cmake/coverage.cmake)          # coverage flags + setup_coverage_target() (when ENABLE_COVERAGE)
-endif()
-
-#=========================
-# Version Header
-#=========================
-if(GENERATE_VERSION_HEADER)
-  generate_version_header()
+  enable_testing()                       # before the targets, so fuzz/ can register its smoke tests
 endif()
 
 #=========================
@@ -70,14 +68,19 @@ endif()
 if(BUILD_EXAMPLES)
   add_subdirectory(examples) # AFTER src/core so the examples can link MyLib
 endif()
+if(ENABLE_FUZZING)
+  add_subdirectory(fuzz) # libFuzzer targets over MyLib
+endif()
+if(PROJECT_IS_TOP_LEVEL AND (BUILD_APP OR INSTALL_LIB))
+  include(cmake/packaging.cmake) # cpack archive of the installed app and/or MyLib package
+endif()
 
 #=========================
 # Tests & Coverage
 #=========================
 if(BUILD_TESTING)
-  enable_testing() # ctest / gtest_discover_tests register the unit tests
   add_subdirectory(test)
-  if(ENABLE_COVERAGE AND TARGET unit_tests)
+  if(COMMAND setup_coverage_target AND TARGET unit_tests) # undefined when coverage is off/unsupported
     setup_coverage_target(unit_tests) # adds the `coverage` target (runs tests + reports)
   endif()
 endif()

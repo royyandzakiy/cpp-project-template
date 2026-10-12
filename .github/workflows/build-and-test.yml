@@ -10,7 +10,7 @@ on:
       pkg-manager:
         description: 'Package manager'
         required: false
-        default: 'conan'
+        default: 'vcpkg'
         type: choice
         options:
           - vcpkg
@@ -24,19 +24,44 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: format + clang-tidy
+    runs-on: ubuntu-latest
+    env:
+      PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same pinned LLVM as the build jobs, so clang-format/clang-tidy match the pre-commit pin.
+      - name: Install toolchain (pinned) + both package managers
+        run: bash scripts/setup-ubuntu.sh --with-vcpkg
+
+      - uses: ./.github/actions/setup-pkg-manager
+        with:
+          os: linux
+          preset: clang-linux-debug
+
+      # Configure only: tidy needs the compile DB (and the deps' headers), not a build.
+      - name: Configure
+        run: cmake --preset clang-linux-debug -D PKG_MANAGER=${{ env.PKG_MANAGER }} -D BUILD_TESTING=ON
+
+      - name: clang-format
+        run: cmake --build --preset clang-linux-debug --target format-check
+
+      - name: clang-tidy
+        run: cmake --build --preset clang-linux-debug --target tidy-all
+
   linux:
     name: ${{ matrix.preset }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        preset: [clang-linux-debug, clang-linux-release, gcc-linux-debug, gcc-linux-release, clang-linux-asan, clang-linux-tsan, clang-linux-full]
+        preset: [clang-linux-debug, clang-linux-release, gcc-linux-debug, gcc-linux-release, clang-linux-asan, clang-linux-tsan, clang-linux-fuzz, clang-linux-full]
     env:
       PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Install toolchain (pinned) + both package managers
         run: bash scripts/setup-ubuntu.sh --with-vcpkg
@@ -44,6 +69,7 @@ jobs:
       - uses: ./.github/actions/setup-pkg-manager
         with:
           os: linux
+          preset: ${{ matrix.preset }}
 
       - uses: ./.github/actions/cmake-build-test
         with:
@@ -101,13 +127,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        preset: [msvc-debug, msvc-release, msvc-asan, clang-cl-debug, clang-cl-release, mingw-debug, mingw-release] # todo: clang-cl-asan still fails to build
+        preset: [msvc-debug, msvc-release, msvc-asan, clang-cl-debug, clang-cl-release, mingw-debug, mingw-release] # clang-cl-asan builds, but VS's bundled LLVM 19 ASan runtime crashes on newer Windows; add it once CI installs LLVM 20+
     env:
       PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -116,6 +140,7 @@ jobs:
       - uses: ./.github/actions/setup-pkg-manager
         with:
           os: windows
+          preset: ${{ matrix.preset }}
 
       - uses: ./.github/actions/cmake-build-test
         with:
@@ -172,8 +197,6 @@ jobs:
       PKG_MANAGER: ${{ github.event.inputs.pkg-manager || 'vcpkg' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Install build tools
         run: |
@@ -184,6 +207,7 @@ jobs:
       - uses: ./.github/actions/setup-pkg-manager
         with:
           os: macos
+          preset: ${{ matrix.preset }}
 
       - uses: ./.github/actions/cmake-build-test
         with:

@@ -20,6 +20,15 @@ if(NOT VCPKG_TARGET_TRIPLET)
   endif()
 endif()
 
+# Optional manifest features (vcpkg.json "features"), switched on by the matching project option.
+# Must be set before project(), where the vcpkg toolchain runs the manifest install.
+if(ENABLE_TRACY)
+  list(APPEND VCPKG_MANIFEST_FEATURES "tracy")
+endif()
+if(ENABLE_PERFETTO)
+  list(APPEND VCPKG_MANIFEST_FEATURES "perfetto")
+endif()
+
 # Find vcpkg root
 # Priority: CMake var (preset/-D) > env var > vcpkg in PATH > common default paths > project subdir > error
 if(VCPKG_ROOT_PATH)
@@ -33,6 +42,13 @@ else()
   if(DEFINED ENV{VCPKG_ROOT} AND EXISTS "$ENV{VCPKG_ROOT}/${_vcpkg_toolchain_rel}")
     set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT}")
     message(STATUS "ENV\{VCPKG_ROOT\}: $ENV{VCPKG_ROOT}")
+    # A VS Developer Shell overwrites VCPKG_ROOT with Visual Studio's bundled vcpkg, silently
+    # switching away from your own install. Pin VCPKG_ROOT_PATH (CMakeUserPresets.json) to avoid it.
+    string(REPLACE "\\" "/" _vcpkg_env_root "$ENV{VCPKG_ROOT}")
+    if(_vcpkg_env_root MATCHES "Microsoft Visual Studio/.*/VC/vcpkg")
+      message(WARNING "[vcpkg] Using Visual Studio's bundled vcpkg (set by the VS Developer Shell). "
+                      "If you have your own vcpkg, set VCPKG_ROOT_PATH in CMakeUserPresets.json.")
+    endif()
   elseif(DEFINED ENV{VCPKG_ROOT_PATH} AND EXISTS "$ENV{VCPKG_ROOT_PATH}/${_vcpkg_toolchain_rel}")
     set(VCPKG_ROOT_PATH "$ENV{VCPKG_ROOT_PATH}")
     message(STATUS "ENV\{VCPKG_ROOT_PATH\}: $ENV{VCPKG_ROOT_PATH}")
@@ -165,44 +181,18 @@ message(STATUS "└────────────────────�
 message(STATUS "")
 message(STATUS "┌─ [3/${VCPKG_CHECKS_TOTAL}] vcpkg Installation")
 
-# Detect Mode
-if(VCPKG_MANIFEST_MODE)
-  message(STATUS "│   ${STATUS_INFO} Mode: MANIFEST (using vcpkg.json)")
-  message(STATUS "│   ${STATUS_OK} dependencies will be managed automatically")
+# Manifest mode only: the vcpkg toolchain turns it on because vcpkg.json exists, and the
+# optional features (tracy, perfetto) rely on it.
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../vcpkg.json")
+  if(VCPKG_MANIFEST_FEATURES)
+    set(_features "${VCPKG_MANIFEST_FEATURES}")
+  else()
+    set(_features "(none)")
+  endif()
+  message(STATUS "│   ${STATUS_INFO} Mode: MANIFEST (vcpkg.json) — optional features: ${_features}")
   math(EXPR VCPKG_CHECKS_PASSED "${VCPKG_CHECKS_PASSED} + 1")
 else()
-  message(STATUS "│   ${STATUS_INFO} Mode: CLASSIC (global installation)")
-
-  set(TRIPLET_DIR "${VCPKG_ROOT_PATH}/installed/${VCPKG_TARGET_TRIPLET}")
-  if(EXISTS "${TRIPLET_DIR}")
-    message(STATUS "│   ${STATUS_OK} triplet directory: ${TRIPLET_DIR}")
-    math(EXPR VCPKG_CHECKS_PASSED "${VCPKG_CHECKS_PASSED} + 1")
-
-    # Quick global package checks if using vcpkg classic mode. If using manifest mode, ignore
-    if(EXISTS "${TRIPLET_DIR}/include/fmt")
-      message(STATUS "│   ${STATUS_OK} fmt: found")
-    else()
-      message(STATUS "│   ${STATUS_WARN} fmt: not found (run: ./vcpkg install fmt --triplet ${VCPKG_TARGET_TRIPLET})")
-    endif()
-    if(EXISTS "${TRIPLET_DIR}/include/gtest")
-      message(STATUS "│   ${STATUS_OK} gtest: found")
-    else()
-      message(
-        STATUS "│   ${STATUS_WARN} gtest: not found (run: ./vcpkg install gtest --triplet ${VCPKG_TARGET_TRIPLET})")
-    endif()
-
-    # Add more as needed, following this format:
-    # if(EXISTS "${TRIPLET_DIR}/include/drogon")
-    #     message(STATUS "│   ${STATUS_OK} drogon: found")
-    # else()
-    #     message(STATUS "│   ${STATUS_WARN} drogon: not found (run: ./vcpkg install drogon --triplet ${VCPKG_TARGET_TRIPLET})")
-    # endif()
-
-  else()
-    message(STATUS "│   ${STATUS_WARN} triplet directory not found: ${TRIPLET_DIR}")
-    message(STATUS "│   ${STATUS_INFO} Run: ./vcpkg install --triplet ${VCPKG_TARGET_TRIPLET}")
-    math(EXPR VCPKG_CHECKS_PASSED "${VCPKG_CHECKS_PASSED} + 0")
-  endif()
+  message(FATAL_ERROR "vcpkg.json not found next to CMakeLists.txt — this project needs vcpkg manifest mode")
 endif()
 message(STATUS "└─────────────────────────────────────────────────────────────────────────")
 

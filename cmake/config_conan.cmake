@@ -2,7 +2,7 @@
 # Conan 2 integration via the cmake-conan dependency provider. Included by
 # setup_package_manager() when PKG_MANAGER=conan. Works with ANY preset.
 #
-# Graceful fallback: if Conan's prerequisites (the cmake-conan submodule + a `conan`
+# Graceful fallback: if Conan's prerequisites (cmake-conan, fetched below, + a `conan`
 # executable) are missing, this falls back to vcpkg for THIS configure instead of hard
 # failing. PKG_MANAGER stays 'conan' in the cache, so fixing the environment and
 # re-configuring picks Conan back up automatically.
@@ -11,7 +11,7 @@ include(FetchContent)
 FetchContent_Declare(
   cmake-conan
   GIT_REPOSITORY https://github.com/conan-io/cmake-conan.git
-  GIT_TAG        develop2
+  GIT_TAG        b1593849dd842c37ff198b9d3e7a6d4e03803121 # develop2 as of 2026-10-13; bump deliberately
 )
 FetchContent_MakeAvailable(cmake-conan)
 
@@ -21,8 +21,8 @@ find_program(CONAN_EXECUTABLE NAMES conan)
 
 set(_conan_ready TRUE)
 if(NOT EXISTS "${CONAN_PROVIDER}")
-  message(WARNING "[conan] cmake-conan submodule not found at ${CONAN_PROVIDER}\n"
-                  "        Run: git submodule update --init --recursive")
+  message(WARNING "[conan] cmake-conan provider not found at ${CONAN_PROVIDER}\n"
+                  "        (fetching cmake-conan failed — check network access and GIT_TAG)")
   set(_conan_ready FALSE)
 endif()
 if(NOT CONAN_EXECUTABLE)
@@ -34,11 +34,6 @@ if(NOT _conan_ready)
   message(WARNING "[conan] Prerequisites missing — falling back to vcpkg for this configure "
                   "(PKG_MANAGER stays 'conan' in the cache; fix the env and re-configure to use Conan).")
   set(PKG_MANAGER "vcpkg") # local override for this configure only
-  # project_options.cmake only defines VCPKG_MANIFEST_MODE when PKG_MANAGER==vcpkg, which it
-  # wasn't here — default it so config_vcpkg uses manifest mode (vcpkg.json), not classic.
-  if(NOT DEFINED VCPKG_MANIFEST_MODE)
-    set(VCPKG_MANIFEST_MODE ON)
-  endif()
   include(cmake/config_vcpkg.cmake)
   return()
 endif()
@@ -51,11 +46,15 @@ endif()
 
 # Host profile selection:
 #   - clang-cl needs an explicit profile (maps clang-cl -> compiler=msvc + executables); auto-pick
-#     cmake/conan-profiles/clang-cl-windows-<buildtype>.ini based on the active preset.
+#     cmake/conan-profiles/clang-cl-windows-<buildtype>.ini based on the active preset, or
+#     clang-cl-windows-asan.ini when ASan is on.
 #   - every other compiler: leave unset so cmake-conan auto-detects from the CMake configuration.
 # An explicit -DCONAN_HOST_PROFILE=... always wins.
 if(NOT CONAN_HOST_PROFILE AND CMAKE_CXX_COMPILER MATCHES "clang-cl")
   string(TOLOWER "${CMAKE_BUILD_TYPE}" _conan_bt)
+  if(ENABLE_SANITIZERS AND ENABLE_ASAN)
+    set(_conan_bt "asan") # clang-cl ASan needs deps on the release CRT (see cmake/sanitizers.cmake)
+  endif()
   set(_conan_prof "${CMAKE_SOURCE_DIR}/cmake/conan-profiles/clang-cl-windows-${_conan_bt}.ini")
   if(EXISTS "${_conan_prof}")
     set(CONAN_HOST_PROFILE "${_conan_prof}" CACHE FILEPATH "Conan host profile (auto-selected for clang-cl)")

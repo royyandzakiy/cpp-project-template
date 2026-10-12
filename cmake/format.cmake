@@ -9,7 +9,8 @@
 # Style/checks themselves live in .clang-format / .clang-tidy — these targets
 # only drive the tools.
 
-# Project-owned sources. CONFIGURE_DEPENDS re-globs when files are added.
+# Project-owned sources — the same set the clang-format pre-commit hook covers.
+# CONFIGURE_DEPENDS re-globs when files are added.
 file(
   GLOB_RECURSE FORMAT_SOURCES
   CONFIGURE_DEPENDS
@@ -17,14 +18,18 @@ file(
   "${CMAKE_SOURCE_DIR}/src/*.hpp"
   "${CMAKE_SOURCE_DIR}/src/*.h"
   "${CMAKE_SOURCE_DIR}/include/*.hpp"
-  "${CMAKE_SOURCE_DIR}/include/*.h")
+  "${CMAKE_SOURCE_DIR}/include/*.h"
+  "${CMAKE_SOURCE_DIR}/test/*.cpp"
+  "${CMAKE_SOURCE_DIR}/test/*.hpp"
+  "${CMAKE_SOURCE_DIR}/examples/*.cpp"
+  "${CMAKE_SOURCE_DIR}/examples/*.hpp"
+  "${CMAKE_SOURCE_DIR}/fuzz/*.cpp")
 
-# Never touch generated headers (e.g. include/${PROJECT_NAME}/version.h).
-list(FILTER FORMAT_SOURCES EXCLUDE REGEX "/version\\.h$")
-
-# clang-tidy analyzes translation units; restrict it to .cpp files.
+# clang-tidy analyzes production translation units only: test code breaks many rules on purpose,
+# and examples are only in the compile DB when their option is on.
 set(TIDY_SOURCES ${FORMAT_SOURCES})
 list(FILTER TIDY_SOURCES INCLUDE REGEX "\\.cpp$")
+list(FILTER TIDY_SOURCES INCLUDE REGEX "/src/")
 
 # ----- clang-format targets -----
 find_program(CLANG_FORMAT_EXE NAMES clang-format)

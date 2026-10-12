@@ -4,7 +4,8 @@
 
 # ----- Build output -----
 build/
-cmake-build-*/        # CLion default build dirs
+# CLion default build dirs
+cmake-build-*/
 bin/
 out/
 Testing/
@@ -21,12 +22,18 @@ _deps/
 # ----- clangd / compile database -----
 # Mirrored to the project root by CMake; machine- and preset-specific.
 compile_commands.json
-.cache/               # clangd background index
+# clangd background index
+.cache/
 
 # ----- Generated sources -----
-# Produced at configure time by cmake/version.cmake from version.h.in
-include/*/version.h
-# (mylib_export.h is generated into the build tree, not here — see src/core/CMakeLists.txt)
+# (mylib_export.h and version.h are generated into the build tree — see src/core/CMakeLists.txt)
+
+# ----- Fuzzing -----
+# libFuzzer corpus and crash/leak/timeout repro files from local runs.
+fuzz/corpus/
+crash-*
+leak-*
+timeout-*
 
 # ----- Library install staging -----
 # Auto-populated by MyLib's POST_BUILD `cmake --install` when INSTALL_LIB=ON (cmake/install.cmake).
@@ -34,6 +41,7 @@ generated_lib/
 
 # ----- Package managers / local config -----
 vcpkg_installed/
+.vcpkg-cache/
 CMakeUserPresets.json
 project_options.local.cmake
 
@@ -81,3 +89,5 @@ desktop.ini
 # ----- Editor swap/backup -----
 *~
 *.swp
+
+.codebase-memory/

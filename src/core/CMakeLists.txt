@@ -27,10 +27,6 @@ set(_mylib_public_headers
     "${PROJECT_SOURCE_DIR}/include/MyLib/greeter.hpp"
 )
 
-if(GENERATE_VERSION_HEADER)
-    list(APPEND _mylib_public_headers "${PROJECT_SOURCE_DIR}/include/MyLib/version.h")
-endif()
-
 target_sources(MyLib
     PUBLIC
         FILE_SET HEADERS
@@ -43,22 +39,28 @@ target_sources(MyLib
         greeter.cpp
 )
 
-# ---- Generate Export Header ------------------------------------------------
-# Generated into BUILD tree (not source) - platform/compiler specific
-# Each build dir gets its own correct copy
+# ---- Generated Headers ------------------------------------------------------
+# Generated into the BUILD tree (not source): mylib_export.h is platform/compiler specific, and
+# each build dir gets its own copy. Both install next to the hand-written headers.
 include(GenerateExportHeader)
 generate_export_header(
     MyLib
     BASE_NAME MYLIB
     EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/exports/MyLib/mylib_export.h"
 )
+set(_mylib_generated_headers "${CMAKE_CURRENT_BINARY_DIR}/exports/MyLib/mylib_export.h")
+
+if(GENERATE_VERSION_HEADER)
+    generate_version_header("${CMAKE_CURRENT_BINARY_DIR}/exports/MyLib/version.h")
+    list(APPEND _mylib_generated_headers "${CMAKE_CURRENT_BINARY_DIR}/exports/MyLib/version.h")
+endif()
 
 target_sources(MyLib
     PUBLIC
         FILE_SET generated_headers
         TYPE HEADERS
         BASE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/exports"
-        FILES "${CMAKE_CURRENT_BINARY_DIR}/exports/MyLib/mylib_export.h"
+        FILES ${_mylib_generated_headers}
 )
 
 # ---- Include Paths ----------------------------------------------------------
@@ -104,9 +106,7 @@ target_link_libraries(MyLib
 # PCH, unity build, profiler links, clang-tidy
 configure_target(MyLib)
 
-if (ENABLE_SANITIZERS)
-  target_enable_sanitizers(MyLib)
-endif()
+target_enable_sanitizers(MyLib) # no-op unless ENABLE_SANITIZERS
 
 # ---- Installation (optional) ------------------------------------------------
 # find_package()-able package + staging into generated_lib/. App-only projects can delete

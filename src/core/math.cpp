@@ -1,17 +1,19 @@
 #include "MyLib/math.hpp"
 
+#include <cstdint>
+
 namespace mymath {
 
-auto add(int a, int b) -> int {
-	return a + b;
+auto add(int a, int b) -> std::int64_t {
+	return std::int64_t{a} + b;
 }
 
-auto subtract(int a, int b) -> int {
-	return a - b;
+auto subtract(int a, int b) -> std::int64_t {
+	return std::int64_t{a} - b;
 }
 
-auto multiply(int a, int b) -> int {
-	return a * b;
+auto multiply(int a, int b) -> std::int64_t {
+	return std::int64_t{a} * b;
 }
 
 auto divide(double a, double b) -> double {

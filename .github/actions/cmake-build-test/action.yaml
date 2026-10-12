@@ -1,6 +1,6 @@
 # .github/actions/cmake-build-test/action.yaml
 name: CMake Build & Test
-description: 'Configures, builds, and tests a CMake project using presets'
+description: 'Configures, builds, and tests a CMake project using presets (and packages release presets)'
 inputs:
   preset:
     description: 'The CMake preset to use for configuration and building'
@@ -35,3 +35,20 @@ runs:
     - name: Test
       shell: bash
       run: ctest --preset test-${{ inputs.preset }}
+
+    # Release presets also produce the cpack archive (cmake/packaging.cmake) as a build artifact.
+    # -C Release covers multi-config generators; single-config ones ignore it.
+    - name: Package
+      if: endsWith(inputs.preset, '-release')
+      shell: bash
+      run: cpack --config build/${{ inputs.preset }}/CPackConfig.cmake -C Release
+
+    - name: Upload package
+      if: endsWith(inputs.preset, '-release')
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-${{ inputs.preset }}
+        path: |
+          build/${{ inputs.preset }}/package/*.zip
+          build/${{ inputs.preset }}/package/*.tar.gz
+        if-no-files-found: error
