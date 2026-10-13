@@ -34,6 +34,12 @@ if(MSVC)
     add_compile_options(/WX) # warnings as errors
   endif()
 else()
+  if(MINGW)
+    # Links libstdc++, libgcc and winpthread into each binary. Otherwise it loads whichever
+    # libstdc++-6.dll is first on PATH (0xC0000139 with a different MinGW), and cpack's
+    # RUNTIME_DEPENDENCIES can't find those DLLs to bundle.
+    add_link_options(-static)
+  endif()
   # Baseline: warnings visible (+ two cheap, high-value, low-noise ones).
   add_compile_options(-Wall -Wextra -Wshadow -Wnon-virtual-dtor)
   if(ENABLE_STRICT_COMPILER)

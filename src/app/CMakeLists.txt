@@ -66,6 +66,8 @@ install(TARGETS MyApp
         DIRECTORIES $<TARGET_FILE_DIR:MyApp>
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT MyApp
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT MyApp
+    # Required on macOS whenever RUNTIME_DEPENDENCIES is used, even with no frameworks.
+    FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT MyApp
 )
 
 message(STATUS "MyApp configured (executable over MyLib)")
